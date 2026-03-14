@@ -23,7 +23,7 @@ A **CLI toolkit** for generating **production-ready Node.js REST APIs** with opi
 ### Run via npx (recommended)
 
 ```bash
-npx create-smart-api my-api
+npx create-smart-api create my-api
 ```
 
 ### Or install globally
@@ -35,7 +35,7 @@ npm install -g create-smart-api
 Then create a project:
 
 ```bash
-create-smart-api my-api
+create-smart-api create my-api
 ```
 
 ---
@@ -45,7 +45,7 @@ create-smart-api my-api
 1. Run the generator:
 
    ```bash
-   create-smart-api my-api
+   create-smart-api create my-api
    ```
 
 2. Choose your database:
@@ -82,7 +82,7 @@ my-project
 ### Create a new project
 
 ```bash
-create-smart-api my-api
+create-smart-api create my-api
 ```
 
 ### Generate a CRUD module

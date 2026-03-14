@@ -1,6 +1,6 @@
 {
   "name": "create-smart-api",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "CLI to generate production-ready Node.js APIs with CRUD, auth, validation, testing and microservices",
   "type": "module",
   "preferGlobal": true,

@@ -3,7 +3,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { log } from "../helper/chalk.js";
 
-export default async function generateSwagger(projectPath) {
+export default async function generateSwagger(projectPath, moduleType) {
   const answers = await inquirer.prompt([
     {
       type: "list",
@@ -14,6 +14,7 @@ export default async function generateSwagger(projectPath) {
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
       ],
+      when: () => !moduleType,
     },
   ]);
   const swaggerDir = path.join(projectPath, "config");

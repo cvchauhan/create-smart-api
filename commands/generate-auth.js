@@ -3,7 +3,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { execSync } from "child_process";
 import { log } from "../helper/chalk.js";
-export default async function () {
+export default async function (framework, moduleType) {
   const answers = await inquirer.prompt([
     {
       type: "list",
@@ -11,6 +11,7 @@ export default async function () {
       message: "Select Framework",
       default: "express",
       choices: ["express", "fastify"],
+      when: () => !framework,
     },
     {
       type: "list",
@@ -21,6 +22,7 @@ export default async function () {
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
       ],
+      when: () => !moduleType,
     },
   ]);
   const base = process.cwd();

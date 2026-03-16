@@ -3,6 +3,10 @@ import path from "path";
 import { log } from "../helper/chalk.js";
 
 export default async function (name) {
+  if (!name) {
+    log.error("Microservice name is required");
+    return;
+  }
   const base = path.join(process.cwd(), name);
 
   await fs.mkdirp(base + "/gateway");

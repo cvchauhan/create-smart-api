@@ -1,20 +1,21 @@
-# create-smart-api
+## 📦 create-smart-api — Production-ready Node.js REST API generator
 
-A **CLI toolkit** for generating **production-ready Node.js REST APIs** with opinions, architecture, and best practices built in.
+A **CLI toolkit** for generating **production-ready Node.js REST APIs** with powerful scaffolding, architecture best practices, and built-in features.
+
+---
 
 ## 🚀 What it does
 
 `create-smart-api` scaffolds a complete backend project with:
 
-- ✅ Express.js + modular routing
-- ✅ Controller / Service / Model architecture
-- ✅ CRUD generator for resources
-- ✅ Authentication (JWT + password hashing)
-- ✅ Validation schemas (Zod/Joi)
-- ✅ Testing setup (Jest)
-- ✅ Swagger/OpenAPI docs support
-- ✅ Docker support
-- ✅ Plugin system for extensibility
+- **Express.js or Fastify** with modular routing
+- Controller, Service, Model, Route separation
+- CRUD generator for resources
+- JWT authentication (with password hashing)
+- Validation schemas (Zod/Joi)
+- Jest testing setup
+- Swagger/OpenAPI documentation
+- Plugin system for additional features
 
 ---
 
@@ -48,32 +49,36 @@ create-smart-api create my-api
    create-smart-api create my-api
    ```
 
-2. Choose your database:
-   - MongoDB
-   - MySQL
-   - MSSQL
+2. Follow the interactive CLI prompts:
+   - **Project name**
+   - **Framework:** Express or Fastify
+   - **Module system:** CommonJS or ES Modules (ESM)
+   - **Database:** MongoDB, MySQL, or MSSQL
+   - **Generate sample CRUD:** Yes/No
+   - **CRUD module name** (if Yes)
+   - **Port number**
 
 3. The CLI will scaffold a production-ready Node.js API project.
 
 ---
 
-## 📁 Generated Project Structure (example)
+## 📁 Project Structure (Example)
 
 ```
-my-project
-├── src
-│   ├── controllers
-│   ├── services
-│   ├── routes
-│   ├── models
-│   ├── middleware
-│   ├── validations
-│   └── config
-├── tests
-├── app.js
-├── server.js
+my-api/
+├── src/
+│   ├── controllers/
+│   ├── services/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/
+│   ├── validations/
+│   ├── config/
+|   ├── server.js
 └── package.json
 ```
+
+- Each CRUD module will be structured across controllers, services, models, and routes.
 
 ---
 
@@ -85,6 +90,8 @@ my-project
 create-smart-api create my-api
 ```
 
+This will prompt you for options and scaffold the project.
+
 ### Generate a CRUD module
 
 ```bash
@@ -94,11 +101,11 @@ create-smart-api generate:crud user
 Generates:
 
 ```
-src/modules/user
-├── user.controller.js
-├── user.service.js
-├── user.routes.js
-└── user.model.js
+src/
+├── controllers/user.controller.js
+├── services/user.service.js
+├── routes/user.routes.js
+├── models/user.model.js
 ```
 
 ### Add authentication
@@ -110,8 +117,8 @@ create-smart-api generate:auth
 Adds:
 
 - JWT middleware
-- Login / register endpoints
-- Password hashing
+- login & register endpoints
+- password hashing
 
 ### Add validation
 
@@ -119,7 +126,7 @@ Adds:
 create-smart-api generate:validation user
 ```
 
-Generates a Zod/Joi validation schema for the specified resource.
+Generates appropriate Zod/Joi schemas in `src/validations/`.
 
 ### Add tests
 
@@ -135,18 +142,7 @@ Generates Jest test files for the resource.
 create-smart-api add:swagger
 ```
 
-Adds OpenAPI docs and Swagger UI for the project.
-
-### Add Docker support
-
-```bash
-create-smart-api add:docker
-```
-
-Adds:
-
-- `Dockerfile`
-- `docker-compose.yml`
+Adds Swagger/OpenAPI docs and Swagger UI.
 
 ---
 
@@ -156,13 +152,12 @@ Adds:
 npm test
 ```
 
-Example Jest test:
+Sample Jest test:
 
 ```js
 describe("User API", () => {
   it("should create user", async () => {
     const res = await request(app).post("/users").send({ name: "test" });
-
     expect(res.statusCode).toBe(201);
   });
 });
@@ -172,7 +167,7 @@ describe("User API", () => {
 
 ## 🔌 Plugin System
 
-You can extend the CLI via plugins.
+Extend your backend with plugins.
 
 Example:
 
@@ -180,37 +175,12 @@ Example:
 create-smart-api plugin install redis
 ```
 
-Plugins can add features like:
-
-- Caching
-- Queues
-- Microservices
-- Monitoring
-
 ---
 
-## 🐳 Docker
+## 🗺️ Roadmap
 
-Generate Docker setup:
-
-```bash
-create-smart-api add:docker
-```
-
-Run the container:
-
-```bash
-docker-compose up
-```
-
----
-
-## 📦 Roadmap
-
-Planned features:
-
-- GraphQL generator
-- Redis caching generator
+- GraphQL API generator
+- Redis cache generator
 - Kubernetes deployment templates
 - Event-driven microservices
 - AI-powered API generator
@@ -219,12 +189,12 @@ Planned features:
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request.
+Contributions welcome!
 
 1. Fork the repo
 2. Create a feature branch
-3. Add tests
-4. Open a PR
+3. Add tests/documentation
+4. Submit a PR
 
 ---
 
@@ -232,20 +202,6 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 MIT
 
-Fork repository
-
-Create feature branch
-
-Commit changes
-
-Submit Pull Request
-
-📄 License
-MIT License
-
-👨‍💻 Author
-Created by backend developers for backend developers.
-
-⭐ If you like this project, please give it a star on GitHub.
-
 ---
+
+Created by Chirag Chauhan and contributors. Star this project to support its development!

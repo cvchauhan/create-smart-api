@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper/chalk.js";
+import inquirer from "inquirer";
 
 export default async function generateCrud(
   base,
@@ -8,8 +9,31 @@ export default async function generateCrud(
   framework,
   moduleType,
 ) {
+  if (!moduleName) {
+    log.error("Module name is required");
+    return;
+  }
+  const answers = await inquirer.prompt([
+    {
+      type: "list",
+      name: "framework",
+      message: "Select Framework",
+      choices: ["express", "fastify"],
+      when: () => !framework,
+    },
+    {
+      type: "list",
+      name: "moduleType",
+      message: "Module system",
+      choices: [
+        { name: "ES Module", value: "module" },
+        { name: "CommonJS", value: "commonjs" },
+      ],
+      when: () => !moduleType,
+    },
+  ]);
   const name = moduleName.toLowerCase();
-  const isESM = moduleType === "module";
+  const isESM = moduleType === "module" || answers.moduleType === "module";
 
   const controllerPath = path.join(
     base,
@@ -93,7 +117,7 @@ module.exports.create = async (req,res)=>{
 
   let routeContent;
 
-  if (framework === "express") {
+  if (framework === "express" || answers.framework === "express") {
     routeContent = isESM
       ? `
 import express from "express";
@@ -119,7 +143,7 @@ module.exports = router;
 `;
   }
 
-  if (framework === "fastify") {
+  if (framework === "fastify" || answers.framework === "fastify") {
     routeContent = isESM
       ? `
 export default async function (fastify){
@@ -152,41 +176,79 @@ module.exports = async function (fastify){
   await fs.writeFile(routePath, routeContent);
 
   /* -------- AUTO REGISTER ROUTE -------- */
+  const routesDir = path.dirname(routesIndex);
 
-  let registerCode = "";
+  // Rebuild routes index to include all generated route modules (idempotent)
+  const routeFiles = (await fs.readdir(routesDir)).filter(
+    (f) => f.endsWith(".routes.js") && f !== "index.js",
+  );
 
-  if (framework === "express") {
-    registerCode = isESM
-      ? `
+  const importLines = [];
+  const registerLines = [];
+
+  for (const file of routeFiles) {
+    const moduleName = file.replace(".routes.js", "");
+    const routeVarName = `${moduleName}Routes`;
+
+    if (framework === "express" || answers.framework === "express") {
+      if (isESM) {
+        importLines.push(`import ${routeVarName} from "./${file}";`);
+        registerLines.push(`  app.use("/${moduleName}s", ${routeVarName});`);
+      } else {
+        importLines.push(`const ${routeVarName} = require("./${file}");`);
+        registerLines.push(`  app.use("/${moduleName}s", ${routeVarName});`);
+      }
+    }
+
+    if (framework === "fastify" || answers.framework === "fastify") {
+      if (isESM) {
+        importLines.push(`import ${routeVarName} from "./${file}";`);
+        registerLines.push(`  await app.register(${routeVarName});`);
+      } else {
+        importLines.push(`const ${routeVarName} = require("./${file}");`);
+        registerLines.push(`  await app.register(${routeVarName});`);
+      }
+    }
+  }
+
+  let routesIndexContent = "";
+
+  if (framework === "express" || answers.framework === "express") {
+    if (isESM) {
+      routesIndexContent = `${importLines.join("\n")}
+
 export default function registerRoutes(app) {
-    import ${name}Routes from "./${name}.routes.js";
-    app.use("/${name}s", ${name}Routes); 
-}
-`
-      : `
-module.exports = function registerRoutes(app) { 
-    const ${name}Routes = require("./${name}.routes");
-    app.use("/${name}s", ${name}Routes);
+${registerLines.join("\n")}
 }
 `;
+    } else {
+      routesIndexContent = `${importLines.join("\n")}
+
+module.exports = function registerRoutes(app) {
+${registerLines.join("\n")}
+};
+`;
+    }
   }
 
-  if (framework === "fastify") {
-    registerCode = isESM
-      ? `
+  if (framework === "fastify" || answers.framework === "fastify") {
+    if (isESM) {
+      routesIndexContent = `${importLines.join("\n")}
+
 export default async function registerRoutes(app) {
-    import ${name}Routes from "./${name}.routes.js";
-    await app.register(${name}Routes);
-}
-`
-      : `
-module.exports = async function registerRoutes(app) {
-    const ${name}Routes = require("./${name}.routes");
-    await app.register(${name}Routes);
+${registerLines.join("\n")}
 }
 `;
+    } else {
+      routesIndexContent = `${importLines.join("\n")}
+
+module.exports = async function registerRoutes(app) {
+${registerLines.join("\n")}
+};
+`;
+    }
   }
 
-  await fs.appendFile(routesIndex, registerCode);
+  await fs.writeFile(routesIndex, routesIndexContent);
   log.success(`CRUD for ${name} created successfully`);
 }

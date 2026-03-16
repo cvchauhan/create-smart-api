@@ -13,7 +13,7 @@ export async function createStructure(base, options) {
     await fs.mkdirp(path.join(src, folder));
   }
 
-  const { framework, moduleType } = options;
+  const { framework, moduleType, port } = options;
   const isESM = moduleType === "module";
 
   let serverContent;
@@ -34,8 +34,8 @@ app.get("/", (req,res)=>{
  res.json({message:"API running"});
 });
 
-app.listen(3000,()=>{
- console.log("Server running on port 3000");
+app.listen(${port},()=>{
+ console.log("Server running on port ${port}");
 });
 `;
     } else {
@@ -53,8 +53,8 @@ app.get("/", (req,res)=>{
  res.json({message:"API running"});
 });
 
-app.listen(3000,()=>{
- console.log("Server running on port 3000");
+app.listen(${port},()=>{
+ console.log("Server running on port ${port}");
 });
 `;
     }
@@ -74,7 +74,7 @@ app.get("/", async ()=>{
  return {message:"API running"};
 });
 
-app.listen({port:3000});
+app.listen({port:${port}});
 `;
     } else {
       serverContent = `
@@ -89,11 +89,20 @@ app.get("/", async ()=>{
  return {message:"API running"};
 });
 
-app.listen({port:3000});
+app.listen({port:${port}});
 `;
     }
   }
 
   await fs.writeFile(path.join(src, "server.js"), serverContent);
+
+  // Create a default routes index file (so server can import it immediately)
+  const routesIndexPath = path.join(src, "routes", "index.js");
+  const routesIndexContent = isESM
+    ? `export default function registerRoutes(app) {\n  // register routes here\n}\n`
+    : `module.exports = function registerRoutes(app) {\n  // register routes here\n};\n`;
+
+  await fs.writeFile(routesIndexPath, routesIndexContent);
+
   log.success(`Server file created successfully`);
 }

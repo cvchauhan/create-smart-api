@@ -4,7 +4,11 @@ import { execSync } from "child_process";
 import inquirer from "inquirer";
 import { log } from "../helper/chalk.js";
 
-export default async function (module) {
+export default async function (module, moduleType) {
+  if (!module) {
+    log.error("Module name is required");
+    return;
+  }
   const answers = await inquirer.prompt([
     {
       type: "list",
@@ -15,6 +19,7 @@ export default async function (module) {
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
       ],
+      when: () => !moduleType,
     },
   ]);
   const base = process.cwd();

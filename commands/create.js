@@ -60,7 +60,7 @@ export default async function (name) {
     },
   ]);
 
-  const base = path.join(process.cwd(), name);
+  const base = path.join(process.cwd(), name || answers.name);
   await fs.mkdirp(base);
 
   await createStructure(base, answers);

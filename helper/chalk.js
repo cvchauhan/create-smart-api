@@ -19,20 +19,4 @@ export const log = {
         borderStyle: "round",
       }),
     ),
-  warn: (msg) =>
-    console.log(
-      boxen(chalk.yellow(`⚠ ${msg}`), {
-        padding: 1,
-        borderColor: "yellow",
-        borderStyle: "round",
-      }),
-    ),
-  info: (msg) =>
-    console.log(
-      boxen(chalk.blue(`ℹ ${msg}`), {
-        padding: 1,
-        borderColor: "blue",
-        borderStyle: "round",
-      }),
-    ),
 };

@@ -41,5 +41,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/cvchauhan/create-smart-api"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
+    "babel-jest": "^30.3.0",
+    "jest": "^30.3.0"
   }
 }

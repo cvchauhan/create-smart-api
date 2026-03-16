@@ -56,5 +56,5 @@ module.exports = { testEnvironment: "node" }; `;
     testContent,
   );
   await fs.writeFile(path.join(base, "jest.config.js"), jestConfig);
-  console.log("Jest test generated successfully");
+  console.log("✔ Jest test generated successfully");
 }

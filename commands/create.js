@@ -85,5 +85,5 @@ export default async function (name) {
       answers.moduleType,
     );
   }
-  console.log("Project created");
+  console.log("✔ Project created successfully!!");
 }

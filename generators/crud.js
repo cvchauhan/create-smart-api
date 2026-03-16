@@ -187,4 +187,5 @@ module.exports = async function registerRoutes(app) {
   }
 
   await fs.appendFile(routesIndex, registerCode);
+  console.log(`✔ CRUD for ${name} created successfully`);
 }

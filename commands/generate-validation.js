@@ -43,5 +43,5 @@ module.exports = function(req, res) {
 
   await fs.writeFile(path.join(dir, `${name}.validation.js`), controllerFile);
 
-  console.log("Validation created");
+  console.log("✔ Validation created");
 }

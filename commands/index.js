@@ -6,5 +6,16 @@ import service from "../commands/generate-service.js";
 import micro from "../commands/generate-microservice.js";
 import plugin from "../commands/add-plugin.js";
 import test from "../commands/generate-test.js";
+import swagger from "../commands/swagger.js";
 
-export { create, crud, auth, validation, service, micro, plugin, test };
+export {
+  create,
+  crud,
+  auth,
+  validation,
+  service,
+  micro,
+  plugin,
+  test,
+  swagger,
+};

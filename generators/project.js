@@ -94,4 +94,5 @@ app.listen({port:3000});
   }
 
   await fs.writeFile(path.join(src, "server.js"), serverContent);
+  console.log("✔ Server file created successfully");
 }

@@ -4,6 +4,8 @@ import inquirer from "inquirer";
 import { execSync } from "child_process";
 import { createStructure } from "../generators/project.js";
 import generateCrud from "../generators/crud.js";
+import { log } from "../helper/chalk.js";
+
 export default async function (name) {
   const answers = await inquirer.prompt([
     {
@@ -85,5 +87,6 @@ export default async function (name) {
       answers.moduleType,
     );
   }
-  console.log("Project created");
+
+  log.success("Project created successfully!!");
 }

@@ -1,14 +1,13 @@
+import fs from "fs-extra";
+import path from "path";
+import { log } from "../helper/chalk.js";
 
-import fs from "fs-extra"
-import path from "path"
+export default async function (name) {
+  const base = path.join(process.cwd(), name);
 
-export default async function(name){
+  await fs.mkdirp(base + "/gateway");
+  await fs.mkdirp(base + "/services/user");
+  await fs.mkdirp(base + "/services/order");
 
- const base = path.join(process.cwd(),name)
-
- await fs.mkdirp(base+"/gateway")
- await fs.mkdirp(base+"/services/user")
- await fs.mkdirp(base+"/services/order")
-
- console.log("Microservice structure created")
+  log.success("Microservice structure created");
 }

@@ -11,6 +11,7 @@ import {
   micro,
   plugin,
   test,
+  swagger,
 } from "../commands/index.js";
 
 const program = new Command();
@@ -29,6 +30,13 @@ program.command("generate:microservice <name>").action(micro);
 program.command("add:plugin <name>").action(plugin);
 
 program.command("generate:test <module> [moduleType]").action(test);
-program.command("generate:swagger <module>").action(test);
+// program.command("generate:swagger <module>").action(test);
+program
+  .command("generate:swagger")
+  .description("Generate Swagger documentation setup")
+  .action(async () => {
+    const projectPath = process.cwd();
+    await swagger(projectPath);
+  });
 
 program.parse(process.argv);

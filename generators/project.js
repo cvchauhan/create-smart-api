@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
+import { log } from "../helper/chalk.js";
 
 export async function createStructure(base, options) {
   const src = path.join(base, "src");
@@ -94,4 +95,5 @@ app.listen({port:3000});
   }
 
   await fs.writeFile(path.join(src, "server.js"), serverContent);
+  log.success(`Server file created successfully`);
 }

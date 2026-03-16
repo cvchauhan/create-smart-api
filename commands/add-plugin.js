@@ -1,15 +1,14 @@
+import { execSync } from "child_process";
+import { log } from "../helper/chalk.js";
 
-import { execSync } from "child_process"
+export default async function (name) {
+  if (name === "redis") {
+    execSync("npm install redis", { stdio: "inherit" });
+  }
 
-export default async function(name){
+  if (name === "kafka") {
+    execSync("npm install kafkajs", { stdio: "inherit" });
+  }
 
- if(name==="redis"){
-  execSync("npm install redis",{stdio:"inherit"})
- }
-
- if(name==="kafka"){
-  execSync("npm install kafkajs",{stdio:"inherit"})
- }
-
- console.log("Plugin added:",name)
+  log.success(`Plugin ${name} added successfully!!`);
 }

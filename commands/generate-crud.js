@@ -1,6 +1,9 @@
+import crud from "../generators/crud.js";
 
-import crud from "../generators/crud.js"
-
-export default async function(name){
- await crud(process.cwd(),name)
+export default async function (
+  name,
+  framework = "express",
+  moduleType = "commonjs",
+) {
+  await crud(process.cwd(), name, framework, moduleType);
 }

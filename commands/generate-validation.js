@@ -1,24 +1,47 @@
+import fs from "fs-extra";
+import path from "path";
+import { execSync } from "child_process";
+import inquirer from "inquirer";
 
-import fs from "fs-extra"
-import path from "path"
-import { execSync } from "child_process"
+export default async function (name) {
+  const answers = await inquirer.prompt([
+    {
+      type: "list",
+      name: "moduleType",
+      message: "Module system",
+      default: "commonjs",
+      choices: [
+        { name: "ES Module", value: "module" },
+        { name: "CommonJS", value: "commonjs" },
+      ],
+    },
+  ]);
+  execSync("npm install zod", { stdio: "inherit" });
 
-export default async function(name){
+  const dir = path.join(process.cwd(), "src/validation", name);
+  await fs.mkdirp(dir);
+  const isModule = answers.moduleType === "module";
+  const controllerFile = isModule
+    ? `
+import { ${name}Schema } from "../../controllers/${name}.controller.js"; 
+export default function(req, res) { 
+    const validation = ${name}Schema.safeParse(req.body); 
+    if (!validation.success) { 
+        return res.status(400).json(validation.error); 
+    } 
+    res.json({ message: "${name} created", data: validation.data }); 
+}`
+    : `
+const { ${name}Schema } = require("../../controllers/${name}.controller.js"); 
+module.exports = function(req, res) { 
+    const validation = ${name}Schema.safeParse(req.body); 
+    if (!validation.success) { 
+        return res.status(400).json(validation.error); 
+    } 
+    res.json({ message: "${name} created", data: validation.data }); 
+}`;
 
- execSync("npm install zod",{stdio:"inherit"})
+  await fs.writeFile(path.join(dir, `${name}.validation.js`), controllerFile);
 
- const dir = path.join(process.cwd(),"src/modules",name)
- await fs.mkdirp(dir)
-
- const file = `
-import {z} from "zod"
-
-export const ${name}Schema = z.object({
- name:z.string(),
-})
-`
-
- await fs.writeFile(path.join(dir,`${name}.validation.js`),file)
-
- console.log("Validation created")
+  console.log("Validation created");
 }

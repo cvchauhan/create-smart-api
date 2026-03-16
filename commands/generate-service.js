@@ -3,6 +3,10 @@ import path from "path";
 import { log } from "../helper/chalk.js";
 
 export default async function (name) {
+  if (!name) {
+    log.error("Module name is required");
+    return;
+  }
   const dir = path.join(process.cwd(), "src/modules", name);
   await fs.mkdirp(dir);
 

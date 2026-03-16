@@ -9,6 +9,13 @@ import { log } from "../helper/chalk.js";
 export default async function (name) {
   const answers = await inquirer.prompt([
     {
+      type: "input",
+      name: "name",
+      message: "Project name",
+      default: "my-app",
+      when: () => !name,
+    },
+    {
       type: "list",
       name: "framework",
       message: "Select Framework",
@@ -44,6 +51,12 @@ export default async function (name) {
       message: "CRUD module name",
       default: "sample",
       when: (a) => a.crud,
+    },
+    {
+      type: "input",
+      name: "port",
+      message: "Port for the server",
+      default: 3000,
     },
   ]);
 
@@ -88,5 +101,7 @@ export default async function (name) {
     );
   }
 
-  log.success("Project created successfully!!");
+  log.success(
+    `Project ${name} created successfully!! with ${answers.framework}, ${answers.db} and PORT: ${answers.port}  `,
+  );
 }

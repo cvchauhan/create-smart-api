@@ -15,7 +15,6 @@ A **CLI toolkit** for generating **production-ready Node.js REST APIs** with pow
 - Validation schemas (Zod/Joi)
 - Jest testing setup
 - Swagger/OpenAPI documentation
-- Docker support
 - Plugin system for additional features
 
 ---
@@ -145,14 +144,6 @@ create-smart-api add:swagger
 
 Adds Swagger/OpenAPI docs and Swagger UI.
 
-### Add Docker support
-
-```bash
-create-smart-api add:docker
-```
-
-Adds Dockerfile and docker-compose.yml for containerization.
-
 ---
 
 ## 🧪 Running Tests
@@ -182,17 +173,6 @@ Example:
 
 ```bash
 create-smart-api plugin install redis
-```
-
----
-
-## 🐳 Docker
-
-To build and run your API with Docker:
-
-```bash
-create-smart-api add:docker
-docker-compose up
 ```
 
 ---

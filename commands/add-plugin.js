@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import { log } from "../helper/chalk.js";
 
 export default async function (name) {
   if (name === "redis") {
@@ -9,5 +10,5 @@ export default async function (name) {
     execSync("npm install kafkajs", { stdio: "inherit" });
   }
 
-  console.log(`✔ Plugin ${name} added successfully!!`);
+  log.success(`Plugin ${name} added successfully!!`);
 }

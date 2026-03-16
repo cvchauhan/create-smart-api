@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
 import { execSync } from "child_process";
+import { log } from "../helper/chalk.js";
 export default async function () {
   const answers = await inquirer.prompt([
     {
@@ -109,5 +110,5 @@ module.exports = async function (req, reply) {
     }
   }
   await fs.writeFile(path.join(dir, "auth.middleware.js"), middleware);
-  console.log("✔ Auth middleware generated successfully");
+  log.success("Auth middleware generated successfully");
 }

@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
+import { log } from "../helper/chalk.js";
 
 export default async function (name) {
   const answers = await inquirer.prompt([
@@ -43,5 +44,5 @@ module.exports = function(req, res) {
 
   await fs.writeFile(path.join(dir, `${name}.validation.js`), controllerFile);
 
-  console.log("✔ Validation created");
+  log.success("Validation created");
 }

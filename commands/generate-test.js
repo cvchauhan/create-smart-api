@@ -2,6 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
+import { log } from "../helper/chalk.js";
 
 export default async function (module) {
   const answers = await inquirer.prompt([
@@ -56,5 +57,5 @@ module.exports = { testEnvironment: "node" }; `;
     testContent,
   );
   await fs.writeFile(path.join(base, "jest.config.js"), jestConfig);
-  console.log("✔ Jest test generated successfully");
+  log.success("Jest test generated successfully");
 }

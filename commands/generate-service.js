@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
+import { log } from "../helper/chalk.js";
 
 export default async function (name) {
   const dir = path.join(process.cwd(), "src/modules", name);
@@ -13,5 +14,5 @@ export const getAll${name} = async ()=>{
 
   await fs.writeFile(path.join(dir, `${name}.service.js`), service);
 
-  console.log("✔ Service created");
+  log.success("Service created");
 }

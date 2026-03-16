@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
+import { log } from "../helper/chalk.js";
 
 export default async function generateSwagger(projectPath) {
   const answers = await inquirer.prompt([
@@ -67,5 +68,5 @@ ${exportContent}
 
   await fs.writeFile(path.join(swaggerDir, "swagger.js"), content);
 
-  console.log("✔ Swagger configuration created");
+  log.success("Swagger configuration created");
 }

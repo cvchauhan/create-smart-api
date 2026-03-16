@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
+import { log } from "../helper/chalk.js";
 
 export default async function generateCrud(
   base,
@@ -41,11 +42,11 @@ export const create = async (data)=>{
 };
 `
     : `
-exports.getAll = async ()=>{
+module.exports.getAll = async ()=>{
  return [];
 };
 
-exports.create = async (data)=>{
+module.exports.create = async (data)=>{
  return data;
 };
 `;
@@ -74,12 +75,12 @@ export const create = async (req,res)=>{
     controllerContent = `
 const service = require("../services/${name}.service");
 
-exports.getAll = async (req,res)=>{
+module.exports.getAll = async (req,res)=>{
  const data = await service.getAll();
  res.json(data);
 };
 
-exports.create = async (req,res)=>{
+module.exports.create = async (req,res)=>{
  const data = await service.create(req.body);
  res.json(data);
 };
@@ -187,5 +188,5 @@ module.exports = async function registerRoutes(app) {
   }
 
   await fs.appendFile(routesIndex, registerCode);
-  console.log(`✔ CRUD for ${name} created successfully`);
+  log.success(`CRUD for ${name} created successfully`);
 }

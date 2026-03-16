@@ -17,15 +17,18 @@ const program = new Command();
 
 program.command("create <name>").action(create);
 
-program.command("generate:crud <module>").action(crud);
-program.command("generate:service <module>").action(service);
-program.command("generate:auth").action(auth);
-program.command("generate:validation <module>").action(validation);
+program.command("generate:crud <module> [framework] [moduleType]").action(crud);
+program
+  .command("generate:service <module> [framework] [moduleType]")
+  .action(service);
+program.command("generate:auth [framework] [moduleType]").action(auth);
+program.command("generate:validation <module> [moduleType]").action(validation);
 
 program.command("generate:microservice <name>").action(micro);
 
 program.command("add:plugin <name>").action(plugin);
 
-program.command("generate:test <module>").action(test);
+program.command("generate:test <module> [moduleType]").action(test);
+program.command("generate:swagger <module>").action(test);
 
 program.parse(process.argv);

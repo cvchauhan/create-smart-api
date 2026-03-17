@@ -15,7 +15,7 @@ export default async function generateCrud(
   }
   const answers = await inquirer.prompt([
     {
-      type: "list",
+      type: "select",
       name: "framework",
       message: "Select Framework",
       default: "express",
@@ -23,7 +23,7 @@ export default async function generateCrud(
       when: () => !framework,
     },
     {
-      type: "list",
+      type: "rawlist",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

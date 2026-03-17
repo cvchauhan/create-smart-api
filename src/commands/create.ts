@@ -24,14 +24,14 @@ export default async function (name: string) {
       when: () => !name,
     },
     {
-      type: "list",
+      type: "select",
       name: "framework",
       message: "Select Framework",
       default: "express",
       choices: ["express", "fastify"],
     },
     {
-      type: "list",
+      type: "rawlist",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",
@@ -41,7 +41,7 @@ export default async function (name: string) {
       ],
     },
     {
-      type: "list",
+      type: "select",
       name: "db",
       message: "Select DB",
       default: "mongodb",

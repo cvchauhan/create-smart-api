@@ -9,7 +9,7 @@ export default async function generateSwagger(
 ) {
   const answers = await inquirer.prompt([
     {
-      type: "list",
+      type: "rawlist",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

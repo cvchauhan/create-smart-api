@@ -13,7 +13,7 @@ export default async function (
   }
   const answers = await inquirer.prompt([
     {
-      type: "list",
+      type: "rawlist",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

@@ -1,9 +1,12 @@
 import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
-import { log } from "../helper/chalk.js";
+import { log } from "../helper/chalk";
 
-export default async function generateSwagger(projectPath, moduleType) {
+export default async function generateSwagger(
+  projectPath: string,
+  moduleType?: "module" | "commonjs",
+) {
   const answers = await inquirer.prompt([
     {
       type: "list",

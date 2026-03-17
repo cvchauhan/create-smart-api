@@ -120,6 +120,16 @@ Adds:
 - login & register endpoints
 - password hashing
 
+### Add Service
+
+```bash
+create-smart-api generate:service
+```
+
+Adds:
+
+- Create service file with getAll & create route
+
 ### Add validation
 
 ```bash
@@ -139,7 +149,7 @@ Generates Jest test files for the resource.
 ### Add Swagger docs
 
 ```bash
-create-smart-api add:swagger
+create-smart-api generate:swagger
 ```
 
 Adds Swagger/OpenAPI docs and Swagger UI.

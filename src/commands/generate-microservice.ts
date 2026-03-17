@@ -1,8 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
-import { log } from "../helper/chalk.js";
+import { log } from "../helper/chalk";
 
-export default async function (name) {
+export default async function (name: string) {
   if (!name) {
     log.error("Microservice name is required");
     return;

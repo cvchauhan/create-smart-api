@@ -1,6 +1,8 @@
-test/
-__tests__/
-*.spec.js
-*.test.js
-coverage/
+src/
+*.ts
+*.map
+node
 jest.config.js
+tsconfig.json
+coverage
+test/

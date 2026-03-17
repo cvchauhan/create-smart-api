@@ -2,14 +2,18 @@
   "name": "create-smart-api",
   "version": "3.0.1",
   "description": "CLI to generate production-ready Node.js APIs with CRUD, auth, validation, testing and microservices",
-  "type": "module",
   "preferGlobal": true,
+  "main": "dist/bin/cli.js",
+  "types": "dist/bin/cli.d.ts",
   "bin": {
-    "create-smart-api": "./bin/cli.js"
+    "create-smart-api": "dist/bin/cli.js"
   },
   "scripts": {
-    "start": "node bin/cli.js",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+    "start": "node dist/bin/cli.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "build": "tsc",
+    "dev": "ts-node src/bin/cli.ts",
+    "publish": "npm run build && npm publish"
   },
   "keywords": [
     "nodejs",
@@ -19,7 +23,10 @@
     "crud",
     "microservices",
     "jest",
-    "backend"
+    "backend",
+    "javascript",
+    "swagger",
+    "fastify"
   ],
   "author": "",
   "license": "MIT",
@@ -32,12 +39,16 @@
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "fs-extra": "^11.3.4",
-    "inquirer": "^13.3.2",
+    "inquirer": "^9.3.8",
     "jsonwebtoken": "^9.0.3",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.3.6"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/cvchauhan/create-smart-api"
@@ -46,9 +57,13 @@
     "url": "https://github.com/cvchauhan/create-smart-api/issues"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-env": "^7.29.0",
-    "babel-jest": "^30.3.0",
-    "jest": "^30.3.0"
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.9",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

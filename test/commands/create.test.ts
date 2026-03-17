@@ -3,7 +3,7 @@ const execSyncMock = jest.fn();
 const mkdirpMock = jest.fn();
 const createStructureMock = jest.fn();
 const generateCrudMock = jest.fn();
-const promptMock = jest.fn();
+const promptMock: any = jest.fn();
 jest.unstable_mockModule("child_process", () => ({
   execSync: execSyncMock,
 }));
@@ -13,17 +13,15 @@ jest.unstable_mockModule("fs-extra", () => ({
 jest.unstable_mockModule("inquirer", () => ({
   default: { prompt: promptMock },
 }));
-jest.unstable_mockModule("../../generators/project.js", () => ({
+jest.unstable_mockModule("../../src/generators/project", () => ({
   createStructure: createStructureMock,
 }));
-jest.unstable_mockModule("../../generators/crud.js", () => ({
+jest.unstable_mockModule("../../src/generators/crud", () => ({
   default: generateCrudMock,
 }));
-jest.unstable_mockModule("../../helper/chalk.js", () => ({
-  log: { success: jest.fn() },
-}));
-const { default: create } = await import("../../commands/create.js");
-const { log } = await import("../../helper/chalk.js");
+
+import create from "../../src/commands/create";
+import { log } from "../../src/helper/chalk";
 describe("create command", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -130,7 +128,7 @@ describe("create command", () => {
       port: 3000,
     });
 
-    await create();
+    await create("");
 
     expect(promptMock).toHaveBeenCalled();
   });

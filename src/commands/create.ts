@@ -2,17 +2,25 @@ import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
 import { execSync } from "child_process";
-import { createStructure } from "../generators/project.js";
-import generateCrud from "../generators/crud.js";
-import { log } from "../helper/chalk.js";
+import { createStructure } from "../generators/project";
+import generateCrud from "../generators/crud";
+import { log } from "../helper/chalk";
 
-export default async function (name) {
-  const answers = await inquirer.prompt([
+export default async function (name: string) {
+  const answers: {
+    name: string;
+    framework: "express" | "fastify";
+    moduleType: "module" | "commonjs";
+    db: "mongodb" | "mssql" | "mysql";
+    crud: boolean;
+    moduleName: string;
+    port: number;
+  } = await inquirer.prompt([
     {
       type: "input",
       name: "name",
       message: "Project name",
-      default: "my-app",
+      default: "my-app-change",
       when: () => !name,
     },
     {

@@ -12,7 +12,7 @@ import {
   plugin,
   test,
   swagger,
-} from "../commands/index.js";
+} from "../commands/index";
 
 const program = new Command();
 
@@ -26,7 +26,7 @@ program
   .description("Generate CRUD operations for a module")
   .action(crud);
 program
-  .command("generate:service [module] [framework] [moduleType]")
+  .command("generate:service [module] [moduleType]")
   .description("Generate a new service")
   .action(service);
 program

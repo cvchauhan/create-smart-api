@@ -1,7 +1,7 @@
 import { execSync } from "child_process";
-import { log } from "../helper/chalk.js";
+import { log } from "../helper/chalk";
 
-export default async function (name) {
+export default async function (name: string) {
   if (!name) {
     log.error("Plugin name is required");
     return;

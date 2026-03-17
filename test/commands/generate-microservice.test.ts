@@ -8,17 +8,8 @@ await jest.unstable_mockModule("fs-extra", () => ({
   },
 }));
 
-await jest.unstable_mockModule("../../helper/chalk.js", () => ({
-  log: {
-    error: jest.fn(),
-    success: jest.fn(),
-  },
-}));
-
-const { default: generateMicro } =
-  await import("../../commands/generate-microservice.js");
-
-const { log } = await import("../../helper/chalk.js");
+import { log } from "../../src/helper/chalk";
+import generateMicro from "../../src/commands/generate-microservice";
 
 describe("generate microservice command", () => {
   beforeEach(() => {
@@ -27,7 +18,7 @@ describe("generate microservice command", () => {
   });
 
   test("should log error when name is missing", async () => {
-    await generateMicro();
+    await generateMicro("");
 
     expect(log.error).toHaveBeenCalledWith("Microservice name is required");
     expect(mkdirpMock).not.toHaveBeenCalled();

@@ -1,20 +1,8 @@
 import { jest } from "@jest/globals";
+import { mkdir as mkdirpMock, writeFile as writeFileMock } from "fs-extra";
+import { execSync as execSyncMock } from "child_process";
 
-const mkdirpMock = jest.fn();
-const writeFileMock = jest.fn();
-const execSyncMock = jest.fn();
-const promptMock = jest.fn();
-
-await jest.unstable_mockModule("fs-extra", () => ({
-  default: {
-    mkdirp: mkdirpMock,
-    writeFile: writeFileMock,
-  },
-}));
-
-await jest.unstable_mockModule("child_process", () => ({
-  execSync: execSyncMock,
-}));
+const promptMock: any = jest.fn();
 
 await jest.unstable_mockModule("inquirer", () => ({
   default: {
@@ -22,15 +10,8 @@ await jest.unstable_mockModule("inquirer", () => ({
   },
 }));
 
-await jest.unstable_mockModule("../../helper/chalk.js", () => ({
-  log: {
-    success: jest.fn(),
-  },
-}));
-
-const { default: generateAuth } =
-  await import("../../commands/generate-auth.js");
-const { log } = await import("../../helper/chalk.js");
+import { log } from "../../src/helper/chalk";
+import generateAuth from "../../src/commands/generate-auth";
 
 describe("Auth middleware generator", () => {
   beforeEach(() => {
@@ -99,7 +80,9 @@ describe("Auth middleware generator", () => {
 
     const questions = promptMock.mock.calls[0][0];
 
-    const frameworkQuestion = questions.find((q) => q.name === "framework");
+    const frameworkQuestion = questions.find(
+      (q: { name: string }) => q.name === "framework",
+    );
 
     expect(frameworkQuestion.when()).toBe(false);
   });
@@ -113,7 +96,9 @@ describe("Auth middleware generator", () => {
 
     const questions = promptMock.mock.calls[0][0];
 
-    const frameworkQuestion = questions.find((q) => q.name === "framework");
+    const frameworkQuestion = questions.find(
+      (q: { name: string }) => q.name === "framework",
+    );
 
     expect(frameworkQuestion.when()).toBe(false);
   });

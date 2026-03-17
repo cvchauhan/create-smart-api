@@ -1,8 +1,15 @@
 import fs from "fs-extra";
 import path from "path";
-import { log } from "../helper/chalk.js";
+import { log } from "../helper/chalk";
 
-export async function createStructure(base, options) {
+export async function createStructure(
+  base: string,
+  options: {
+    framework: "express" | "fastify";
+    moduleType: "module" | "commonjs";
+    port: number;
+  },
+) {
   const src = path.join(base, "src");
 
   await fs.mkdirp(src);
@@ -16,7 +23,7 @@ export async function createStructure(base, options) {
   const { framework, moduleType, port } = options;
   const isESM = moduleType === "module";
 
-  let serverContent;
+  let serverContent: any;
 
   if (framework === "express") {
     if (isESM) {
@@ -31,7 +38,7 @@ app.use(express.json());
 registerRoutes(app);
 
 app.get("/", (req,res)=>{
- res.json({message:"API running"});
+ res.json({message:"I love Create Smart API"});
 });
 
 app.listen(${port},()=>{
@@ -50,7 +57,7 @@ app.use(express.json());
 registerRoutes(app);
 
 app.get("/", (req,res)=>{
- res.json({message:"API running"});
+ res.json({message:"I love Create Smart API"});
 });
 
 app.listen(${port},()=>{
@@ -71,7 +78,7 @@ const app = Fastify();
 await registerRoutes(app);
 
 app.get("/", async ()=>{
- return {message:"API running"};
+ return {message:"I love Create Smart API"};
 });
 
 app.listen({port:${port}});
@@ -86,7 +93,7 @@ const app = Fastify();
 registerRoutes(app);
 
 app.get("/", async ()=>{
- return {message:"API running"};
+ return {message:"I love Create Smart API"};
 });
 
 app.listen({port:${port}});

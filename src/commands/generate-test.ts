@@ -2,9 +2,12 @@ import fs from "fs-extra";
 import path from "path";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
-import { log } from "../helper/chalk.js";
+import { log } from "../helper/chalk";
 
-export default async function (module, moduleType) {
+export default async function (
+  module: string,
+  moduleType?: "module" | "commonjs",
+) {
   if (!module) {
     log.error("Module name is required");
     return;

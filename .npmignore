@@ -1,0 +1,8 @@
+src/
+*.ts
+*.map
+node
+jest.config.js
+tsconfig.json
+coverage
+test/

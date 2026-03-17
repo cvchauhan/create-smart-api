@@ -1,13 +1,13 @@
 import fs from "fs-extra";
 import path from "path";
-import { log } from "../helper/chalk.js";
+import { log } from "../helper/chalk";
 import inquirer from "inquirer";
 
 export default async function generateCrud(
-  base,
-  moduleName,
-  framework,
-  moduleType,
+  base: string,
+  moduleName: string,
+  framework?: "express" | "fastify",
+  moduleType?: "module" | "commonjs",
 ) {
   if (!moduleName) {
     log.error("Module name is required");
@@ -18,6 +18,7 @@ export default async function generateCrud(
       type: "list",
       name: "framework",
       message: "Select Framework",
+      default: "express",
       choices: ["express", "fastify"],
       when: () => !framework,
     },
@@ -25,6 +26,7 @@ export default async function generateCrud(
       type: "list",
       name: "moduleType",
       message: "Module system",
+      default: "commonjs",
       choices: [
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
@@ -115,7 +117,7 @@ module.exports.create = async (req,res)=>{
 
   /* -------- ROUTES -------- */
 
-  let routeContent;
+  let routeContent: any;
 
   if (framework === "express" || answers.framework === "express") {
     routeContent = isESM

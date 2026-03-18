@@ -1,7 +1,16 @@
-import { jest } from "@jest/globals";
+import generateCrud from "../../commands/generate-crud";
+import { log } from "../../helper/chalk";
+import crud from "../../generators/crud";
 
-import generateCrud from "../../src/commands/generate-crud";
-import { log } from "../../src/helper/chalk";
+// ✅ mock dependencies
+jest.mock("../../helper/chalk", () => ({
+  log: {
+    error: jest.fn(),
+    success: jest.fn(),
+  },
+}));
+
+jest.mock("../../generators/crud", () => jest.fn());
 
 describe("generate crud command", () => {
   beforeEach(() => {
@@ -12,13 +21,13 @@ describe("generate crud command", () => {
     await generateCrud();
 
     expect(log.error).toHaveBeenCalledWith("Module name is required");
-    expect(generateCrud).not.toHaveBeenCalled();
+    expect(crud).not.toHaveBeenCalled();
   });
 
   test("should call crud generator when module name provided", async () => {
     await generateCrud("user", "express", "commonjs");
 
-    expect(generateCrud).toHaveBeenCalledWith(
+    expect(crud).toHaveBeenCalledWith(
       process.cwd(),
       "user",
       "express",

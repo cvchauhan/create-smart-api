@@ -1,17 +1,35 @@
-import { jest } from "@jest/globals";
-import { mkdir as mkdirpMock, writeFile as writeFileMock } from "fs-extra";
-import { execSync as execSyncMock } from "child_process";
+import generateAuth from "../../commands/generate-auth";
+import { execSync } from "child_process";
+import { writeFile, mkdirp } from "fs-extra";
+import inquirer from "inquirer";
+import { log } from "../../helper/chalk";
 
-const promptMock: any = jest.fn();
+// ✅ Correct mocks
 
-await jest.unstable_mockModule("inquirer", () => ({
-  default: {
-    prompt: promptMock,
+jest.mock("../../helper/chalk", () => ({
+  log: {
+    error: jest.fn(),
+    success: jest.fn(),
   },
 }));
 
-import { log } from "../../src/helper/chalk";
-import generateAuth from "../../src/commands/generate-auth";
+jest.mock("child_process", () => ({
+  execSync: jest.fn(),
+}));
+
+// ✅ FIX: named exports (not default)
+jest.mock("fs-extra", () => ({
+  writeFile: jest.fn(),
+  mkdirp: jest.fn(),
+}));
+
+// ✅ FIX: match default import
+jest.mock("inquirer", () => ({
+  prompt: jest.fn(),
+}));
+
+// ✅ Now this works
+const promptMock: any = inquirer.prompt as any;
 
 describe("Auth middleware generator", () => {
   beforeEach(() => {
@@ -26,19 +44,19 @@ describe("Auth middleware generator", () => {
 
     await generateAuth();
 
-    expect(mkdirpMock).toHaveBeenCalled();
-    expect(execSyncMock).toHaveBeenCalledWith(
-      "npm install jsonwebtoken bcrypt",
-      { stdio: "inherit" },
-    );
+    expect(mkdirp).toHaveBeenCalled();
 
-    expect(writeFileMock).toHaveBeenCalledWith(
+    expect(execSync).toHaveBeenCalledWith("npm install jsonwebtoken bcrypt", {
+      stdio: "inherit",
+    });
+
+    expect(writeFile).toHaveBeenCalledWith(
       expect.stringContaining("auth.middleware.js"),
       expect.stringContaining("module.exports"),
     );
 
     expect(log.success).toHaveBeenCalledWith(
-      "Auth middleware generated successfully",
+      "Auth module + middleware generated successfully",
     );
   });
 
@@ -50,7 +68,7 @@ describe("Auth middleware generator", () => {
 
     await generateAuth();
 
-    expect(writeFileMock).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       expect.stringContaining("auth.middleware.js"),
       expect.stringContaining("export default"),
     );
@@ -64,7 +82,7 @@ describe("Auth middleware generator", () => {
 
     await generateAuth();
 
-    expect(writeFileMock).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       expect.stringContaining("auth.middleware.js"),
       expect.stringContaining("reply"),
     );
@@ -86,7 +104,8 @@ describe("Auth middleware generator", () => {
 
     expect(frameworkQuestion.when()).toBe(false);
   });
-  test("should skip framework prompt if framework passed", async () => {
+
+  test("should skip framework prompt if framework passed (fastify)", async () => {
     promptMock.mockResolvedValue({
       framework: "fastify",
       moduleType: "commonjs",
@@ -101,5 +120,24 @@ describe("Auth middleware generator", () => {
     );
 
     expect(frameworkQuestion.when()).toBe(false);
+  });
+
+  let questions: any[];
+  test("should evaluate when conditions", async () => {
+    promptMock.mockImplementation(async (q: any) => {
+      questions = q;
+      return {
+        framework: "express",
+        moduleType: "commonjs",
+      };
+    });
+
+    await generateAuth();
+
+    const frameworkWhen = questions[0].when;
+    const moduleTypeWhen = questions[1].when;
+
+    expect(frameworkWhen()).toBe(true);
+    expect(moduleTypeWhen()).toBe(true);
   });
 });

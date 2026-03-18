@@ -1,15 +1,17 @@
-import { jest } from "@jest/globals";
+import { log } from "../../helper/chalk";
+import generateMicro from "../../commands/generate-microservice";
+import { mkdirp } from "fs-extra";
 
-const mkdirpMock = jest.fn();
-
-await jest.unstable_mockModule("fs-extra", () => ({
-  default: {
-    mkdirp: mkdirpMock,
-  },
+jest.mock("fs-extra", () => ({
+  mkdirp: jest.fn(),
 }));
 
-import { log } from "../../src/helper/chalk";
-import generateMicro from "../../src/commands/generate-microservice";
+jest.mock("../../helper/chalk", () => ({
+  log: {
+    error: jest.fn(),
+    success: jest.fn(),
+  },
+}));
 
 describe("generate microservice command", () => {
   beforeEach(() => {
@@ -21,7 +23,7 @@ describe("generate microservice command", () => {
     await generateMicro("");
 
     expect(log.error).toHaveBeenCalledWith("Microservice name is required");
-    expect(mkdirpMock).not.toHaveBeenCalled();
+    expect(mkdirp).not.toHaveBeenCalled();
   });
 
   test("should create microservice folder structure", async () => {

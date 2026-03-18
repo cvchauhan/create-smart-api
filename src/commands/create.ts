@@ -20,7 +20,7 @@ export default async function (name: string) {
       type: "input",
       name: "name",
       message: "Project name",
-      default: "my-app-change",
+      default: "my-app",
       when: () => !name,
     },
     {

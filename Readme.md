@@ -99,9 +99,9 @@ name:string,email:string,age:number,status:enum
 ┌───┬─────────┬────────┬─────┬─────┬─────────┬────────────────────┐
 │ # │ Field   │ Type   │ Req │Uniq │ Default │ Extra              │
 ├───┼─────────┼────────┼─────┼─────┼─────────┼────────────────────┤
-│ 1 │ name    │ string │ ✔   │ ✖   │ -       │ -                  │
-│ 2 │ email   │ string │ ✔   │ ✔   │ -       │ -                  │
-│ 3 │ status  │ string │ ✖   │ ✖   │ active  │ enum(active,inact) │
+│ 1 │ name    │ string │ ✔   │ ✖  │ -       │ -                  │
+│ 2 │ email   │ string │ ✔   │ ✔  │ -       │ -                  │
+│ 3 │ status  │ string │ ✖   │ ✖  │ active  │ enum(active,inact) │
 └───┴─────────┴────────┴─────┴─────┴─────────┴────────────────────┘
 ```
 

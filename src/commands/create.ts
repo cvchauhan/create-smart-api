@@ -80,24 +80,29 @@ export default async function (name: string) {
       ? "mysql"
       : answers.db === "mssql"
         ? "mssql"
-        : "sqlite";
+        : answers.db === "mongodb"
+          ? "mongodb"
+          : "sqlite";
 
   await fs.writeFile(dbPath, generateDbConfig(answers.moduleType, dialect));
 
   /* -------- ENV FILE -------- */
 
   const envPath = path.join(base, ".env");
-
-  await fs.writeFile(
-    envPath,
-    `
+  const envContent =
+    dialect === "mongodb"
+      ? `
+DB_URL=mongodb://localhost:27017/mydb
+PORT=${answers.port}
+      `
+      : `
 DB_NAME=test_db
 DB_USER=root
 DB_PASS=password
 DB_HOST=localhost
 PORT=${answers.port}
-`,
-  );
+`;
+  await fs.writeFile(envPath, envContent);
   process.chdir(base);
 
   execSync("npm init -y", { stdio: "inherit" });

@@ -2,7 +2,6 @@ import crud from "../generators/crud";
 import { log } from "../helper";
 import path from "path";
 import fs from "fs-extra";
-import chalk from "chalk";
 
 export default async function (
   name?: string,
@@ -17,9 +16,7 @@ export default async function (
   const srcPath = path.join(base, "./src");
 
   if (!fs.existsSync(srcPath) || !fs.lstatSync(srcPath).isDirectory()) {
-    log.error(
-      `Please create project first using: ${chalk.bold.italic("create-smart-api create")}`,
-    );
+    log.error(`Please create project first using: create-smart-api create`);
     return;
   }
 

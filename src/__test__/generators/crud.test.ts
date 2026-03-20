@@ -6,16 +6,50 @@ import { log } from "../../helper/chalk";
 jest.mock("inquirer", () => ({
   prompt: jest.fn(),
 }));
+jest.mock("cli-table3", () => ({
+  Table: jest.fn(),
+}));
+jest.mock("../../helper/showTablePreview", () => ({
+  showTablePreview: jest.fn(),
+}));
 
 jest.mock("fs-extra", () => ({
   writeFile: jest.fn(),
   readdir: jest.fn().mockResolvedValue(["index.routes.js"]),
+}));
+jest.mock("../../helper/addField", () => ({
+  addField: jest.fn(),
+}));
+jest.mock("../../helper/editField", () => ({
+  editField: jest.fn(),
+}));
+jest.mock("../../helper/parseFields", () => ({
+  parseFields: jest.fn().mockResolvedValue(["name:string"]),
+}));
+jest.mock("../../helper/deleteField", () => ({
+  deleteField: jest.fn(),
+}));
+jest.mock("../../helper/enhanceFields", () => ({
+  enhanceFields: jest.fn(),
+}));
+jest.mock("../../helper/getTypeColor", () => ({
+  getTypeColor: jest.fn(),
+}));
+jest.mock("../../helper/showTablePreview", () => ({
+  showTablePreview: jest.fn(),
+}));
+jest.mock("../../helper/generateMongooseModel", () => ({
+  generateMongooseModel: jest.fn(),
+}));
+jest.mock("../../helper/generateSequelizeModel", () => ({
+  generateSequelizeModel: jest.fn(),
 }));
 
 jest.mock("../../helper/chalk", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
+    warn: jest.fn(),
   },
 }));
 
@@ -100,7 +134,7 @@ describe("crud generator", () => {
         framework: "express",
         moduleType: "commonjs",
         fieldInput: "name:string,email:string",
-        action: "continue",
+        action: "cancel",
       };
     });
 

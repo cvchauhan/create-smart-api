@@ -3,6 +3,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { execSync } from "child_process";
 import { log } from "../helper";
+
 export default async function (
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",

@@ -30,6 +30,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "express",
       moduleType: "commonjs",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "user");
@@ -44,6 +46,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "fastify",
       moduleType: "module",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "product");
@@ -55,6 +59,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "fastify",
       moduleType: "commonjs",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "product");
@@ -66,6 +72,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "express",
       moduleType: "module",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "product");
@@ -79,20 +87,29 @@ describe("crud generator", () => {
     expect(log.error).toHaveBeenCalledWith("Module name is required");
   });
 
-  let questions: any[];
   test("should evaluate when conditions", async () => {
+    let firstCallQuestions: any[] = [];
+
     promptMock.mockImplementation(async (q: any) => {
-      questions = q;
+      // capture only first call (array of questions)
+      if (Array.isArray(q) && firstCallQuestions.length === 0) {
+        firstCallQuestions = q;
+      }
+
       return {
         framework: "express",
         moduleType: "commonjs",
+        fieldInput: "name:string,email:string",
+        action: "continue",
       };
     });
 
     await crud("/base", "user");
 
-    const frameworkWhen = questions[0].when;
-    const moduleTypeWhen = questions[1].when;
+    expect(firstCallQuestions.length).toBeGreaterThan(0);
+
+    const frameworkWhen = firstCallQuestions[0].when;
+    const moduleTypeWhen = firstCallQuestions[1].when;
 
     expect(frameworkWhen()).toBe(true);
     expect(moduleTypeWhen()).toBe(true);

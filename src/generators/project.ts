@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import { log } from "../helper/chalk";
+import { log } from "../helper";
 
 export async function createStructure(
   base: string,
@@ -29,6 +29,8 @@ export async function createStructure(
     if (isESM) {
       serverContent = `
 import express from "express";
+import { config } from "dotenv";
+config();
 import registerRoutes from "./routes/index.js";
 
 const app = express();
@@ -48,6 +50,8 @@ app.listen(${port},()=>{
     } else {
       serverContent = `
 const express = require("express");
+const dotenv = require("dotenv");
+dotenv.config();
 const registerRoutes = require("./routes");
 
 const app = express();
@@ -71,6 +75,8 @@ app.listen(${port},()=>{
     if (isESM) {
       serverContent = `
 import Fastify from "fastify";
+import { config } from "dotenv";
+config();
 import registerRoutes from "./routes/index.js";
 
 const app = Fastify();
@@ -86,6 +92,9 @@ app.listen({port:${port}});
     } else {
       serverContent = `
 const Fastify = require("fastify");
+dotenv.config();
+const registerRoutes = require("./routes");
+
 const registerRoutes = require("./routes");
 
 const app = Fastify();

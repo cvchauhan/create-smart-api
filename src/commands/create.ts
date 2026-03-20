@@ -4,7 +4,7 @@ import inquirer from "inquirer";
 import { execSync } from "child_process";
 import { createStructure } from "../generators/project";
 import generateCrud from "../generators/crud";
-import { log } from "../helper/chalk";
+import { log, generateDbConfig } from "../helper";
 
 export default async function (name: string) {
   const answers: {
@@ -73,6 +73,31 @@ export default async function (name: string) {
 
   await createStructure(base, answers);
 
+  const dbPath = path.join(base, "src/config/db.js");
+
+  const dialect =
+    answers.db === "mysql"
+      ? "mysql"
+      : answers.db === "mssql"
+        ? "mssql"
+        : "sqlite";
+
+  await fs.writeFile(dbPath, generateDbConfig(answers.moduleType, dialect));
+
+  /* -------- ENV FILE -------- */
+
+  const envPath = path.join(base, ".env");
+
+  await fs.writeFile(
+    envPath,
+    `
+DB_NAME=test_db
+DB_USER=root
+DB_PASS=password
+DB_HOST=localhost
+PORT=${answers.port}
+`,
+  );
   process.chdir(base);
 
   execSync("npm init -y", { stdio: "inherit" });
@@ -83,18 +108,19 @@ export default async function (name: string) {
     execSync("npm pkg set type=module", { stdio: "inherit" });
   }
   if (answers.framework === "express") {
-    execSync("npm install express dotenv", { stdio: "inherit" });
+    execSync("npm install express", { stdio: "inherit" });
   }
+  execSync("npm install -D dotenv", { stdio: "inherit" });
 
   if (answers.framework === "fastify") {
-    execSync("npm install fastify dotenv", { stdio: "inherit" });
+    execSync("npm install fastify", { stdio: "inherit" });
   }
 
   if (answers.db === "mongodb") {
     execSync("npm install mongoose", { stdio: "inherit" });
   }
   if (answers.db === "mssql") {
-    execSync("npm install mssql", { stdio: "inherit" });
+    execSync("npm install sequelize tedious", { stdio: "inherit" });
   }
   if (answers.db === "mysql") {
     execSync("npm install mysql2 sequelize", { stdio: "inherit" });
@@ -106,10 +132,12 @@ export default async function (name: string) {
       answers.moduleName,
       answers.framework,
       answers.moduleType,
+      answers.db,
+      true,
     );
   }
 
   log.success(
-    `Project ${name} created successfully!! with ${answers.framework}, ${answers.db} and PORT: ${answers.port}  `,
+    `Project ${name || answers.name} created successfully!! with ${answers.framework}, ${answers.db} and PORT: ${answers.port}  `,
   );
 }

@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import { log } from "../helper/chalk";
+import { log } from "../helper";
 import inquirer from "inquirer";
 
 export default async function (

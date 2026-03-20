@@ -1,10 +1,9 @@
 import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
-import { log } from "../helper/chalk";
+import { log } from "../helper";
 
 export default async function generateSwagger(
-  projectPath: string,
   moduleType?: "module" | "commonjs",
 ) {
   const answers = await inquirer.prompt([
@@ -20,7 +19,8 @@ export default async function generateSwagger(
       when: () => !moduleType,
     },
   ]);
-  const swaggerDir = path.join(projectPath, "config");
+  const base = process.cwd();
+  const swaggerDir = path.join(base, "src/config");
 
   await fs.ensureDir(swaggerDir);
   let swaggerImport = "";
@@ -62,7 +62,7 @@ const options = {
       }
     ]
   },
-  apis: ["./routes/*.js"]
+  apis: ["../routes/*.js"]
 };
 
 const swaggerSpec = swaggerJsdoc(options);

@@ -1,6 +1,6 @@
 import create from "../../commands/create";
 import inquirer from "inquirer";
-import fs from "fs-extra";
+import fs, { writeFile } from "fs-extra";
 import { execSync } from "child_process";
 import { createStructure } from "../../generators/project";
 import generateCrud from "../../generators/crud";
@@ -17,6 +17,7 @@ jest.mock("inquirer", () => ({
 
 jest.mock("fs-extra", () => ({
   mkdirp: jest.fn(),
+  writeFile: jest.fn(),
 }));
 
 jest.mock("child_process", () => ({

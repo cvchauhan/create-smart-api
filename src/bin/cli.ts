@@ -12,8 +12,14 @@ import {
   plugin,
   test,
   swagger,
-} from "../commands/index";
+} from "../commands";
 
+import pkg from "../../package.json";
+
+if (process.argv.includes("--version") || process.argv.includes("-v")) {
+  console.log(pkg?.version || "unknown");
+  process.exit(0);
+}
 const program = new Command();
 
 program
@@ -56,8 +62,7 @@ program
   .command("generate:swagger")
   .description("Generate Swagger documentation setup")
   .action(async () => {
-    const projectPath = process.cwd();
-    await swagger(projectPath);
+    await swagger();
   });
 program.addHelpText(
   "after",

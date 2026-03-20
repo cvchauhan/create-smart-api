@@ -1,5 +1,5 @@
 import { execSync } from "child_process";
-import { log } from "../helper/chalk";
+import { log } from "../helper";
 
 export default async function (name: string) {
   if (!name) {

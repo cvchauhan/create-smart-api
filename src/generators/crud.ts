@@ -1,13 +1,25 @@
 import fs from "fs-extra";
 import path from "path";
-import { log } from "../helper/chalk";
 import inquirer from "inquirer";
+import {
+  addField,
+  editField,
+  deleteField,
+  parseFields,
+  enhanceFields,
+  showTablePreview,
+  log,
+  generateMongooseModel,
+  generateSequelizeModel,
+} from "../helper";
 
 export default async function generateCrud(
   base: string,
   moduleName: string,
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
+  db?: "mongodb" | "mssql" | "mysql",
+  isCreate?: boolean,
 ) {
   if (!moduleName) {
     log.error("Module name is required");
@@ -33,6 +45,14 @@ export default async function generateCrud(
       ],
       when: () => !moduleType,
     },
+    {
+      type: "select",
+      name: "db",
+      message: "Select DB",
+      default: "mongodb",
+      choices: ["mongodb", "mssql", "mysql"],
+      when: () => !db,
+    },
   ]);
   const name = moduleName.toLowerCase();
   const isESM = moduleType === "module" || answers.moduleType === "module";
@@ -47,11 +67,70 @@ export default async function generateCrud(
   const routePath = path.join(base, "src/routes", `${name}.routes.js`);
   const routesIndex = path.join(base, "src/routes/index.js");
 
+  const { fieldInput } = await inquirer.prompt({
+    type: "input",
+    name: "fieldInput",
+    message:
+      "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
+  });
+
+  const fields = await parseFields(fieldInput);
+  if (!fields.length) {
+    log.warn(`Project created successfully, but no models were generated.
+
+      Some features like database operations may not work.
+
+      👉 Run again to add models (create-smart-api create).
+`);
+    return;
+  }
+  await enhanceFields(fields);
+  showTablePreview(fields);
+
+  while (true) {
+    showTablePreview(fields);
+
+    const { action } = await inquirer.prompt({
+      type: "rawlist",
+      name: "action",
+      default: "continue",
+      message: "Select action:",
+      choices: [
+        { name: "✅ Continue", value: "continue" },
+        { name: "✏️ Edit field", value: "edit" },
+        { name: "➕ Add new field", value: "add" },
+        { name: "❌ Delete field", value: "delete" },
+        { name: "🚪 Cancel", value: "cancel" },
+      ],
+    });
+
+    if (action === "continue") break;
+
+    if (action === "cancel") {
+      log.warn("Operation cancelled");
+      return;
+    }
+
+    if (action === "edit") {
+      await editField(fields);
+    }
+
+    if (action === "add") {
+      await addField(fields);
+    }
+
+    if (action === "delete") {
+      await deleteField(fields);
+    }
+  }
   /* -------- MODEL -------- */
 
-  const modelContent = isESM
-    ? `export const ${name}Model = {};`
-    : `module.exports = {};`;
+  let modelContent = "";
+  if (db === "mongodb" || answers.db === "mongodb") {
+    modelContent = generateMongooseModel(fields, name, isESM);
+  } else {
+    modelContent = generateSequelizeModel(fields, name, isESM);
+  }
 
   await fs.writeFile(modelPath, modelContent);
 
@@ -59,21 +138,25 @@ export default async function generateCrud(
 
   const serviceContent = isESM
     ? `
-export const getAll = async ()=>{
- return [];
+import ${name} from "../models/${name}.model.js";
+
+export const getAll = async () => {
+  return await ${name}.findAll();
 };
 
-export const create = async (data)=>{
- return data;
+export const create = async (data) => {
+  return await ${name}.create(data);
 };
 `
     : `
-module.exports.getAll = async ()=>{
- return [];
+const ${name} = require("../models/${name}.model");
+
+module.exports.getAll = async () => {
+  return await ${name}.findAll();
 };
 
-module.exports.create = async (data)=>{
- return data;
+module.exports.create = async (data) => {
+  return await ${name}.create(data);
 };
 `;
 
@@ -252,5 +335,7 @@ ${registerLines.join("\n")}
   }
 
   await fs.writeFile(routesIndex, routesIndexContent);
-  log.success(`CRUD for ${name} created successfully`);
+  if (!isCreate) {
+    log.success(`CRUD for ${name} created successfully`);
+  }
 }

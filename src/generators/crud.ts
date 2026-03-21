@@ -1,16 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
-import {
-  addField,
-  editField,
-  deleteField,
-  parseFields,
-  enhanceFields,
-  showTablePreview,
-  log,
-  askRelations,
-} from "../helper";
+import { parseFields, log, askRelations } from "../helper";
 import generateModel from "../commands/model";
 
 export default async function generateCrud(

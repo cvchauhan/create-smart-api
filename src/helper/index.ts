@@ -9,6 +9,9 @@ import { generateSequelizeModel } from "./generateSequelizeModel";
 import { mapType } from "./mapType";
 import { parseFields } from "./parseFields";
 import { showTablePreview } from "./showTablePreview";
+import { askRelations } from "./relations";
+import { generateMongooseRelations } from "./mongooseRelations";
+import { generateSequelizeRelations } from "./sequelizeRelations";
 
 export {
   mapType,
@@ -22,4 +25,7 @@ export {
   generateDbConfig,
   generateSequelizeModel,
   generateMongooseModel,
+  askRelations,
+  generateMongooseRelations,
+  generateSequelizeRelations,
 };

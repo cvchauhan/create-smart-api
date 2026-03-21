@@ -1,9 +1,11 @@
 import { Field } from "../types/field";
+import { generateMongooseRelations } from "./mongooseRelations";
 
 export function generateMongooseModel(
   fields: Field[],
   name: string,
   isESM: boolean,
+  relations: any[] = [],
 ) {
   const modelFields = fields
     .map((f) => {
@@ -24,12 +26,15 @@ export function generateMongooseModel(
     })
     .join(",");
 
+  // 🔥 Generate relation fields
+  const relationFields = generateMongooseRelations(relations);
+
   return isESM
     ? `
 import mongoose from "mongoose";
 
 const ${name}Schema = new mongoose.Schema({
-${modelFields}
+${modelFields}${relationFields ? "," + relationFields : ""}
 }, { timestamps: true });
 
 export default mongoose.model("${name}", ${name}Schema);
@@ -38,7 +43,7 @@ export default mongoose.model("${name}", ${name}Schema);
 const mongoose = require("mongoose");
 
 const ${name}Schema = new mongoose.Schema({
-${modelFields}
+${modelFields}${relationFields ? "," + relationFields : ""}
 }, { timestamps: true });
 
 module.exports = mongoose.model("${name}", ${name}Schema);
@@ -51,6 +56,8 @@ function mapMongooseType(type: string) {
     number: "Number",
     boolean: "Boolean",
     date: "Date",
+    objectid: "mongoose.Schema.Types.ObjectId",
   };
-  return map[type] || "String";
+
+  return map[type.toLowerCase()] || type;
 }

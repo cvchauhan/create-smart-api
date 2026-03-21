@@ -9,9 +9,9 @@ import {
   enhanceFields,
   showTablePreview,
   log,
-  generateMongooseModel,
-  generateSequelizeModel,
+  askRelations,
 } from "../helper";
+import generateModel from "../commands/model";
 
 export default async function generateCrud(
   base: string,
@@ -70,6 +70,7 @@ export default async function generateCrud(
   const { fieldInput } = await inquirer.prompt({
     type: "input",
     name: "fieldInput",
+    required: true,
     message:
       "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
   });
@@ -84,81 +85,89 @@ export default async function generateCrud(
 `);
     return;
   }
-  await enhanceFields(fields);
-  showTablePreview(fields);
 
-  while (true) {
-    showTablePreview(fields);
-
-    const { action } = await inquirer.prompt({
-      type: "rawlist",
-      name: "action",
-      default: "continue",
-      message: "Select action:",
-      choices: [
-        { name: "✅ Continue", value: "continue" },
-        { name: "✏️ Edit field", value: "edit" },
-        { name: "➕ Add new field", value: "add" },
-        { name: "❌ Delete field", value: "delete" },
-        { name: "🚪 Cancel", value: "cancel" },
-      ],
-    });
-
-    if (action === "continue") break;
-
-    if (action === "cancel") {
-      log.warn("Operation cancelled");
-      return;
-    }
-
-    if (action === "edit") {
-      await editField(fields);
-    }
-
-    if (action === "add") {
-      await addField(fields);
-    }
-
-    if (action === "delete") {
-      await deleteField(fields);
-    }
-  }
   /* -------- MODEL -------- */
+  const selectedDb = db || answers.db;
+  const selectModuleType = moduleType || answers.moduleType;
+  let modelContent: any = await generateModel(
+    name,
+    selectModuleType,
+    selectedDb,
+    fields,
+    isESM,
+    true,
+  );
 
-  let modelContent = "";
-  if (db === "mongodb" || answers.db === "mongodb") {
-    modelContent = generateMongooseModel(fields, name, isESM);
-  } else {
-    modelContent = generateSequelizeModel(fields, name, isESM);
-  }
-
+  const relations = await askRelations();
   await fs.writeFile(modelPath, modelContent);
 
   /* -------- SERVICE -------- */
 
-  const serviceContent = isESM
-    ? `
+  let serviceContent = "";
+
+  if (selectedDb === "mongodb") {
+    const populateFields = relations.map((r: any) =>
+      r.type === "1:N" || r.type === "N:N"
+        ? `${r.target.toLowerCase()}s`
+        : r.target.toLowerCase(),
+    );
+
+    serviceContent = isESM
+      ? `
 import ${name} from "../models/${name}.model.js";
 
 export const getAll = async () => {
-  return await ${name}.findAll();
+  return await ${name}.find().populate(${JSON.stringify(populateFields)});
 };
 
 export const create = async (data) => {
   return await ${name}.create(data);
 };
 `
-    : `
+      : `
 const ${name} = require("../models/${name}.model");
 
 module.exports.getAll = async () => {
-  return await ${name}.findAll();
+  return await ${name}.find().populate(${JSON.stringify(populateFields)});
 };
 
 module.exports.create = async (data) => {
   return await ${name}.create(data);
 };
 `;
+  } else {
+    const includeCode = relations
+      .map((r: any) => `{ model: models.${r.target} }`)
+      .join(",");
+
+    serviceContent = isESM
+      ? `
+import models from "../models/index.js";
+
+export const getAll = async () => {
+  return await models.${name}.findAll({
+    include: [${includeCode}]
+  });
+};
+
+export const create = async (data) => {
+  return await models.${name}.create(data);
+};
+`
+      : `
+const models = require("../models");
+
+module.exports.getAll = async () => {
+  return await models.${name}.findAll({
+    include: [${includeCode}]
+  });
+};
+
+module.exports.create = async (data) => {
+  return await models.${name}.create(data);
+};
+`;
+  }
 
   await fs.writeFile(servicePath, serviceContent);
 

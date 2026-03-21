@@ -56,6 +56,7 @@ describe("createStructure", () => {
       framework: "express",
       moduleType: "commonjs",
       port: 3000,
+      db: "mongodb",
     });
 
     const src = path.join(base, "src");
@@ -74,6 +75,7 @@ describe("createStructure", () => {
       framework: "express",
       moduleType: "commonjs",
       port: 3000,
+      db: "mongodb",
     });
 
     const serverPath = path.join(base, "src", "server.js");
@@ -89,6 +91,7 @@ describe("createStructure", () => {
       framework: "express",
       moduleType: "module",
       port: 3000,
+      db: "mongodb",
     });
 
     const serverPath = path.join(base, "src", "server.js");
@@ -104,6 +107,7 @@ describe("createStructure", () => {
       framework: "fastify",
       moduleType: "commonjs",
       port: 3000,
+      db: "mongodb",
     });
 
     const serverPath = path.join(base, "src", "server.js");
@@ -119,6 +123,7 @@ describe("createStructure", () => {
       framework: "fastify",
       moduleType: "module",
       port: 3000,
+      db: "mongodb",
     });
 
     const serverPath = path.join(base, "src", "server.js");
@@ -134,6 +139,7 @@ describe("createStructure", () => {
       framework: "express",
       moduleType: "commonjs",
       port: 3000,
+      db: "mongodb",
     });
 
     const routesIndexPath = path.join(base, "src", "routes", "index.js");
@@ -149,6 +155,7 @@ describe("createStructure", () => {
       framework: "express",
       moduleType: "module",
       port: 3000,
+      db: "mongodb",
     });
 
     const routesIndexPath = path.join(base, "src", "routes", "index.js");
@@ -164,6 +171,7 @@ describe("createStructure", () => {
       framework: "express",
       moduleType: "commonjs",
       port: 3000,
+      db: "mongodb",
     });
 
     expect(log.success).toHaveBeenCalledWith(

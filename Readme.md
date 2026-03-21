@@ -94,16 +94,13 @@ name:string,email:string,age:number,status:enum
 ### 📊 Step 3: Table Preview
 
 ```
-📊 Schema Preview
+## 📊 Schema Preview
 
-┌───┬─────────┬────────┬─────┬─────┬─────────┬────────────────────┐
-│ # │ Field   │ Type   │ Req │Uniq │ Default │ Extra              │
-├───┼─────────┼────────┼─────┼─────┼─────────┼────────────────────┤
-│ 1 │ name    │ string │ ✔   │ ✖  │ -       │ -                  │
-│ 2 │ email   │ string │ ✔   │ ✔  │ -       │ -                  │
-│ 3 │ status  │ string │ ✖   │ ✖  │ active  │ enum(active,inact) │
-└───┴─────────┴────────┴─────┴─────┴─────────┴────────────────────┘
-```
+| # | Field  | Type   | Req | Uniq | Default | Extra               |
+|---|--------|--------|-----|------|---------|---------------------|
+| 1 | name   | string | Yes | No   | -       | -                   |
+| 2 | email  | string | Yes | Yes  | -       | -                   |
+| 3 | status | string | No  | No   | active  | enum(active,inact)  |
 
 ---
 
@@ -138,18 +135,21 @@ Options:
 ## 📁 Generated Structure
 
 ```
+
 my-api/
 ├── src/
-│   ├── controllers/
-│   ├── services/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   ├── config/
-│   ├── server.js
+│ ├── controllers/
+│ ├── services/
+│ ├── models/
+│ ├── routes/
+│ ├── middleware/
+│ ├── config/
+│ ├── helper/
+│ ├── server.js
 ├── .env
 └── package.json
-```
+
+````
 
 ---
 
@@ -159,7 +159,7 @@ my-api/
 
 ```bash
 create-smart-api create my-api
-```
+````
 
 ---
 
@@ -183,6 +183,14 @@ create-smart-api generate:auth
 
 ```bash
 create-smart-api generate:service
+```
+
+---
+
+### Generate Model
+
+```bash
+create-smart-api generate:model user
 ```
 
 ---

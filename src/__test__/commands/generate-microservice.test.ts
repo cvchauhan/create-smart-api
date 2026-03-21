@@ -39,6 +39,9 @@ jest.mock("../../helper/generateMongooseModel", () => ({
 jest.mock("../../helper/generateSequelizeModel", () => ({
   generateSequelizeModel: jest.fn(),
 }));
+jest.mock("../../helper/relations", () => ({
+  askRelations: jest.fn(),
+}));
 
 describe("generate microservice command", () => {
   beforeEach(() => {

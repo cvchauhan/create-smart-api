@@ -12,6 +12,7 @@ import {
   plugin,
   test,
   swagger,
+  model,
 } from "../commands";
 
 import pkg from "../../package.json";
@@ -35,6 +36,10 @@ program
   .command("generate:service [module] [moduleType]")
   .description("Generate a new service")
   .action(service);
+program
+  .command("generate:model [name] [moduleType] [db]")
+  .description("Generate a new model")
+  .action(model);
 program
   .command("generate:auth [framework] [moduleType]")
   .description("Generate authentication setup")

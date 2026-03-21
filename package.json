@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "jest",
-    "test:coverage": "jest --coverage --watch=true",
+    "test:coverage": "jest --coverage",
     "build": "tsc",
     "dev": "ts-node src/bin/cli.ts",
     "dev:test": "npm run build && npm link",

@@ -37,6 +37,9 @@ jest.mock("../../helper/generateMongooseModel", () => ({
 jest.mock("../../helper/generateSequelizeModel", () => ({
   generateSequelizeModel: jest.fn(),
 }));
+jest.mock("../../helper/relations", () => ({
+  askRelations: jest.fn(),
+}));
 
 jest.mock("../../generators/crud", () => jest.fn());
 

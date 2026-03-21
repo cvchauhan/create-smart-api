@@ -38,12 +38,6 @@ jest.mock("../../helper/getTypeColor", () => ({
 jest.mock("../../helper/showTablePreview", () => ({
   showTablePreview: jest.fn(),
 }));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
-}));
 
 jest.mock("../../helper/chalk", () => ({
   log: {

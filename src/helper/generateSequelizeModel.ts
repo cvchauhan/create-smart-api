@@ -1,10 +1,12 @@
 import { mapType } from "./mapType";
 import { Field } from "../types/field";
+import { generateSequelizeRelations } from "./sequelizeRelations";
 
 export function generateSequelizeModel(
   fields: Field[],
   name: string,
   isESM: boolean,
+  relations: any[] = [], // 👈 NEW
 ) {
   const modelFields = fields
     .map((f) => {
@@ -25,6 +27,9 @@ export function generateSequelizeModel(
     })
     .join(",");
 
+  // 🔥 Generate relation code
+  const relationCode = generateSequelizeRelations(name, relations);
+
   return isESM
     ? `
 import { DataTypes } from "sequelize";
@@ -33,6 +38,11 @@ import sequelize from "../config/db.js";
 const ${name} = sequelize.define("${name}", {
 ${modelFields}
 }, { timestamps: true });
+
+// 🔥 Relations
+${name}.associate = (models) => {
+${relationCode}
+};
 
 export default ${name};
 `
@@ -43,6 +53,11 @@ const sequelize = require("../config/db");
 const ${name} = sequelize.define("${name}", {
 ${modelFields}
 }, { timestamps: true });
+
+// 🔥 Relations
+${name}.associate = (models) => {
+${relationCode}
+};
 
 module.exports = ${name};
 `;

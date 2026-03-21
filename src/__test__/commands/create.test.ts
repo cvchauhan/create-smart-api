@@ -5,10 +5,42 @@ import { execSync } from "child_process";
 import { createStructure } from "../../generators/project";
 import generateCrud from "../../generators/crud";
 import { log } from "../../helper/chalk";
+
 jest.spyOn(process, "chdir").mockImplementation(() => {});
 
 jest.mock("path", () => ({
   join: jest.fn((...args) => args.join("/")),
+}));
+
+jest.mock("../../helper/generateDbConfig", () => ({
+  generateDbConfig: jest.fn(),
+}));
+jest.mock("../../helper/addField", () => ({
+  addField: jest.fn(),
+}));
+jest.mock("../../helper/editField", () => ({
+  editField: jest.fn(),
+}));
+jest.mock("../../helper/parseFields", () => ({
+  parseFields: jest.fn().mockResolvedValue(["name:string"]),
+}));
+jest.mock("../../helper/deleteField", () => ({
+  deleteField: jest.fn(),
+}));
+jest.mock("../../helper/enhanceFields", () => ({
+  enhanceFields: jest.fn(),
+}));
+jest.mock("../../helper/getTypeColor", () => ({
+  getTypeColor: jest.fn(),
+}));
+jest.mock("../../helper/showTablePreview", () => ({
+  showTablePreview: jest.fn(),
+}));
+jest.mock("../../helper/generateMongooseModel", () => ({
+  generateMongooseModel: jest.fn(),
+}));
+jest.mock("../../helper/generateSequelizeModel", () => ({
+  generateSequelizeModel: jest.fn(),
 }));
 
 jest.mock("inquirer", () => ({
@@ -17,6 +49,7 @@ jest.mock("inquirer", () => ({
 
 jest.mock("fs-extra", () => ({
   mkdirp: jest.fn(),
+  writeFile: jest.fn(),
 }));
 
 jest.mock("child_process", () => ({
@@ -62,7 +95,7 @@ describe("create command", () => {
 
     expect(execSync).toHaveBeenCalledWith("npm init -y", expect.any(Object));
     expect(execSync).toHaveBeenCalledWith(
-      "npm install express dotenv",
+      "npm install express",
       expect.any(Object),
     );
     expect(execSync).toHaveBeenCalledWith(
@@ -75,6 +108,8 @@ describe("create command", () => {
       "user",
       "express",
       "commonjs",
+      "mongodb",
+      true,
     );
 
     expect(log.success).toHaveBeenCalled();
@@ -94,7 +129,7 @@ describe("create command", () => {
     await create("");
 
     expect(execSync).toHaveBeenCalledWith(
-      "npm install fastify dotenv",
+      "npm install fastify",
       expect.any(Object),
     );
 
@@ -125,10 +160,14 @@ describe("create command", () => {
     );
   });
 
-  let questions: any[];
   test("should use provided name (skip prompt condition)", async () => {
+    let questions: any[] = [];
+
     promptMock.mockImplementation(async (q: any) => {
-      questions = q;
+      if (Array.isArray(q) && questions.length === 0) {
+        questions = q;
+      }
+
       return {
         framework: "express",
         moduleType: "commonjs",
@@ -141,11 +180,18 @@ describe("create command", () => {
 
     await create("my-app");
 
-    const nameWhen = questions[0].when;
+    expect(questions.length).toBeGreaterThan(0);
 
-    expect(nameWhen()).toBe(false); // coverage for when
+    const nameQuestion = questions.find((q: any) => q.name === "name");
+
+    expect(nameQuestion).toBeDefined();
+    expect(typeof nameQuestion.when).toBe("function");
+
+    expect(nameQuestion.when()).toBe(false);
   });
+
   test("should show moduleName when crud is true", async () => {
+    let questions: any[] = [];
     promptMock.mockImplementation(async (q: any) => {
       questions = q;
       return {

@@ -6,16 +6,44 @@ import { log } from "../../helper/chalk";
 jest.mock("inquirer", () => ({
   prompt: jest.fn(),
 }));
+jest.mock("cli-table3", () => ({
+  Table: jest.fn(),
+}));
+jest.mock("../../helper/showTablePreview", () => ({
+  showTablePreview: jest.fn(),
+}));
 
 jest.mock("fs-extra", () => ({
   writeFile: jest.fn(),
   readdir: jest.fn().mockResolvedValue(["index.routes.js"]),
+}));
+jest.mock("../../helper/addField", () => ({
+  addField: jest.fn(),
+}));
+jest.mock("../../helper/editField", () => ({
+  editField: jest.fn(),
+}));
+jest.mock("../../helper/parseFields", () => ({
+  parseFields: jest.fn().mockResolvedValue(["name:string"]),
+}));
+jest.mock("../../helper/deleteField", () => ({
+  deleteField: jest.fn(),
+}));
+jest.mock("../../helper/enhanceFields", () => ({
+  enhanceFields: jest.fn(),
+}));
+jest.mock("../../helper/getTypeColor", () => ({
+  getTypeColor: jest.fn(),
+}));
+jest.mock("../../helper/showTablePreview", () => ({
+  showTablePreview: jest.fn(),
 }));
 
 jest.mock("../../helper/chalk", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
+    warn: jest.fn(),
   },
 }));
 
@@ -30,6 +58,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "express",
       moduleType: "commonjs",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "user");
@@ -44,6 +74,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "fastify",
       moduleType: "module",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "product");
@@ -55,6 +87,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "fastify",
       moduleType: "commonjs",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "product");
@@ -66,6 +100,8 @@ describe("crud generator", () => {
     promptMock.mockResolvedValue({
       framework: "express",
       moduleType: "module",
+      fieldInput: "name:string, email:string",
+      action: "continue",
     });
 
     await crud("/base", "product");
@@ -79,20 +115,29 @@ describe("crud generator", () => {
     expect(log.error).toHaveBeenCalledWith("Module name is required");
   });
 
-  let questions: any[];
   test("should evaluate when conditions", async () => {
+    let firstCallQuestions: any[] = [];
+
     promptMock.mockImplementation(async (q: any) => {
-      questions = q;
+      // capture only first call (array of questions)
+      if (Array.isArray(q) && firstCallQuestions.length === 0) {
+        firstCallQuestions = q;
+      }
+
       return {
         framework: "express",
         moduleType: "commonjs",
+        fieldInput: "name:string,email:string",
+        action: "cancel",
       };
     });
 
     await crud("/base", "user");
 
-    const frameworkWhen = questions[0].when;
-    const moduleTypeWhen = questions[1].when;
+    expect(firstCallQuestions.length).toBeGreaterThan(0);
+
+    const frameworkWhen = firstCallQuestions[0].when;
+    const moduleTypeWhen = firstCallQuestions[1].when;
 
     expect(frameworkWhen()).toBe(true);
     expect(moduleTypeWhen()).toBe(true);

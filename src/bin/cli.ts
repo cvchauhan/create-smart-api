@@ -12,8 +12,15 @@ import {
   plugin,
   test,
   swagger,
-} from "../commands/index";
+  model,
+} from "../commands";
 
+import pkg from "../../package.json";
+
+if (process.argv.includes("--version") || process.argv.includes("-v")) {
+  console.log(pkg?.version || "unknown");
+  process.exit(0);
+}
 const program = new Command();
 
 program
@@ -29,6 +36,10 @@ program
   .command("generate:service [module] [moduleType]")
   .description("Generate a new service")
   .action(service);
+program
+  .command("generate:model [name] [moduleType] [db]")
+  .description("Generate a new model")
+  .action(model);
 program
   .command("generate:auth [framework] [moduleType]")
   .description("Generate authentication setup")
@@ -56,8 +67,7 @@ program
   .command("generate:swagger")
   .description("Generate Swagger documentation setup")
   .action(async () => {
-    const projectPath = process.cwd();
-    await swagger(projectPath);
+    await swagger();
   });
 program.addHelpText(
   "after",

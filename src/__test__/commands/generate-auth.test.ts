@@ -28,6 +28,33 @@ jest.mock("inquirer", () => ({
   prompt: jest.fn(),
 }));
 
+jest.mock("../../helper/addField", () => ({
+  addField: jest.fn(),
+}));
+jest.mock("../../helper/editField", () => ({
+  editField: jest.fn(),
+}));
+jest.mock("../../helper/parseFields", () => ({
+  parseFields: jest.fn().mockResolvedValue(["name:string"]),
+}));
+jest.mock("../../helper/deleteField", () => ({
+  deleteField: jest.fn(),
+}));
+jest.mock("../../helper/enhanceFields", () => ({
+  enhanceFields: jest.fn(),
+}));
+jest.mock("../../helper/getTypeColor", () => ({
+  getTypeColor: jest.fn(),
+}));
+jest.mock("../../helper/showTablePreview", () => ({
+  showTablePreview: jest.fn(),
+}));
+jest.mock("../../helper/generateMongooseModel", () => ({
+  generateMongooseModel: jest.fn(),
+}));
+jest.mock("../../helper/generateSequelizeModel", () => ({
+  generateSequelizeModel: jest.fn(),
+}));
 // ✅ Now this works
 const promptMock: any = inquirer.prompt as any;
 

@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
-import { log } from "../helper/chalk";
+import { log } from "../helper";
 
 export default async function (
   module: string,

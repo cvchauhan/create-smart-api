@@ -1,18 +1,26 @@
 import pluginInstaller from "../../commands/add-plugin";
 import { execSync } from "child_process";
-import { log } from "../../helper/chalk";
+import { log } from "../../helper";
 
 jest.mock("child_process", () => ({
   execSync: jest.fn(),
 }));
 
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper/index", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
   },
+  addField: jest.fn(),
+  editField: jest.fn(),
+  parseFields: jest.fn().mockResolvedValue(["name:string"]),
+  deleteField: jest.fn(),
+  enhanceFields: jest.fn(),
+  getTypeColor: jest.fn(),
+  generateMongooseModel: jest.fn(),
+  generateSequelizeModel: jest.fn(),
+  showTablePreview: jest.fn(),
 }));
-
 describe("Plugin Installer", () => {
   beforeEach(() => {
     jest.clearAllMocks();

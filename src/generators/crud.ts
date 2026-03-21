@@ -1,13 +1,16 @@
 import fs from "fs-extra";
 import path from "path";
-import { log } from "../helper/chalk";
 import inquirer from "inquirer";
+import { parseFields, log, askRelations } from "../helper";
+import generateModel from "../commands/model";
 
 export default async function generateCrud(
   base: string,
   moduleName: string,
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
+  db?: "mongodb" | "mssql" | "mysql",
+  isCreate?: boolean,
 ) {
   if (!moduleName) {
     log.error("Module name is required");
@@ -33,6 +36,14 @@ export default async function generateCrud(
       ],
       when: () => !moduleType,
     },
+    {
+      type: "select",
+      name: "db",
+      message: "Select DB",
+      default: "mongodb",
+      choices: ["mongodb", "mssql", "mysql"],
+      when: () => !db,
+    },
   ]);
   const name = moduleName.toLowerCase();
   const isESM = moduleType === "module" || answers.moduleType === "module";
@@ -43,39 +54,112 @@ export default async function generateCrud(
     `${name}.controller.js`,
   );
   const servicePath = path.join(base, "src/services", `${name}.service.js`);
-  const modelPath = path.join(base, "src/models", `${name}.model.js`);
+  const modelName = name.charAt(0).toUpperCase() + name.slice(1);
+  const modelPath = path.join(base, "src/models", `${modelName}.model.js`);
   const routePath = path.join(base, "src/routes", `${name}.routes.js`);
   const routesIndex = path.join(base, "src/routes/index.js");
 
+  const { fieldInput } = await inquirer.prompt({
+    type: "input",
+    name: "fieldInput",
+    required: true,
+    message:
+      "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
+  });
+
+  const fields = await parseFields(fieldInput);
+  if (!fields.length) {
+    log.warn(`Project created successfully, but no models were generated.
+
+      Some features like database operations may not work.
+
+      👉 Run again to add models (create-smart-api create).
+`);
+    return;
+  }
+
   /* -------- MODEL -------- */
+  const selectedDb = db || answers.db;
+  const selectModuleType = moduleType || answers.moduleType;
+  let modelContent: any = await generateModel(
+    name,
+    selectModuleType,
+    selectedDb,
+    fields,
+    isESM,
+    true,
+  );
 
-  const modelContent = isESM
-    ? `export const ${name}Model = {};`
-    : `module.exports = {};`;
-
+  const relations = await askRelations();
   await fs.writeFile(modelPath, modelContent);
 
   /* -------- SERVICE -------- */
 
-  const serviceContent = isESM
-    ? `
-export const getAll = async ()=>{
- return [];
+  let serviceContent = "";
+
+  if (selectedDb === "mongodb") {
+    const populateFields = relations.map((r: any) =>
+      r.type === "1:N" || r.type === "N:N"
+        ? `${r.target.toLowerCase()}s`
+        : r.target.toLowerCase(),
+    );
+
+    serviceContent = isESM
+      ? `
+import ${name} from "../models/${name}.model.js";
+
+export const getAll = async () => {
+  return await ${name}.find().populate(${JSON.stringify(populateFields)});
 };
 
-export const create = async (data)=>{
- return data;
+export const create = async (data) => {
+  return await ${name}.create(data);
 };
 `
-    : `
-module.exports.getAll = async ()=>{
- return [];
+      : `
+const ${name} = require("../models/${name}.model");
+
+module.exports.getAll = async () => {
+  return await ${name}.find().populate(${JSON.stringify(populateFields)});
 };
 
-module.exports.create = async (data)=>{
- return data;
+module.exports.create = async (data) => {
+  return await ${name}.create(data);
 };
 `;
+  } else {
+    const includeCode = relations
+      .map((r: any) => `{ model: models.${r.target} }`)
+      .join(",");
+
+    serviceContent = isESM
+      ? `
+import models from "../models/index.js";
+
+export const getAll = async () => {
+  return await models.${name}.findAll({
+    include: [${includeCode}]
+  });
+};
+
+export const create = async (data) => {
+  return await models.${name}.create(data);
+};
+`
+      : `
+const models = require("../models");
+
+module.exports.getAll = async () => {
+  return await models.${name}.findAll({
+    include: [${includeCode}]
+  });
+};
+
+module.exports.create = async (data) => {
+  return await models.${name}.create(data);
+};
+`;
+  }
 
   await fs.writeFile(servicePath, serviceContent);
 
@@ -252,5 +336,7 @@ ${registerLines.join("\n")}
   }
 
   await fs.writeFile(routesIndex, routesIndexContent);
-  log.success(`CRUD for ${name} created successfully`);
+  if (!isCreate) {
+    log.success(`CRUD for ${name} created successfully`);
+  }
 }

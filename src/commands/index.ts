@@ -7,6 +7,7 @@ import micro from "../commands/generate-microservice";
 import plugin from "../commands/add-plugin";
 import test from "../commands/generate-test";
 import swagger from "../commands/swagger";
+import model from "../commands/model";
 
 export {
   create,
@@ -18,4 +19,5 @@ export {
   plugin,
   test,
   swagger,
+  model,
 };

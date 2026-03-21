@@ -1,5 +1,7 @@
 import crud from "../generators/crud";
-import { log } from "../helper/chalk";
+import { log } from "../helper";
+import path from "path";
+import fs from "fs-extra";
 
 export default async function (
   name?: string,
@@ -10,5 +12,13 @@ export default async function (
     log.error("Module name is required");
     return;
   }
-  await crud(process.cwd(), name, framework, moduleType);
+  const base = process.cwd();
+  const srcPath = path.join(base, "./src");
+
+  if (!fs.existsSync(srcPath) || !fs.lstatSync(srcPath).isDirectory()) {
+    log.error(`Please create project first using: create-smart-api create`);
+    return;
+  }
+
+  await crud(base, name, framework, moduleType);
 }

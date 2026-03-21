@@ -7,6 +7,7 @@ export function generateMongooseModel(
   isESM: boolean,
   relations: any[] = [],
 ) {
+  const schemaName = name.charAt(0).toLowerCase() + name.slice(1);
   const modelFields = fields
     .map((f) => {
       let str = `
@@ -33,20 +34,20 @@ export function generateMongooseModel(
     ? `
 import mongoose from "mongoose";
 
-const ${name}Schema = new mongoose.Schema({
+const ${schemaName}Schema = new mongoose.Schema({
 ${modelFields}${relationFields ? "," + relationFields : ""}
 }, { timestamps: true });
 
-export default mongoose.model("${name}", ${name}Schema);
+export default mongoose.model("${name}", ${schemaName}Schema);
 `
     : `
 const mongoose = require("mongoose");
 
-const ${name}Schema = new mongoose.Schema({
+const ${schemaName}Schema = new mongoose.Schema({
 ${modelFields}${relationFields ? "," + relationFields : ""}
 }, { timestamps: true });
 
-module.exports = mongoose.model("${name}", ${name}Schema);
+module.exports = mongoose.model("${name}", ${schemaName}Schema);
 `;
 }
 

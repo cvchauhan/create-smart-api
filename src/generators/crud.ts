@@ -54,7 +54,8 @@ export default async function generateCrud(
     `${name}.controller.js`,
   );
   const servicePath = path.join(base, "src/services", `${name}.service.js`);
-  const modelPath = path.join(base, "src/models", `${name}.model.js`);
+  const modelName = name.charAt(0).toUpperCase() + name.slice(1);
+  const modelPath = path.join(base, "src/models", `${modelName}.model.js`);
   const routePath = path.join(base, "src/routes", `${name}.routes.js`);
   const routesIndex = path.join(base, "src/routes/index.js");
 

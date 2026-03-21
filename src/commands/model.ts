@@ -143,31 +143,119 @@ export default async function generateModel(
       await deleteField(modelFields);
     }
   }
-  const relations = await askRelations();
 
   const selectModuleType = isESM || answers.moduleType === "module";
-  let modelContent: any = "";
+  let relations = await askRelations();
 
+  relations = await processRelations(
+    relations,
+    base,
+    selectedDb,
+    selectModuleType,
+  );
+  let modelContent: any = "";
+  const modelName = name.charAt(0).toUpperCase() + name.slice(1);
   if (selectedDb === "mongodb") {
     modelContent = generateMongooseModel(
       modelFields,
-      name,
+      modelName,
       selectModuleType,
       relations,
     );
   } else {
     modelContent = generateSequelizeModel(
       modelFields,
-      name,
+      modelName,
       selectModuleType,
       relations,
     );
   }
   if (!isCrud) {
-    const modelPath = path.join(base, "src/models", `${name}.model.js`);
+    const modelPath = path.join(base, "src/models", `${modelName}.model.js`);
     await fs.writeFile(modelPath, modelContent);
-    log.success(`Model ${name} created successfully`);
+    log.success(`Model ${modelName} created successfully`);
     return;
   }
   return modelContent;
+}
+
+async function processRelations(
+  relations: any[],
+  basePath: string,
+  db: "mongodb" | "mssql" | "mysql",
+  isESM: boolean,
+) {
+  const modelsPath = path.join(basePath, "src/models");
+
+  const existingModels = fs.existsSync(modelsPath)
+    ? fs.readdirSync(modelsPath).map((f) => f.replace(/\.model\.(js|ts)$/, ""))
+    : [];
+
+  const finalRelations: any[] = [];
+  const createdModels = new Set<string>();
+
+  for (const rel of relations) {
+    const target = rel.target;
+
+    if (existingModels.includes(target) || createdModels.has(target)) {
+      finalRelations.push(rel);
+      continue;
+    }
+
+    console.log(`\n❌ Model "${target}" not found.\n`);
+
+    const { action } = await inquirer.prompt([
+      {
+        type: "select",
+        name: "action",
+        message: "What do you want to do?",
+        choices: ["Create Model", "Skip Relation"],
+      },
+    ]);
+
+    if (action === "Create Model") {
+      const { fieldInput } = await inquirer.prompt({
+        type: "input",
+        name: "fieldInput",
+        required: true,
+        message:
+          "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
+      });
+      const modelFields = await parseFields(fieldInput);
+      await createModelFile(target, basePath, db, isESM, modelFields);
+      createdModels.add(target);
+      finalRelations.push(rel);
+    } else {
+      log.warn(`Skipping relation with ${target}`);
+    }
+  }
+
+  return finalRelations;
+}
+
+async function createModelFile(
+  modelName: string,
+  basePath: string,
+  db: "mongodb" | "mssql" | "mysql",
+  isESM: boolean,
+  modelFields: Field[] = [],
+) {
+  const modelPath = path.join(basePath, "src/models", `${modelName}.model.js`);
+
+  // prevent overwrite
+  if (fs.existsSync(modelPath)) {
+    log.warn(`Model ${modelName} already exists`);
+    return;
+  }
+
+  let content = "";
+
+  if (db === "mongodb") {
+    content = generateMongooseModel(modelFields, modelName, isESM, []);
+  } else {
+    content = generateSequelizeModel(modelFields, modelName, isESM, []);
+  }
+
+  await fs.writeFile(modelPath, content);
+  log.success(`Model ${modelName} created`);
 }

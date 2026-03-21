@@ -16,6 +16,9 @@ jest.mock("../../helper/showTablePreview", () => ({
 jest.mock("fs-extra", () => ({
   writeFile: jest.fn(),
   readdir: jest.fn().mockResolvedValue(["index.routes.js"]),
+  existsSync: jest.fn().mockReturnValue(true),
+  lstatSync: jest.fn().mockReturnValue({ isDirectory: () => true }),
+  readdirSync: jest.fn().mockReturnValue(["index.routes.js"]),
 }));
 jest.mock("../../helper/addField", () => ({
   addField: jest.fn(),

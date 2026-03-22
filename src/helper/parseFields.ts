@@ -1,4 +1,5 @@
 import { Field } from "../types/field";
+import { log } from "./chalk";
 import { resolveType } from "./resolveType";
 
 export async function parseFields(input: string): Promise<Field[]> {
@@ -11,8 +12,10 @@ export async function parseFields(input: string): Promise<Field[]> {
   for (const item of input.split(",")) {
     const [name, type] = item.split(":");
 
-    if (!name || !type) throw new Error(`Invalid field: ${item}`);
-
+    if (!name || !type) {
+      log.error(`Invalid field: ${item}`);
+      return [];
+    }
     const resolvedType = await resolveType(type);
 
     fields.push({

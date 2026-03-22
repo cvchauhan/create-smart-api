@@ -9,7 +9,7 @@ export async function deleteField(fields: Field[]) {
   }
 
   const { fieldName } = await inquirer.prompt({
-    type: "list",
+    type: "select",
     name: "fieldName",
     message: "Select field to delete:",
     choices: fields.map((f) => f.name),

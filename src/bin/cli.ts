@@ -39,7 +39,7 @@ program
 program
   .command("generate:model [name] [moduleType] [db]")
   .description("Generate a new model")
-  .action(model);
+  .action(model as any);
 program
   .command("generate:auth [framework] [moduleType]")
   .description("Generate authentication setup")

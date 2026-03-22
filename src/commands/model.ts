@@ -15,6 +15,7 @@ import inquirer from "inquirer";
 import fs from "fs-extra";
 import path from "path";
 import create from "./create";
+import { fieldInputs, validateOnlyString } from "../helper/fieldInput";
 
 export default async function generateModel(
   name: string,
@@ -50,6 +51,7 @@ export default async function generateModel(
           message: "new project name?",
           default: "my-app",
           required: true,
+          validate: validateOnlyString,
         },
       ]);
       await create(projectName);
@@ -81,14 +83,7 @@ export default async function generateModel(
   ]);
 
   const selectedDb = db || answers.db;
-  const { fieldInput } = await inquirer.prompt({
-    type: "input",
-    name: "fieldInput",
-    when: () => !fields?.length,
-    required: true,
-    message:
-      "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
-  });
+  const { fieldInput } = await fieldInputs(fields);
   let modelFields: Field[] = [];
   if (fields?.length) {
     modelFields = fields;
@@ -106,7 +101,6 @@ export default async function generateModel(
     return;
   }
   await enhanceFields(modelFields);
-  showTablePreview(modelFields);
   while (true) {
     showTablePreview(modelFields);
 
@@ -128,7 +122,7 @@ export default async function generateModel(
 
     if (action === "cancel") {
       log.warn("Operation cancelled");
-      return;
+      return { modelContent: "", relations: [] };
     }
 
     if (action === "edit") {
@@ -145,7 +139,7 @@ export default async function generateModel(
   }
 
   const selectModuleType = isESM || answers.moduleType === "module";
-  let relations = await askRelations();
+  let relations: any = await askRelations();
 
   relations = await processRelations(
     relations,
@@ -176,7 +170,7 @@ export default async function generateModel(
     log.success(`Model ${modelName} created successfully`);
     return;
   }
-  return modelContent;
+  return { modelContent, relations };
 }
 
 async function processRelations(
@@ -202,7 +196,7 @@ async function processRelations(
       continue;
     }
 
-    console.log(`\n❌ Model "${target}" not found.\n`);
+    log.error(`Model "${target}" not found.`);
 
     const { action } = await inquirer.prompt([
       {
@@ -214,14 +208,15 @@ async function processRelations(
     ]);
 
     if (action === "Create Model") {
-      const { fieldInput } = await inquirer.prompt({
-        type: "input",
-        name: "fieldInput",
-        required: true,
-        message:
-          "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
-      });
+      const { fieldInput } = await fieldInputs();
       const modelFields = await parseFields(fieldInput);
+      if (!modelFields.length) {
+        log.warn(`Project created successfully, but no models were generated.
+
+      Some features like database operations may not work.      
+      `);
+        return finalRelations;
+      }
       await createModelFile(target, basePath, db, isESM, modelFields);
       createdModels.add(target);
       finalRelations.push(rel);

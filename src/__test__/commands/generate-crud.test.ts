@@ -63,6 +63,7 @@ describe("generate crud command", () => {
       "user",
       "express",
       "commonjs",
+      undefined,
     );
   });
 });

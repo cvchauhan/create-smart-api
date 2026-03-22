@@ -82,6 +82,10 @@ export async function editField(fields: Field[]) {
         name: "val",
         message: "Enter enum values (comma separated):",
         default: field.enumValues?.join(",") || "",
+        validate: (input: string) => {
+          if (!input.trim()) return "Enum values are required";
+          return true;
+        },
       });
 
       field.enumValues = val.split(",").map((v: string) => v.trim());

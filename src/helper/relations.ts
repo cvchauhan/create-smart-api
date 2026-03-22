@@ -1,4 +1,5 @@
 import inquirer from "inquirer";
+import { validateOnlyString } from "./fieldInput";
 
 export async function askRelations() {
   const relations: any[] = [];
@@ -26,6 +27,7 @@ export async function askRelations() {
         type: "input",
         name: "target",
         message: "Target model name",
+        validate: validateOnlyString,
       },
     ]);
 

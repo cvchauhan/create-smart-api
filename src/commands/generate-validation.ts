@@ -3,6 +3,7 @@ import path from "path";
 import { execSync } from "child_process";
 import inquirer from "inquirer";
 import { log } from "../helper";
+import { getConfig } from "../helper/getConfig";
 
 export default async function (
   name: string,
@@ -12,6 +13,7 @@ export default async function (
     log.error("Module name is required");
     return;
   }
+  const config = getConfig(process.cwd());
   const answers = await inquirer.prompt([
     {
       type: "rawlist",
@@ -22,7 +24,7 @@ export default async function (
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
       ],
-      when: () => !moduleType,
+      when: () => !moduleType && !config?.module,
     },
   ]);
   execSync("npm install zod", { stdio: "inherit" });

@@ -5,6 +5,7 @@ import { execSync } from "child_process";
 import { createStructure } from "../generators/project";
 import generateCrud from "../generators/crud";
 import { log, generateDbConfig } from "../helper";
+import { validateOnlyNumber, validateOnlyString } from "../helper/fieldInput";
 
 export default async function (name: string) {
   const answers: {
@@ -22,6 +23,7 @@ export default async function (name: string) {
       message: "Project name",
       default: "my-app",
       when: () => !name,
+      validate: validateOnlyString,
     },
     {
       type: "select",
@@ -59,12 +61,14 @@ export default async function (name: string) {
       message: "CRUD module name",
       default: "sample",
       when: (a) => a.crud,
+      validate: validateOnlyString,
     },
     {
       type: "input",
       name: "port",
       message: "Port for the server",
       default: 3000,
+      validate: validateOnlyNumber,
     },
   ]);
 
@@ -109,6 +113,7 @@ PORT=${answers.port}
   execSync('npm pkg set scripts.start="node src/server.js"', {
     stdio: "inherit",
   });
+
   if (answers.moduleType === "module") {
     execSync("npm pkg set type=module", { stdio: "inherit" });
   }
@@ -130,7 +135,16 @@ PORT=${answers.port}
   if (answers.db === "mysql") {
     execSync("npm install mysql2 sequelize", { stdio: "inherit" });
   }
+  const pkgPath = path.join(base, "package.json");
+  const pkg = await fs.readJSON(pkgPath);
 
+  pkg.createSmartApi = {
+    db: answers.db,
+    module: answers.moduleType,
+    framework: answers.framework,
+  };
+
+  await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
   if (answers.crud) {
     await generateCrud(
       base,

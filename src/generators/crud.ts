@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
-import { parseFields, log, askRelations } from "../helper";
+import { log } from "../helper";
 import generateModel from "../commands/model";
 
 export default async function generateCrud(
@@ -16,6 +16,7 @@ export default async function generateCrud(
     log.error("Module name is required");
     return;
   }
+
   const answers = await inquirer.prompt([
     {
       type: "select",
@@ -58,39 +59,17 @@ export default async function generateCrud(
   const modelPath = path.join(base, "src/models", `${modelName}.model.js`);
   const routePath = path.join(base, "src/routes", `${name}.routes.js`);
   const routesIndex = path.join(base, "src/routes/index.js");
-
-  const { fieldInput } = await inquirer.prompt({
-    type: "input",
-    name: "fieldInput",
-    required: true,
-    message:
-      "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
-  });
-
-  const fields = await parseFields(fieldInput);
-  if (!fields.length) {
-    log.warn(`Project created successfully, but no models were generated.
-
-      Some features like database operations may not work.
-
-      👉 Run again to add models (create-smart-api create).
-`);
-    return;
-  }
-
   /* -------- MODEL -------- */
   const selectedDb = db || answers.db;
   const selectModuleType = moduleType || answers.moduleType;
-  let modelContent: any = await generateModel(
+  let { modelContent = "", relations = [] }: any = await generateModel(
     name,
     selectModuleType,
     selectedDb,
-    fields,
     isESM,
     true,
   );
 
-  const relations = await askRelations();
   await fs.writeFile(modelPath, modelContent);
 
   /* -------- SERVICE -------- */
@@ -134,29 +113,29 @@ module.exports.create = async (data) => {
 
     serviceContent = isESM
       ? `
-import models from "../models/index.js";
+import ${name} from "../models/${name}.model.js";
 
 export const getAll = async () => {
-  return await models.${name}.findAll({
+  return await ${name}.findAll({
     include: [${includeCode}]
   });
 };
 
 export const create = async (data) => {
-  return await models.${name}.create(data);
+  return await ${name}.create(data);
 };
 `
       : `
-const models = require("../models");
+const ${name} = require("../models/${name}.model");
 
 module.exports.getAll = async () => {
-  return await models.${name}.findAll({
+  return await ${name}.findAll({
     include: [${includeCode}]
   });
 };
 
 module.exports.create = async (data) => {
-  return await models.${name}.create(data);
+  return await ${name}.create(data);
 };
 `;
   }

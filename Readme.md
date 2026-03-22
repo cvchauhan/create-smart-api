@@ -76,9 +76,28 @@ create-smart-api generate:crud user
 
 ### ✨ Step 1: Bulk Field Input
 
-```bash
-name:string,email:string,age:number,status:enum
+## 🧩 Field Definition
+
+### 🔹 Choose Input Mode
+
+````bash
+? How do you want to define fields?
+❯ Interactive
+  Quick input (name:string,...)
+
+Field name: name
+Type: string
+Required? Yes
+Unique? No
 ```
+
+? How do you want to define fields?
+  Interactive
+❯ Quick input (name:string,...)
+
+name:string,email:string,age:number,status:enum
+
+````
 
 ---
 
@@ -250,9 +269,36 @@ create-smart-api plugin install redis
 
 ---
 
+## 🔗 Relationship Support
+
+Define relationships between models using a simple and guided approach.
+
+---
+
+### 🔹 Add Relations
+
+You will be prompted to define relationships:
+
+```bash
+Related model name: User
+Relation type:
+❯ 1:1
+  1:N
+  N:N
+
+Add another relation? Yes/No
+
+Model "User" not found.
+
+? What do you want to do?
+❯ Create Model
+  Skip
+```
+
+---
+
 ## 🗺️ Roadmap
 
-- Relations (1:1, 1:N, N:N)
 - GraphQL generator
 - Redis cache support
 - Microservices support
@@ -280,3 +326,7 @@ MIT
 Created by Chirag Chauhan
 
 ⭐ Star the repo if you like it!
+
+```
+
+```

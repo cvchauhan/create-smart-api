@@ -2,10 +2,13 @@ import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
 import { log } from "../helper";
+import { getConfig } from "../helper/getConfig";
 
 export default async function generateSwagger(
   moduleType?: "module" | "commonjs",
 ) {
+  const base = process.cwd();
+  const config = getConfig(base);
   const answers = await inquirer.prompt([
     {
       type: "rawlist",
@@ -16,12 +19,10 @@ export default async function generateSwagger(
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
       ],
-      when: () => !moduleType,
+      when: () => !moduleType && !config?.module,
     },
   ]);
-  const base = process.cwd();
   const swaggerDir = path.join(base, "src/config");
-
   await fs.ensureDir(swaggerDir);
   let swaggerImport = "";
   if (answers.moduleType === "module") {

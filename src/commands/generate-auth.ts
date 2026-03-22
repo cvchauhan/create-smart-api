@@ -3,11 +3,13 @@ import path from "path";
 import inquirer from "inquirer";
 import { execSync } from "child_process";
 import { log } from "../helper";
+import { getConfig } from "../helper/getConfig";
 
 export default async function (
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
 ) {
+  const config = getConfig(process.cwd());
   const answers = await inquirer.prompt([
     {
       type: "select",
@@ -15,7 +17,7 @@ export default async function (
       message: "Select Framework",
       default: "express",
       choices: ["express", "fastify"],
-      when: () => !framework,
+      when: () => !framework && !config?.framework,
     },
     {
       type: "rawlist",
@@ -26,7 +28,7 @@ export default async function (
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
       ],
-      when: () => !moduleType,
+      when: () => !moduleType && !config?.module,
     },
   ]);
   const selectedFramework = framework || answers.framework;

@@ -50,6 +50,10 @@ jest.mock("inquirer", () => ({
 jest.mock("fs-extra", () => ({
   mkdirp: jest.fn(),
   writeFile: jest.fn(),
+  existsSync: jest.fn().mockReturnValue(true),
+  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
+  readJSON: jest.fn().mockReturnValue({}),
+  writeJSON: jest.fn(),
 }));
 
 jest.mock("child_process", () => ({

@@ -41,6 +41,8 @@ jest.mock("../../helper/generateSequelizeModel", () => ({
 jest.mock("fs-extra", () => ({
   ensureDir: jest.fn(),
   writeFile: jest.fn(),
+  existsSync: jest.fn().mockReturnValue(true),
+  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
 }));
 
 jest.mock("../../helper/chalk", () => ({

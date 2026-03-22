@@ -21,7 +21,6 @@ export default async function generateModel(
   name: string,
   moduleType: "module" | "commonjs",
   db: "mongodb" | "mssql" | "mysql",
-  fields: Field[],
   isESM: boolean,
   isCrud: boolean = false,
 ) {
@@ -83,24 +82,30 @@ export default async function generateModel(
   ]);
 
   const selectedDb = db || answers.db;
-  const { fieldInput } = await fieldInputs(fields);
-  let modelFields: Field[] = [];
-  if (fields?.length) {
-    modelFields = fields;
-  } else {
+  let modelFields: any[] = [];
+  const { inputMode } = await inquirer.prompt([
+    {
+      type: "rawlist",
+      name: "inputMode",
+      message: "create-smart-api > How do you want to define fields?",
+      choices: [
+        { name: "Interactive", value: "interactive" },
+        { name: "Quick input (name:string,...)", value: "quick" },
+      ],
+      default: "interactive",
+    },
+  ]);
+
+  if (inputMode === "quick") {
+    const { fieldInput } = await fieldInputs();
     modelFields = await parseFields(fieldInput);
+    await enhanceFields(modelFields);
+  } else {
+    await addField(modelFields, inputMode);
   }
 
-  if (!modelFields.length) {
-    log.warn(`Project created successfully, but no models were generated.
+  normalizeFields(modelFields);
 
-      Some features like database operations may not work.
-
-      👉 Run again to add models (create-smart-api create).
-`);
-    return;
-  }
-  await enhanceFields(modelFields);
   while (true) {
     showTablePreview(modelFields);
 
@@ -146,6 +151,7 @@ export default async function generateModel(
     base,
     selectedDb,
     selectModuleType,
+    inputMode,
   );
   let modelContent: any = "";
   const modelName = name.charAt(0).toUpperCase() + name.slice(1);
@@ -178,6 +184,7 @@ async function processRelations(
   basePath: string,
   db: "mongodb" | "mssql" | "mysql",
   isESM: boolean,
+  inputMode: "interactive" | "quick",
 ) {
   const modelsPath = path.join(basePath, "src/models");
 
@@ -208,14 +215,12 @@ async function processRelations(
     ]);
 
     if (action === "Create Model") {
-      const { fieldInput } = await fieldInputs();
-      const modelFields = await parseFields(fieldInput);
-      if (!modelFields.length) {
-        log.warn(`Project created successfully, but no models were generated.
-
-      Some features like database operations may not work.      
-      `);
-        return finalRelations;
+      let modelFields: Field[] = [];
+      if (inputMode === "quick") {
+        const { fieldInput } = await fieldInputs();
+        modelFields = await parseFields(fieldInput);
+      } else {
+        await addField(modelFields);
       }
       await createModelFile(target, basePath, db, isESM, modelFields);
       createdModels.add(target);
@@ -253,4 +258,15 @@ async function createModelFile(
 
   await fs.writeFile(modelPath, content);
   log.success(`Model ${modelName} created`);
+}
+
+export function normalizeFields(fields: Field[]): Field[] {
+  return fields.map((f) => ({
+    name: f.name,
+    type: f.type || "string",
+    required: f.required ?? false,
+    unique: f.unique ?? false,
+    default: f.default ?? undefined,
+    enumValues: f.enumValues ?? [],
+  }));
 }

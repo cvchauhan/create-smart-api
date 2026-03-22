@@ -1,9 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
 import inquirer from "inquirer";
-import { parseFields, log } from "../helper";
+import { log } from "../helper";
 import generateModel from "../commands/model";
-import { fieldInputs } from "../helper/fieldInput";
 
 export default async function generateCrud(
   base: string,
@@ -60,33 +59,17 @@ export default async function generateCrud(
   const modelPath = path.join(base, "src/models", `${modelName}.model.js`);
   const routePath = path.join(base, "src/routes", `${name}.routes.js`);
   const routesIndex = path.join(base, "src/routes/index.js");
-
-  const { fieldInput } = await fieldInputs();
-
-  const fields = await parseFields(fieldInput);
-  if (!fields.length) {
-    log.warn(`Project created successfully, but no models were generated.
-
-      Some features like database operations may not work.
-
-      👉 Run again to add models (create-smart-api create).
-`);
-    return;
-  }
-
   /* -------- MODEL -------- */
   const selectedDb = db || answers.db;
   const selectModuleType = moduleType || answers.moduleType;
-  let { modelContent, relations }: any = await generateModel(
+  let { modelContent = "", relations = [] }: any = await generateModel(
     name,
     selectModuleType,
     selectedDb,
-    fields,
     isESM,
     true,
   );
 
-  // const relations = await askRelations();
   await fs.writeFile(modelPath, modelContent);
 
   /* -------- SERVICE -------- */

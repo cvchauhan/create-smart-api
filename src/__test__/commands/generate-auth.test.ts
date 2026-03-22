@@ -21,6 +21,10 @@ jest.mock("child_process", () => ({
 jest.mock("fs-extra", () => ({
   writeFile: jest.fn(),
   mkdirp: jest.fn(),
+  existsSync: jest.fn().mockReturnValue(true),
+  readJSONSync: jest
+    .fn()
+    .mockReturnValue({ createSmartApi: { db: "mongodb" } }),
 }));
 
 // ✅ FIX: match default import

@@ -12,6 +12,8 @@ jest.mock("inquirer", () => ({
 jest.mock("fs-extra", () => ({
   mkdirp: jest.fn(),
   writeFile: jest.fn(),
+  existsSync: jest.fn().mockReturnValue(true),
+  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
 }));
 
 jest.mock("child_process", () => ({

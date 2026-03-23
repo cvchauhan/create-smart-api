@@ -112,7 +112,7 @@ name:string,email:string,age:number,status:enum
 
 ### 📊 Step 3: Table Preview
 
-```
+````
 ## 📊 Schema Preview
 
 | # | Field  | Type   | Req | Uniq | Default | Extra               |
@@ -149,28 +149,6 @@ Options:
 - Default values
 - Ready-to-use models
 
----
-
-## 📁 Generated Structure
-
-```
-
-my-api/
-├── src/
-│ ├── controllers/
-│ ├── services/
-│ ├── models/
-│ ├── routes/
-│ ├── middleware/
-│ ├── config/
-│ ├── helper/
-│ ├── server.js
-├── .env
-└── package.json
-
-````
-
----
 
 ## ⚙️ CLI Commands
 
@@ -326,7 +304,3 @@ MIT
 Created by Chirag Chauhan
 
 ⭐ Star the repo if you like it!
-
-```
-
-```

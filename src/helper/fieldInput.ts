@@ -43,7 +43,7 @@ export async function validateFieldInput(input: string) {
 }
 
 export async function validateOnlyString(input: string) {
-  const regex = /^[a-zA-Z]+$/; // only letters
+  const regex = /^[a-zA-Z0-9_-]+$/;
 
   if (!input) {
     return "Name is required";

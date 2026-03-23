@@ -1,4 +1,4 @@
-import { Field } from "../types/field";
+import Field from "../types/field";
 import chalk from "chalk";
 export function getTypeColor(type: string) {
   switch (type) {

@@ -2,52 +2,25 @@ import generateService from "../../commands/generate-service";
 import fs from "fs-extra";
 import inquirer from "inquirer";
 import path from "path";
-import { log } from "../../helper/chalk";
+import { log } from "../../helper";
 
 jest.mock("inquirer", () => ({
   prompt: jest.fn(),
 }));
 
 jest.mock("fs-extra", () => ({
+  fs: jest.fn(),
   mkdirp: jest.fn(),
   writeFile: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),
   readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
 }));
 
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),
   },
-}));
-
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
 }));
 
 const promptMock = inquirer.prompt as any;
@@ -67,7 +40,7 @@ describe("generateService", () => {
   test("should log error if name is missing", async () => {
     await generateService("", "commonjs");
 
-    expect(log.error).toHaveBeenCalledWith("Module name is required");
+    expect(log.error).toHaveBeenCalledWith("Service name is required");
     expect(fs.mkdirp).not.toHaveBeenCalled();
   });
 
@@ -79,7 +52,7 @@ describe("generateService", () => {
 
     await generateService("user", "commonjs");
 
-    const dir = path.join(cwdMock, "src/services", "user");
+    const dir = path.join(cwdMock, "src/services");
 
     expect(fs.mkdirp).toHaveBeenCalledWith(dir);
 
@@ -101,7 +74,7 @@ describe("generateService", () => {
 
     await generateService("product", "module");
 
-    const dir = path.join(cwdMock, "src/services", "product");
+    const dir = path.join(cwdMock, "src/services");
 
     const filePath = path.join(dir, "product.service.js");
 

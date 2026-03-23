@@ -1,4 +1,4 @@
-export type Field = {
+type Field = {
   name: string;
   type: string;
   required?: boolean;
@@ -6,3 +6,5 @@ export type Field = {
   default?: any;
   enumValues?: string[];
 };
+
+export default Field;

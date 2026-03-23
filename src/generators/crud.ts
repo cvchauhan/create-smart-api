@@ -3,7 +3,7 @@ import path from "path";
 import inquirer from "inquirer";
 import { log } from "../helper";
 import generateModel from "../commands/model";
-import { router } from "../utils/router.util";
+import { genrateRouter } from "../utils/router.util";
 
 export default async function generateCrud(
   base: string,
@@ -58,7 +58,6 @@ export default async function generateCrud(
   const servicePath = path.join(base, "src/services", `${name}.service.js`);
   const modelName = name.charAt(0).toUpperCase() + name.slice(1);
   const modelPath = path.join(base, "src/models", `${modelName}.model.js`);
-  const routePath = path.join(base, "src/routes", `${name}.routes.js`);
   const routesIndex = path.join(base, "src/routes/index.js");
   /* -------- MODEL -------- */
   const selectedDb = db || answers.db;
@@ -85,8 +84,7 @@ export default async function generateCrud(
     );
 
     serviceContent = isESM
-      ? `
-import ${name} from "../models/${name}.model.js";
+      ? `import ${name} from "../models/${name}.model.js";
 
 export const getAll = async () => {
   return await ${name}.find().populate(${JSON.stringify(populateFields)});
@@ -96,8 +94,7 @@ export const create = async (data) => {
   return await ${name}.create(data);
 };
 `
-      : `
-const ${name} = require("../models/${name}.model");
+      : `const ${name} = require("../models/${name}.model");
 
 module.exports.getAll = async () => {
   return await ${name}.find().populate(${JSON.stringify(populateFields)});
@@ -113,8 +110,7 @@ module.exports.create = async (data) => {
       .join(",");
 
     serviceContent = isESM
-      ? `
-import ${name} from "../models/${name}.model.js";
+      ? `import ${name} from "../models/${name}.model.js";
 
 export const getAll = async () => {
   return await ${name}.findAll({
@@ -126,8 +122,7 @@ export const create = async (data) => {
   return await ${name}.create(data);
 };
 `
-      : `
-const ${name} = require("../models/${name}.model");
+      : `const ${name} = require("../models/${name}.model");
 
 module.exports.getAll = async () => {
   return await ${name}.findAll({
@@ -148,8 +143,7 @@ module.exports.create = async (data) => {
   let controllerContent;
 
   if (isESM) {
-    controllerContent = `
-import * as service from "../services/${name}.service.js";
+    controllerContent = `import * as service from "../services/${name}.service.js";
 
 export const getAll = async (req,res)=>{
  const data = await service.getAll();
@@ -162,8 +156,7 @@ export const create = async (req,res)=>{
 };
 `;
   } else {
-    controllerContent = `
-const service = require("../services/${name}.service");
+    controllerContent = `const service = require("../services/${name}.service");
 
 module.exports.getAll = async (req,res)=>{
  const data = await service.getAll();
@@ -179,71 +172,9 @@ module.exports.create = async (req,res)=>{
 
   await fs.writeFile(controllerPath, controllerContent);
 
-  /* -------- ROUTES -------- */
-
-  let routeContent: any;
-
-  if (framework === "express" || answers.framework === "express") {
-    routeContent = isESM
-      ? `
-import express from "express";
-import * as controller from "../controllers/${name}.controller.js";
-
-const router = express.Router();
-
-router.get("/", controller.getAll);
-router.post("/", controller.create);
-
-export default router;
-`
-      : `
-const express = require("express");
-const controller = require("../controllers/${name}.controller");
-
-const router = express.Router();
-
-router.get("/", controller.getAll);
-router.post("/", controller.create);
-
-module.exports = router;
-`;
-  }
-
-  if (framework === "fastify" || answers.framework === "fastify") {
-    routeContent = isESM
-      ? `
-export default async function (fastify){
-
- fastify.get("/${name}s", async ()=>{
-  return [];
- });
-
- fastify.post("/${name}s", async (req)=>{
-  return req.body;
- });
-
-}
-`
-      : `
-module.exports = async function (fastify){
-
- fastify.get("/${name}s", async ()=>{
-  return [];
- });
-
- fastify.post("/${name}s", async (req)=>{
-  return req.body;
- });
-
-};
-`;
-  }
-
-  await fs.writeFile(routePath, routeContent);
-
   /* -------- AUTO REGISTER ROUTE -------- */
   const selectedFramework = framework || answers.framework;
-  await router.genrateRouter(routesIndex, selectedFramework, isESM);
+  await genrateRouter(name, selectedFramework, routesIndex, selectModuleType);
 
   if (!isCreate) {
     log.success(`CRUD for ${name} created successfully`);

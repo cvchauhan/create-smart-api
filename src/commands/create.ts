@@ -4,8 +4,12 @@ import inquirer from "inquirer";
 import { execSync } from "child_process";
 import { createStructure } from "../generators/project";
 import generateCrud from "../generators/crud";
-import { log, generateDbConfig } from "../helper";
-import { validateOnlyNumber, validateOnlyString } from "../helper/fieldInput";
+import { log } from "../helper";
+import { generateDbConfig } from "../utils/db.util";
+import {
+  validateOnlyNumber,
+  validateOnlyString,
+} from "../utils/field.validation.util";
 
 export default async function (name: string) {
   const answers: {
@@ -107,6 +111,7 @@ DB_HOST=localhost
 PORT=${answers.port}
 `;
   await fs.writeFile(envPath, envContent);
+
   process.chdir(base);
 
   execSync("npm init -y", { stdio: "inherit" });

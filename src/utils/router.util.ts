@@ -1,12 +1,29 @@
 import fs from "fs-extra";
 import path from "path";
+import routesContent from "../helper/routeContent";
+import { log } from "../helper";
 
 class Router {
-  async genrateRouter(
+  genrateRouter = async (
+    routeName: string,
+    framework: "express" | "fastify",
     routesIndex: string,
-    framework?: "express" | "fastify",
-    isESM?: boolean,
-  ) {
+    moduleType: string,
+  ) => {
+    /* -------- ROUTES -------- */
+    if (!routeName) {
+      log.error("Router name is required");
+      return;
+    }
+
+    const name = routeName.toLowerCase();
+
+    const isESM = moduleType === "module";
+    const base = process.cwd();
+
+    const routePath = path.join(base, "src/routes", `${name}.routes.js`);
+    let routeContent: any = routesContent(name, framework, isESM);
+    await fs.writeFile(routePath, routeContent);
     const routesDir = path.dirname(routesIndex);
 
     // Rebuild routes index to include all generated route modules (idempotent)
@@ -81,7 +98,8 @@ class Router {
     }
 
     await fs.writeFile(routesIndex, routesIndexContent);
-  }
+  };
 }
 
-export const router = new Router();
+const router = new Router();
+export const genrateRouter = router.genrateRouter.bind(router);

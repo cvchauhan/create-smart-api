@@ -11,15 +11,6 @@ jest.mock("../../helper/index", () => ({
     error: jest.fn(),
     success: jest.fn(),
   },
-  addField: jest.fn(),
-  editField: jest.fn(),
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-  deleteField: jest.fn(),
-  enhanceFields: jest.fn(),
-  getTypeColor: jest.fn(),
-  generateMongooseModel: jest.fn(),
-  generateSequelizeModel: jest.fn(),
-  showTablePreview: jest.fn(),
 }));
 describe("Plugin Installer", () => {
   beforeEach(() => {

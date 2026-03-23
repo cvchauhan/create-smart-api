@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import { getConfig } from "../helper/getConfig";
 
 export default async function (
-  name?: string,
+  name: string,
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
 ) {

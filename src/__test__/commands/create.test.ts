@@ -4,43 +4,12 @@ import fs from "fs-extra";
 import { execSync } from "child_process";
 import { createStructure } from "../../generators/project";
 import generateCrud from "../../generators/crud";
-import { log } from "../../helper/chalk";
+import { log } from "../../helper";
 
 jest.spyOn(process, "chdir").mockImplementation(() => {});
 
 jest.mock("path", () => ({
   join: jest.fn((...args) => args.join("/")),
-}));
-
-jest.mock("../../helper/generateDbConfig", () => ({
-  generateDbConfig: jest.fn(),
-}));
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
 }));
 
 jest.mock("inquirer", () => ({
@@ -66,7 +35,7 @@ jest.mock("../../generators/project", () => ({
 
 jest.mock("../../generators/crud", () => jest.fn());
 
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),

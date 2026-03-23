@@ -33,8 +33,7 @@ export default async function (
   await fs.mkdirp(dir);
   const isModule = answers.moduleType === "module";
   const controllerFile = isModule
-    ? `
-import { ${name}Schema } from "../../controllers/${name}.controller.js"; 
+    ? `import { ${name}Schema } from "../../controllers/${name}.controller.js"; 
 export default function(req, res) { 
     const validation = ${name}Schema.safeParse(req.body); 
     if (!validation.success) { 
@@ -42,8 +41,7 @@ export default function(req, res) {
     } 
     res.json({ message: "${name} created", data: validation.data }); 
 }`
-    : `
-const { ${name}Schema } = require("../../controllers/${name}.controller.js"); 
+    : `const { ${name}Schema } = require("../../controllers/${name}.controller.js"); 
 module.exports = function(req, res) { 
     const validation = ${name}Schema.safeParse(req.body); 
     if (!validation.success) { 

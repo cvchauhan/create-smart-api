@@ -37,8 +37,7 @@ export async function createStructure(
 
   if (framework === "express") {
     if (isESM) {
-      serverContent = `
-import express from "express";
+      serverContent = `import express from "express";
 import dotenv from "dotenv";
 import { errorHandler } from "./helper/errorHandler.js";
 import registerRoutes from "./routes/index.js";
@@ -64,8 +63,7 @@ app.listen(${port},()=>{
 });
 `;
     } else {
-      serverContent = `
-const express = require("express");
+      serverContent = `const express = require("express");
 const dotenv = require("dotenv");
 const { errorHandler } = require("./helper/errorHandler");
 dotenv.config();
@@ -94,8 +92,7 @@ app.listen(${port},()=>{
 
   if (framework === "fastify") {
     if (isESM) {
-      serverContent = `
-import Fastify from "fastify";
+      serverContent = `import Fastify from "fastify";
 import  dotenv from "dotenv";
 dotenv.config();
 import registerRoutes from "./routes/index.js";
@@ -120,8 +117,7 @@ app.setErrorHandler((error, request, reply) => {
 app.listen({port:${port}});
 `;
     } else {
-      serverContent = `
-const Fastify = require("fastify");
+      serverContent = `const Fastify = require("fastify");
 dotenv.config();
 const registerRoutes = require("./routes");
 

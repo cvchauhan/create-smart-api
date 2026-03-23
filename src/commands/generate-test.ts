@@ -38,8 +38,7 @@ export default async function (
   let testContent = "";
   let jestConfig = "";
   /* ---------------- TEST FILE ---------------- */ if (isModule) {
-    testContent = ` 
-import request from "supertest"; 
+    testContent = `import request from "supertest"; 
 import app from "../src/server.js"; 
 describe("${module} API", () => { 
     test("GET /${module} should return 200", async () => { 
@@ -50,8 +49,7 @@ describe("${module} API", () => {
     jestConfig = ` 
 export default { testEnvironment: "node" }; `;
   } else {
-    testContent = ` 
-const request = require("supertest"); 
+    testContent = `const request = require("supertest"); 
 const app = require("../src/server"); 
 describe("${module} API", () => { 
     test("GET /${module} should return 200", async () => { 

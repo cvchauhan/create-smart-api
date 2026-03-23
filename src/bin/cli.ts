@@ -13,6 +13,7 @@ import {
   test,
   swagger,
   model,
+  route,
 } from "../commands";
 
 import pkg from "../../package.json";
@@ -36,6 +37,10 @@ program
   .command("generate:service [module] [moduleType]")
   .description("Generate a new service")
   .action(service);
+program
+  .command("generate:route [module] [framework] [moduleType]")
+  .description("Generate a new route")
+  .action(route);
 program
   .command("generate:model [name] [moduleType] [db]")
   .description("Generate a new model")

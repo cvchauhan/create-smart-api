@@ -26,12 +26,10 @@ export default async function generateSwagger(
   await fs.ensureDir(swaggerDir);
   let swaggerImport = "";
   if (answers.moduleType === "module") {
-    swaggerImport = `
-import swaggerJsdoc from "swagger-jsdoc";
+    swaggerImport = `import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";`;
   } else {
-    swaggerImport = `
-const swaggerJsdoc = require("swagger-jsdoc");
+    swaggerImport = `const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");`;
   }
   const exportContent =

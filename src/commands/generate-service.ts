@@ -9,7 +9,7 @@ export default async function (
   moduleType: "module" | "commonjs",
 ) {
   if (!name) {
-    log.error("Module name is required");
+    log.error("Service name is required");
     return;
   }
   const config = getConfig(process.cwd());
@@ -26,12 +26,11 @@ export default async function (
       when: () => !moduleType && !config?.module,
     },
   ]);
-  const dir = path.join(process.cwd(), "src/services", name);
+  const dir = path.join(process.cwd(), "src/services");
   await fs.mkdirp(dir);
   const isModule = answers.moduleType === "module";
   const service = isModule
-    ? `
-export const getAll = async ()=>{
+    ? `export const getAll = async ()=>{
  return [];
 };
 
@@ -39,8 +38,7 @@ export const create = async (data)=>{
  return data;
 };
 `
-    : `
-module.exports.getAll = async ()=>{
+    : `module.exports.getAll = async ()=>{
  return [];
 };
 

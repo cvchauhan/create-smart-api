@@ -1,31 +1,34 @@
-import { addField } from "./addField";
-import { log } from "./chalk";
-import { deleteField } from "./deleteField";
-import { editField } from "./editField";
-import { enhanceFields } from "./enhanceFields";
-import { generateDbConfig } from "./generateDbConfig";
-import { generateMongooseModel } from "./generateMongooseModel";
-import { generateSequelizeModel } from "./generateSequelizeModel";
-import { mapType } from "./mapType";
-import { parseFields } from "./parseFields";
-import { showTablePreview } from "./showTablePreview";
-import { askRelations } from "./relations";
-import { generateMongooseRelations } from "./mongooseRelations";
-import { generateSequelizeRelations } from "./sequelizeRelations";
+import chalk from "chalk";
+import boxen from "boxen";
 
-export {
-  mapType,
-  addField,
-  editField,
-  deleteField,
-  parseFields,
-  enhanceFields,
-  showTablePreview,
-  log,
-  generateDbConfig,
-  generateSequelizeModel,
-  generateMongooseModel,
-  askRelations,
-  generateMongooseRelations,
-  generateSequelizeRelations,
+const warning = chalk.hex("#FFA500");
+const log = {
+  success: (msg: string) =>
+    console.log(
+      chalk.bgBlack(
+        boxen(chalk.green(`✅ ${msg}`), {
+          padding: 1,
+          borderColor: "green",
+          borderStyle: "round",
+        }),
+      ),
+    ),
+  error: (msg: string) =>
+    console.log(
+      boxen(chalk.red(`❌ ${msg}`), {
+        padding: 1,
+        borderColor: "red",
+        borderStyle: "round",
+      }),
+    ),
+  warn: (msg: string) =>
+    console.log(
+      boxen(warning(`⚠️ ${msg}`), {
+        padding: 1,
+        borderColor: "red",
+        borderStyle: "round",
+      }),
+    ),
 };
+
+export { log };

@@ -46,8 +46,7 @@ export default async function (
   const middleware =
     selectedFramework === "express"
       ? isModule
-        ? ` 
-import jwt from "jsonwebtoken"; 
+        ? `import jwt from "jsonwebtoken"; 
 export default function(req, res, next) { 
   try { 
     const authHeader = req.headers.authorization; 
@@ -59,8 +58,7 @@ export default function(req, res, next) {
     res.status(401).json({ message: "Invalid token" }); 
   } 
 }`
-        : ` 
-const jwt = require("jsonwebtoken"); 
+        : `const jwt = require("jsonwebtoken"); 
 module.exports = function(req, res, next) { 
   try { 
     const authHeader = req.headers.authorization; 
@@ -73,8 +71,7 @@ module.exports = function(req, res, next) {
   } 
 };`
       : isModule
-        ? ` 
-import jwt from "jsonwebtoken"; 
+        ? `import jwt from "jsonwebtoken"; 
 export default async function (req, reply) { 
   try { 
     const authHeader = req.headers.authorization; 
@@ -86,8 +83,7 @@ export default async function (req, reply) {
     return reply.status(401).send({ message: "Invalid token" }); 
   } 
 }`
-        : ` 
-const jwt = require("jsonwebtoken"); 
+        : `const jwt = require("jsonwebtoken"); 
 module.exports = async function (req, reply) { 
   try { 
     const authHeader = req.headers.authorization; 
@@ -99,6 +95,7 @@ module.exports = async function (req, reply) {
     return reply.status(401).send({ message: "Invalid token" }); 
   } 
 };`;
+
   await fs.writeFile(
     path.join(middlewareDir, `auth.middleware.js`),
     middleware,
@@ -120,8 +117,7 @@ export const login = async (user) => {
   const token = jwt.sign({ id: 1 }, "secret", { expiresIn: "1h" }); 
   return { token }; 
 }; `
-    : ` 
-const bcrypt = require("bcrypt"); 
+    : `const bcrypt = require("bcrypt"); 
 const jwt = require("jsonwebtoken"); 
 
 module.exports.register = async (user) => { 

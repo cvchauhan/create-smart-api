@@ -1,21 +1,28 @@
-import {
-  generateMongooseModel,
-  generateSequelizeModel,
-  parseFields,
-  enhanceFields,
-  showTablePreview,
-  askRelations,
-  addField,
-  editField,
-  deleteField,
-  log,
-} from "../helper";
-import { Field } from "../types/field";
+import { log } from "../helper";
+import { showTablePreview } from "../helper/showTablePreview";
+import Field from "../types/field";
 import inquirer from "inquirer";
 import fs from "fs-extra";
 import path from "path";
 import create from "./create";
-import { fieldInputs, validateOnlyString } from "../helper/fieldInput";
+import {
+  deleteField,
+  addField,
+  editField,
+  parseFields,
+  enhanceFields,
+} from "../utils/field.util";
+
+import {
+  fieldInputs,
+  validateOnlyString,
+} from "../utils/field.validation.util";
+import { askRelations, processRelations } from "../utils/relation.util";
+import {
+  generateSequelizeModel,
+  generateMongooseModel,
+} from "../utils/model.util";
+import { getConfig } from "../helper/getConfig";
 
 export default async function generateModel(
   name: string,
@@ -30,6 +37,7 @@ export default async function generateModel(
   }
   const base = process.cwd();
   const srcPath = path.join(base, "./src");
+  const config = getConfig(process.cwd());
   if (!fs.existsSync(srcPath) || !fs.lstatSync(srcPath).isDirectory()) {
     log.error("No project found.");
 
@@ -59,6 +67,9 @@ export default async function generateModel(
     }
     return;
   }
+  let selectedModule = config?.module || moduleType;
+  let selectedDb = config?.db || db;
+
   const answers = await inquirer.prompt([
     {
       type: "rawlist",
@@ -69,7 +80,7 @@ export default async function generateModel(
         { name: "ES Module", value: "module" },
         { name: "CommonJS", value: "commonjs" },
       ],
-      when: () => !moduleType,
+      when: () => !selectedModule,
     },
     {
       type: "select",
@@ -77,11 +88,11 @@ export default async function generateModel(
       message: "Select DB",
       default: "mongodb",
       choices: ["mongodb", "mssql", "mysql"],
-      when: () => !db,
+      when: () => !selectedDb,
     },
   ]);
 
-  const selectedDb = db || answers.db;
+  selectedDb = selectedDb || answers.db;
   let modelFields: any[] = [];
   const { inputMode } = await inquirer.prompt([
     {
@@ -177,87 +188,6 @@ export default async function generateModel(
     return;
   }
   return { modelContent, relations };
-}
-
-async function processRelations(
-  relations: any[],
-  basePath: string,
-  db: "mongodb" | "mssql" | "mysql",
-  isESM: boolean,
-  inputMode: "interactive" | "quick",
-) {
-  const modelsPath = path.join(basePath, "src/models");
-
-  const existingModels = fs.existsSync(modelsPath)
-    ? fs.readdirSync(modelsPath).map((f) => f.replace(/\.model\.(js|ts)$/, ""))
-    : [];
-
-  const finalRelations: any[] = [];
-  const createdModels = new Set<string>();
-
-  for (const rel of relations) {
-    const target = rel.target;
-
-    if (existingModels.includes(target) || createdModels.has(target)) {
-      finalRelations.push(rel);
-      continue;
-    }
-
-    log.error(`Model "${target}" not found.`);
-
-    const { action } = await inquirer.prompt([
-      {
-        type: "select",
-        name: "action",
-        message: "What do you want to do?",
-        choices: ["Create Model", "Skip Relation"],
-      },
-    ]);
-
-    if (action === "Create Model") {
-      let modelFields: Field[] = [];
-      if (inputMode === "quick") {
-        const { fieldInput } = await fieldInputs();
-        modelFields = await parseFields(fieldInput);
-      } else {
-        await addField(modelFields);
-      }
-      await createModelFile(target, basePath, db, isESM, modelFields);
-      createdModels.add(target);
-      finalRelations.push(rel);
-    } else {
-      log.warn(`Skipping relation with ${target}`);
-    }
-  }
-
-  return finalRelations;
-}
-
-async function createModelFile(
-  modelName: string,
-  basePath: string,
-  db: "mongodb" | "mssql" | "mysql",
-  isESM: boolean,
-  modelFields: Field[] = [],
-) {
-  const modelPath = path.join(basePath, "src/models", `${modelName}.model.js`);
-
-  // prevent overwrite
-  if (fs.existsSync(modelPath)) {
-    log.warn(`Model ${modelName} already exists`);
-    return;
-  }
-
-  let content = "";
-
-  if (db === "mongodb") {
-    content = generateMongooseModel(modelFields, modelName, isESM, []);
-  } else {
-    content = generateSequelizeModel(modelFields, modelName, isESM, []);
-  }
-
-  await fs.writeFile(modelPath, content);
-  log.success(`Model ${modelName} created`);
 }
 
 export function normalizeFields(fields: Field[]): Field[] {

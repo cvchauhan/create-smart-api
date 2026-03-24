@@ -41,7 +41,7 @@ class FieldValidation {
     return true;
   };
 
-  validateOnlyString = async (input: string) => {
+  validateName = async (input: string) => {
     const regex = /^[a-zA-Z0-9_-]+$/;
 
     if (!input) {
@@ -49,7 +49,7 @@ class FieldValidation {
     }
 
     if (!regex.test(input)) {
-      return "Special characters or numbers are not allowed";
+      return "Special characters only allowed string, number & (_,-)";
     }
 
     return true;
@@ -71,7 +71,8 @@ class FieldValidation {
 
 const fieldValidation = new FieldValidation();
 export const fieldInputs = fieldValidation.fieldInputs.bind(fieldValidation);
-export const validateOnlyString =
-  fieldValidation.validateOnlyString.bind(fieldValidation);
+export const validateFieldInput =
+  fieldValidation.validateFieldInput.bind(fieldValidation);
+export const validateName = fieldValidation.validateName.bind(fieldValidation);
 export const validateOnlyNumber =
   fieldValidation.validateOnlyNumber.bind(fieldValidation);

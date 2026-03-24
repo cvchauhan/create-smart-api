@@ -13,10 +13,7 @@ import {
   enhanceFields,
 } from "../utils/field.util";
 
-import {
-  fieldInputs,
-  validateOnlyString,
-} from "../utils/field.validation.util";
+import { fieldInputs, validateName } from "../utils/field.validation.util";
 import { askRelations, processRelations } from "../utils/relation.util";
 import {
   generateSequelizeModel,
@@ -58,7 +55,7 @@ export default async function generateModel(
           message: "new project name?",
           default: "my-app",
           required: true,
-          validate: validateOnlyString,
+          validate: validateName,
         },
       ]);
       await create(projectName);

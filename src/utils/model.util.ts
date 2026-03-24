@@ -164,7 +164,7 @@ module.exports = mongoose.model("${name}", ${schemaName}Schema);
       objectid: "mongoose.Schema.Types.ObjectId",
     };
 
-    return map[type.toLowerCase()] || type;
+    return map[type.toLowerCase()] || "String";
   };
   mapType = (type: string) => {
     const map: any = {

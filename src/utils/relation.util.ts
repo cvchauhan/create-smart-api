@@ -1,5 +1,5 @@
 import inquirer from "inquirer";
-import { fieldInputs, validateOnlyString } from "./field.validation.util";
+import { fieldInputs, validateName } from "./field.validation.util";
 import { log } from "../helper";
 import fs from "fs-extra";
 import path from "path";
@@ -35,7 +35,7 @@ class Relations {
           type: "input",
           name: "target",
           message: "Target model name",
-          validate: validateOnlyString,
+          validate: validateName,
         },
       ]);
 

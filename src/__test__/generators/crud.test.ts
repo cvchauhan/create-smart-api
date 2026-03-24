@@ -147,8 +147,10 @@ describe("crud generator", () => {
 
     const frameworkWhen = firstCallQuestions[0].when;
     const moduleTypeWhen = firstCallQuestions[1].when;
+    const dbWhen = firstCallQuestions[2].when;
 
     expect(frameworkWhen()).toBe(true);
     expect(moduleTypeWhen()).toBe(true);
+    expect(dbWhen()).toBe(true);
   });
 });

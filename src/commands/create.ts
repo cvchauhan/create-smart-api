@@ -8,7 +8,7 @@ import { log } from "../helper";
 import { generateDbConfig } from "../utils/db.util";
 import {
   validateOnlyNumber,
-  validateOnlyString,
+  validateName,
 } from "../utils/field.validation.util";
 
 export default async function (name: string) {
@@ -27,7 +27,7 @@ export default async function (name: string) {
       message: "Project name",
       default: "my-app",
       when: () => !name,
-      validate: validateOnlyString,
+      validate: validateName,
     },
     {
       type: "select",
@@ -65,7 +65,7 @@ export default async function (name: string) {
       message: "CRUD module name",
       default: "sample",
       when: (a) => a.crud,
-      validate: validateOnlyString,
+      validate: validateName,
     },
     {
       type: "input",

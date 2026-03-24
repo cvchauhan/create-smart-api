@@ -2,6 +2,7 @@ import Field from "../types/field";
 import inquirer from "inquirer";
 import { log } from "../helper/index";
 import { closest } from "fastest-levenshtein";
+import { validateFieldInput, validateName } from "./field.validation.util";
 
 class Fields {
   addField = async (fields: Field[], mode?: string) => {
@@ -14,11 +15,7 @@ class Fields {
           type: "input",
           name: "input",
           message: "Enter field (name:type)",
-          validate: (value) => {
-            if (!value) return "Field input is required";
-            if (!value.includes(":")) return "Use format name:type";
-            return true;
-          },
+          validate: validateFieldInput,
         });
 
         const parsed = await this.parseFields(input);
@@ -82,10 +79,11 @@ class Fields {
     switch (property) {
       case "type": {
         const { newType } = await inquirer.prompt({
-          type: "input",
+          type: "select",
           name: "newType",
           message: "Enter new type:",
           default: field.type,
+          choices: ["string", "number", "boolean", "date", "enum", "objectid"],
         });
 
         field.type = await this.resolveType(newType);
@@ -177,14 +175,14 @@ class Fields {
       name: "name",
       message: "Field name:",
       default: existing?.name,
-      validate: (val) => (!!val ? true : "Field name is required"),
+      validate: validateName,
     });
 
     const { type } = await inquirer.prompt({
       type: "select",
       name: "type",
       message: "Select field type:",
-      choices: ["string", "number", "boolean", "date", "enum"],
+      choices: ["string", "number", "boolean", "date", "enum", "objectid"],
       default: existing?.type || "string",
     });
 

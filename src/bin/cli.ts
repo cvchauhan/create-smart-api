@@ -28,9 +28,17 @@ program
   .command("create [name]")
   .description("Create a new API project")
   .action(create);
+program
+  .command("c [name]")
+  .description("Create a new API project")
+  .action(create);
 
 program
   .command("generate:crud [module] [framework] [moduleType]")
+  .description("Generate CRUD operations for a module")
+  .action(crud);
+program
+  .command("g:c [module] [framework] [moduleType]")
   .description("Generate CRUD operations for a module")
   .action(crud);
 program
@@ -38,7 +46,15 @@ program
   .description("Generate a new service")
   .action(service);
 program
+  .command("g:s [module] [moduleType]")
+  .description("Generate a new service")
+  .action(service);
+program
   .command("generate:route [module] [framework] [moduleType]")
+  .description("Generate a new route")
+  .action(route);
+program
+  .command("g:r [module] [framework] [moduleType]")
   .description("Generate a new route")
   .action(route);
 program
@@ -46,11 +62,23 @@ program
   .description("Generate a new model")
   .action(model as any);
 program
+  .command("g:m [name] [moduleType] [db]")
+  .description("Generate a new model")
+  .action(model as any);
+program
   .command("generate:auth [framework] [moduleType]")
   .description("Generate authentication setup")
   .action(auth);
 program
+  .command("g:a [framework] [moduleType]")
+  .description("Generate authentication setup")
+  .action(auth);
+program
   .command("generate:validation [module] [moduleType]")
+  .description("Generate validation setup")
+  .action(validation);
+program
+  .command("g:v [module] [moduleType]")
   .description("Generate validation setup")
   .action(validation);
 
@@ -58,14 +86,23 @@ program
   .command("generate:microservice <name>")
   .description("Generate a new microservice")
   .action(micro);
+program
+  .command("g:ms <name>")
+  .description("Generate a new microservice")
+  .action(micro);
 
 program
   .command("add:plugin [name]")
   .description("Add a new plugin")
   .action(plugin);
+program.command("add:p [name]").description("Add a new plugin").action(plugin);
 
 program
   .command("generate:test [module] [moduleType]")
+  .description("Generate tests for a module")
+  .action(test);
+program
+  .command("g:t [module] [moduleType]")
   .description("Generate tests for a module")
   .action(test);
 program

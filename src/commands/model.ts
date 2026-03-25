@@ -136,7 +136,7 @@ export default async function generateModel(
 
     if (action === "cancel") {
       log.warn("Operation cancelled");
-      return { relations: [] };
+      return [];
     }
 
     if (action === "edit") {

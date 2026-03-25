@@ -6,3 +6,6 @@ jest.config.js
 tsconfig.json
 coverage
 test/
+.vscode
+.gitignore
+.github

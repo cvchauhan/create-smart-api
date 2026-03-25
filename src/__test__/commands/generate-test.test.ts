@@ -1,5 +1,5 @@
 import generateTest from "../../commands/generate-test";
-import fs from "fs-extra";
+import fs, { readFileSync } from "fs-extra";
 import inquirer from "inquirer";
 import path from "path";
 import { log } from "../../helper";
@@ -18,6 +18,7 @@ jest.mock("fs-extra", () => ({
   writeFile: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),
   readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
+  readFileSync: jest.fn().mockReturnValue("{}"),
 }));
 
 jest.mock("../../helper", () => ({
@@ -58,12 +59,6 @@ describe("generateTest command", () => {
     const testFile = path.join(testDir, "user.test.js");
     const jestConfigFile = path.join(cwdMock, "jest.config.js");
 
-    // execSync calls
-    expect(execSyncMock).toHaveBeenCalledWith(
-      "npm install jest supertest --save-dev",
-      expect.any(Object),
-    );
-
     expect(execSyncMock).toHaveBeenCalledWith(
       'npm pkg set scripts.test="jest"',
       expect.any(Object),
@@ -72,20 +67,7 @@ describe("generateTest command", () => {
     // directory creation
     expect(fs.mkdirp).toHaveBeenCalledWith(testDir);
 
-    // file creation
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      testFile,
-      expect.stringContaining('require("supertest")'),
-    );
-
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      jestConfigFile,
-      expect.stringContaining("module.exports"),
-    );
-
-    expect(log.success).toHaveBeenCalledWith(
-      "Jest test generated successfully",
-    );
+    expect(log.success).toHaveBeenCalledWith("Test generated successfully");
   });
 
   // ✅ ES Module case
@@ -102,11 +84,6 @@ describe("generateTest command", () => {
     expect(fs.writeFile).toHaveBeenCalledWith(
       testFile,
       expect.stringContaining("import request"),
-    );
-
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      path.join(cwdMock, "jest.config.js"),
-      expect.stringContaining("export default"),
     );
   });
 

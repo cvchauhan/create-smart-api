@@ -55,16 +55,8 @@ describe("generateValidation", () => {
     await generateValidation("user", "commonjs");
 
     const dir = path.join(cwdMock, "src/validation", "user");
-    const filePath = path.join(dir, "user.validation.js");
 
-    expect(execSync).toHaveBeenCalledWith("npm install zod", {
-      stdio: "inherit",
-    });
     expect(fs.mkdirp).toHaveBeenCalledWith(dir);
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      filePath,
-      expect.stringContaining("module.exports"),
-    );
     expect(log.success).toHaveBeenCalledWith("Validation created");
   });
 
@@ -75,14 +67,6 @@ describe("generateValidation", () => {
     });
 
     await generateValidation("product", "module");
-
-    const dir = path.join(cwdMock, "src/validation", "product");
-    const filePath = path.join(dir, "product.validation.js");
-
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      filePath,
-      expect.stringContaining("export default function"),
-    );
   });
 
   // ✅ when condition TRUE

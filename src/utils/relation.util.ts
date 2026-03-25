@@ -37,11 +37,33 @@ class Relations {
           message: "Target model name",
           validate: validateName,
         },
+        {
+          type: "input",
+          name: "field",
+          message: "Field name for relation (e.g. roleId):",
+          validate: validateName,
+          filter: (val: string) => val.trim(),
+        },
+        {
+          type: "confirm",
+          name: "required",
+          message: "Is this relation required?",
+          default: false,
+        },
       ]);
-
+      if (
+        relations.some(
+          (r: any) => r.field.toLowerCase() === ans.field.toLowerCase(),
+        )
+      ) {
+        log.error(`Field "${ans.field}" already used in another relation`);
+        continue;
+      }
       relations.push({
         type: ans.type,
         target: ans.target.charAt(0).toUpperCase() + ans.target.slice(1),
+        field: ans.field,
+        required: ans.required,
       });
 
       const { more } = await inquirer.prompt({

@@ -10,6 +10,8 @@ import {
   validateOnlyNumber,
   validateName,
 } from "../utils/field.validation.util";
+import generateEnvFile from "../templates/env.template";
+import generatePackageJson from "../templates/package.json.template";
 
 export default async function (name: string) {
   const answers: {
@@ -97,59 +99,10 @@ export default async function (name: string) {
   /* -------- ENV FILE -------- */
 
   const envPath = path.join(base, ".env");
-  const envContent =
-    dialect === "mongodb"
-      ? `
-DB_URL=mongodb://localhost:27017/mydb
-PORT=${answers.port}
-      `
-      : `
-DB_NAME=test_db
-DB_USER=root
-DB_PASS=password
-DB_HOST=localhost
-PORT=${answers.port}
-`;
-  await fs.writeFile(envPath, envContent);
+  await generateEnvFile(answers.port, envPath, dialect);
 
   process.chdir(base);
-
-  execSync("npm init -y", { stdio: "inherit" });
-  execSync('npm pkg set scripts.start="node src/server.js"', {
-    stdio: "inherit",
-  });
-
-  if (answers.moduleType === "module") {
-    execSync("npm pkg set type=module", { stdio: "inherit" });
-  }
-  if (answers.framework === "express") {
-    execSync("npm install express", { stdio: "inherit" });
-  }
-  execSync("npm install -D dotenv", { stdio: "inherit" });
-
-  if (answers.framework === "fastify") {
-    execSync("npm install fastify", { stdio: "inherit" });
-  }
-
-  if (answers.db === "mongodb") {
-    execSync("npm install mongoose", { stdio: "inherit" });
-  }
-  if (answers.db === "mssql") {
-    execSync("npm install sequelize tedious", { stdio: "inherit" });
-  }
-  if (answers.db === "mysql") {
-    execSync("npm install mysql2 sequelize", { stdio: "inherit" });
-  }
-  const pkgPath = path.join(base, "package.json");
-  const pkg = await fs.readJSON(pkgPath);
-
-  pkg.createSmartApi = {
-    db: answers.db,
-    module: answers.moduleType,
-    framework: answers.framework,
-  };
-
-  await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
+  await generatePackageJson(answers, base);
   if (answers.crud) {
     await generateCrud(
       base,

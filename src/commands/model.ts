@@ -27,6 +27,7 @@ export default async function generateModel(
   db: "mongodb" | "mssql" | "mysql",
   isESM: boolean,
   isCrud: boolean = false,
+  modelPath?: string,
 ) {
   if (!name) {
     log.error("Model name is required");
@@ -135,7 +136,7 @@ export default async function generateModel(
 
     if (action === "cancel") {
       log.warn("Operation cancelled");
-      return { modelContent: "", relations: [] };
+      return { relations: [] };
     }
 
     if (action === "edit") {
@@ -178,13 +179,15 @@ export default async function generateModel(
       relations,
     );
   }
+  let selectedModelPath =
+    modelPath || path.join(base, "src/models", `${modelName}.model.js`);
   if (!isCrud) {
-    const modelPath = path.join(base, "src/models", `${modelName}.model.js`);
-    await fs.writeFile(modelPath, modelContent);
+    await fs.writeFile(selectedModelPath, modelContent);
     log.success(`Model ${modelName} created successfully`);
     return;
   }
-  return { modelContent, relations };
+  await fs.writeFile(selectedModelPath, modelContent);
+  return relations;
 }
 
 export function normalizeFields(fields: Field[]): Field[] {

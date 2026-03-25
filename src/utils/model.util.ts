@@ -65,16 +65,18 @@ module.exports = ${name};
     let code = "";
 
     relations.forEach((r) => {
+      const fk = `${r.target.toLowerCase()}Id`;
+
       if (r.type === "1:N") {
         code += `
-    ${name}.hasMany(models.${r.target});
-    models.${r.target}.belongsTo(${name});`;
+    ${name}.hasMany(models.${r.target}, { foreignKey: "${fk}" });
+    models.${r.target}.belongsTo(${name}, { foreignKey: "${fk}" });`;
       }
 
       if (r.type === "1:1") {
         code += `
-    ${name}.hasOne(models.${r.target});
-    models.${r.target}.belongsTo(${name});`;
+    ${name}.hasOne(models.${r.target}, { foreignKey: "${fk}" });
+    models.${r.target}.belongsTo(${name}, { foreignKey: "${fk}" });`;
       }
 
       if (r.type === "N:N") {
@@ -95,7 +97,19 @@ module.exports = ${name};
     relations: any[] = [],
   ) => {
     const schemaName = name.charAt(0).toLowerCase() + name.slice(1);
-    const modelFields = fields
+
+    // 🔥 Remove duplicate fields (important fix)
+    const relationFieldNames = relations.map((r) =>
+      r.type === "1:N" || r.type === "N:N"
+        ? `${r.target.toLowerCase()}s`
+        : r.target.toLowerCase(),
+    );
+
+    const filteredFields = fields.filter(
+      (f) => !relationFieldNames.includes(f.name.toLowerCase()),
+    );
+
+    const modelFields = filteredFields
       .map((f) => {
         let str = `
   ${f.name}: {
@@ -114,7 +128,6 @@ module.exports = ${name};
       })
       .join(",");
 
-    // 🔥 Generate relation fields
     const relationFields = this.generateMongooseRelations(relations);
 
     return isESM
@@ -135,20 +148,25 @@ ${modelFields}${relationFields ? "," + relationFields : ""}
 module.exports = mongoose.model("${name}", ${schemaName}Schema);
 `;
   };
-
   generateMongooseRelations = (relations: any[]) => {
     return relations
       .map((r) => {
+        const fieldName =
+          r.field ||
+          (r.type === "1:N" || r.type === "N:N"
+            ? `${r.target.toLowerCase()}s`
+            : r.target.toLowerCase());
+
         if (r.type === "1:N" || r.type === "N:N") {
           return `
-  ${r.target.toLowerCase()}s: [{
+  ${fieldName}: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: "${r.target}"
   }]`;
         }
 
         return `
-  ${r.target.toLowerCase()}: {
+  ${fieldName}: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "${r.target}"
   }`;

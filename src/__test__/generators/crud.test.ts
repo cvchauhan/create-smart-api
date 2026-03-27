@@ -1,10 +1,10 @@
 import crud from "../../generators/crud";
 import fs from "fs-extra";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import { log } from "../../helper";
 import generateModel from "../../commands/model";
 
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 jest.mock("cli-table3", () => {
@@ -50,10 +50,11 @@ jest.mock("../../helper", () => ({
     error: jest.fn(),
     success: jest.fn(),
     warn: jest.fn(),
+    info: jest.fn(),
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 
 describe("crud generator", () => {
   beforeEach(() => {

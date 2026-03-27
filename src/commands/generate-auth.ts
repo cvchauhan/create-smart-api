@@ -1,17 +1,17 @@
-import inquirer from "inquirer";
-import { execSync } from "child_process";
+import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import generatAuthMiddleware from "../templates/middleware.template";
 import generateAuthService from "../templates/auth.service.template";
 import generateAuthController from "../templates/auth.controller.template";
+import { execSync } from "child_process";
 
 export default async function (
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
 ) {
   const config = getConfig(process.cwd());
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "select",
       name: "framework",
@@ -37,6 +37,9 @@ export default async function (
   const base = process.cwd();
   execSync("npm install jsonwebtoken bcrypt", { stdio: "inherit" });
   const isModule = selectedModuleType === "module";
+
+  // 🔥 Generate files
+  log.info("Generating auth module...");
 
   await generatAuthMiddleware(selectedFramework, isModule, base);
 

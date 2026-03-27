@@ -1,16 +1,18 @@
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import Field from "../types/field";
 
 class FieldValidation {
   fieldInputs = async (fields?: Field[]): Promise<{ fieldInput: string }> => {
-    return await inquirer.prompt({
-      type: "input",
-      name: "fieldInput",
-      when: () => !fields?.length,
-      validate: this.validateFieldInput,
-      message:
-        "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
-    });
+    return await prompt<{ fieldInput: string }>([
+      {
+        type: "input",
+        name: "fieldInput",
+        when: () => !fields?.length,
+        validate: this.validateFieldInput,
+        message:
+          "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
+      },
+    ]);
   };
 
   validateFieldInput = async (input: string) => {

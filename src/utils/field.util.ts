@@ -1,5 +1,5 @@
 import Field from "../types/field";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper/index";
 import { closest } from "fastest-levenshtein";
 import { validateFieldInput, validateName } from "./field.validation.util";
@@ -11,12 +11,14 @@ class Fields {
 
       // ✅ QUICK MODE
       if (mode === "quick") {
-        const { input } = await inquirer.prompt({
-          type: "input",
-          name: "input",
-          message: "Enter field (name:type)",
-          validate: validateFieldInput,
-        });
+        const { input } = await prompt([
+          {
+            type: "input",
+            name: "input",
+            message: "Enter field (name:type)",
+            validate: validateFieldInput,
+          },
+        ]);
 
         const parsed = await this.parseFields(input);
         newField = parsed[0];
@@ -40,103 +42,126 @@ class Fields {
       }
 
       // 🔁 ASK AGAIN
-      const { addMore } = await inquirer.prompt({
-        type: "confirm",
-        name: "addMore",
-        message: "Add another field?",
-        default: false,
-      });
+      const { addMore } = await prompt([
+        {
+          type: "confirm",
+          name: "addMore",
+          message: "Add another field?",
+          default: false,
+        },
+      ]);
 
       if (!addMore) break;
     }
   };
 
   editField = async (fields: Field[]) => {
-    const { fieldName } = await inquirer.prompt({
-      type: "select",
-      name: "fieldName",
-      message: "Select field to edit:",
-      choices: fields.map((f) => f.name),
-    });
+    const { fieldName } = await prompt([
+      {
+        type: "select",
+        name: "fieldName",
+        message: "Select field to edit:",
+        choices: fields.map((f) => f.name),
+      },
+    ]);
 
     const field = fields.find((f) => f.name === fieldName);
     if (!field) return;
 
-    const { property } = await inquirer.prompt({
-      type: "rawlist",
-      name: "property",
-      message: `What do you want to edit for "${field.name}"?(type, required, unique, default, enum)`,
-      default: "type",
-      choices: [
-        { name: "Type", value: "type" },
-        { name: "Required", value: "required" },
-        { name: "Unique", value: "unique" },
-        { name: "Default", value: "default" },
-        { name: "Enum Values", value: "enum" },
-      ],
-    });
+    const { property } = await prompt([
+      {
+        type: "rawlist",
+        name: "property",
+        message: `What do you want to edit for "${field.name}"?(type, required, unique, default, enum)`,
+        default: "type",
+        choices: [
+          { name: "Type", value: "type" },
+          { name: "Required", value: "required" },
+          { name: "Unique", value: "unique" },
+          { name: "Default", value: "default" },
+          { name: "Enum Values", value: "enum" },
+        ],
+      },
+    ]);
 
     switch (property) {
       case "type": {
-        const { newType } = await inquirer.prompt({
-          type: "select",
-          name: "newType",
-          message: "Enter new type:",
-          default: field.type,
-          choices: ["string", "number", "boolean", "date", "enum", "objectid"],
-        });
+        const { newType } = await prompt([
+          {
+            type: "select",
+            name: "newType",
+            message: "Enter new type:",
+            default: field.type,
+            choices: [
+              "string",
+              "number",
+              "boolean",
+              "date",
+              "enum",
+              "objectid",
+            ],
+          },
+        ]);
 
         field.type = await this.resolveType(newType);
         break;
       }
 
       case "required": {
-        const { val } = await inquirer.prompt({
-          type: "confirm",
-          name: "val",
-          message: "Required?",
-          default: field.required,
-        });
+        const { val } = await prompt([
+          {
+            type: "confirm",
+            name: "val",
+            message: "Required?",
+            default: field.required,
+          },
+        ]);
 
         field.required = val;
         break;
       }
 
       case "unique": {
-        const { val } = await inquirer.prompt({
-          type: "confirm",
-          name: "val",
-          message: "Unique?",
-          default: field.unique,
-        });
+        const { val } = await prompt([
+          {
+            type: "confirm",
+            name: "val",
+            message: "Unique?",
+            default: field.unique,
+          },
+        ]);
 
         field.unique = val;
         break;
       }
 
       case "default": {
-        const { val } = await inquirer.prompt({
-          type: "input",
-          name: "val",
-          message: "Default value:",
-          default: field.default || "",
-        });
+        const { val } = await prompt([
+          {
+            type: "input",
+            name: "val",
+            message: "Default value:",
+            default: field.default || "",
+          },
+        ]);
 
         field.default = val;
         break;
       }
 
       case "enum": {
-        const { val } = await inquirer.prompt({
-          type: "input",
-          name: "val",
-          message: "Enter enum values (comma separated):",
-          default: field.enumValues?.join(",") || "",
-          validate: (input: string) => {
-            if (!input.trim()) return "Enum values are required";
-            return true;
+        const { val } = await prompt([
+          {
+            type: "input",
+            name: "val",
+            message: "Enter enum values (comma separated):",
+            default: field.enumValues?.join(",") || "",
+            validate: (input: string) => {
+              if (!input.trim()) return "Enum values are required";
+              return true;
+            },
           },
-        });
+        ]);
 
         field.enumValues = val.split(",").map((v: string) => v.trim());
         break;
@@ -152,12 +177,14 @@ class Fields {
       return;
     }
 
-    const { fieldName } = await inquirer.prompt({
-      type: "select",
-      name: "fieldName",
-      message: "Select field to delete:",
-      choices: fields.map((f) => f.name),
-    });
+    const { fieldName } = await prompt([
+      {
+        type: "select",
+        name: "fieldName",
+        message: "Select field to delete:",
+        choices: fields.map((f) => f.name),
+      },
+    ]);
 
     const index = fields.findIndex((f) => f.name === fieldName);
 
@@ -170,61 +197,75 @@ class Fields {
   askFieldDetails = async (existing?: Field): Promise<Field> => {
     let obj: any = {};
 
-    const { name } = await inquirer.prompt({
-      type: "input",
-      name: "name",
-      message: "Field name:",
-      default: existing?.name,
-      validate: validateName,
-    });
+    const { name } = await prompt([
+      {
+        type: "input",
+        name: "name",
+        message: "Field name:",
+        default: existing?.name,
+        validate: validateName,
+      },
+    ]);
 
-    const { type } = await inquirer.prompt({
-      type: "select",
-      name: "type",
-      message: "Select field type:",
-      choices: ["string", "number", "boolean", "date", "enum", "objectid"],
-      default: existing?.type || "string",
-    });
+    const { type } = await prompt([
+      {
+        type: "select",
+        name: "type",
+        message: "Select field type:",
+        choices: ["string", "number", "boolean", "date", "enum", "objectid"],
+        default: existing?.type || "string",
+      },
+    ]);
 
-    const { required } = await inquirer.prompt({
-      type: "confirm",
-      name: "required",
-      message: "Is required?",
-      default: existing?.required ?? false,
-    });
+    const { required } = await prompt([
+      {
+        type: "confirm",
+        name: "required",
+        message: "Is required?",
+        default: existing?.required ?? false,
+      },
+    ]);
 
-    const { unique } = await inquirer.prompt({
-      type: "confirm",
-      name: "unique",
-      message: "Is unique?",
-      default: existing?.unique ?? false,
-    });
+    const { unique } = await prompt([
+      {
+        type: "confirm",
+        name: "unique",
+        message: "Is unique?",
+        default: existing?.unique ?? false,
+      },
+    ]);
 
-    const { hasDefault } = await inquirer.prompt({
-      type: "confirm",
-      name: "hasDefault",
-      message: `${name} default value?`,
-      default: false,
-    });
+    const { hasDefault } = await prompt([
+      {
+        type: "confirm",
+        name: "hasDefault",
+        message: `${name} default value?`,
+        default: false,
+      },
+    ]);
 
     if (hasDefault) {
-      const { value } = await inquirer.prompt({
-        type: "input",
-        name: "value",
-        message: `Default value for ${name}`,
-      });
+      const { value } = await prompt([
+        {
+          type: "input",
+          name: "value",
+          message: `Default value for ${name}`,
+        },
+      ]);
       obj.default = value;
     }
 
     let enumValues: string[] | undefined;
 
     if (type === "enum") {
-      const { values } = await inquirer.prompt({
-        type: "input",
-        name: "values",
-        message: "Enter enum values (comma separated):",
-        default: existing?.enumValues?.join(",") || "",
-      });
+      const { values } = await prompt([
+        {
+          type: "input",
+          name: "values",
+          message: "Enter enum values (comma separated):",
+          default: existing?.enumValues?.join(",") || "",
+        },
+      ]);
 
       enumValues = values.split(",").map((v: string) => v.trim());
     }
@@ -242,7 +283,7 @@ class Fields {
 
   enhanceFields = async (fields: Field[]) => {
     for (const field of fields) {
-      const { required, unique } = await inquirer.prompt([
+      const { required, unique } = await prompt([
         {
           type: "confirm",
           name: "required",
@@ -261,29 +302,35 @@ class Fields {
       field.unique = unique;
 
       if (field.type === "enum") {
-        const { values } = await inquirer.prompt({
-          type: "input",
-          name: "values",
-          message: `Enter enum values for ${field.name}`,
-        });
+        const { values } = await prompt([
+          {
+            type: "input",
+            name: "values",
+            message: `Enter enum values for ${field.name}`,
+          },
+        ]);
 
         field.enumValues = values.split(",").map((v: string) => v.trim());
         field.type = "string";
       }
 
-      const { hasDefault } = await inquirer.prompt({
-        type: "confirm",
-        name: "hasDefault",
-        message: `${field.name} default value?`,
-        default: false,
-      });
+      const { hasDefault } = await prompt([
+        {
+          type: "confirm",
+          name: "hasDefault",
+          message: `${field.name} default value?`,
+          default: false,
+        },
+      ]);
 
       if (hasDefault) {
-        const { value } = await inquirer.prompt({
-          type: "input",
-          name: "value",
-          message: `Default value for ${field.name}`,
-        });
+        const { value } = await prompt([
+          {
+            type: "input",
+            name: "value",
+            message: `Default value for ${field.name}`,
+          },
+        ]);
 
         field.default = value;
       }
@@ -323,22 +370,26 @@ class Fields {
 
     const suggestion = closest(cleanType, allowedTypes);
 
-    const { confirm } = await inquirer.prompt({
-      type: "confirm",
-      name: "confirm",
-      message: `Invalid type "${type}". Did you mean "${suggestion}"?`,
-      default: true,
-    });
+    const { confirm } = await prompt([
+      {
+        type: "confirm",
+        name: "confirm",
+        message: `Invalid type "${type}". Did you mean "${suggestion}"?`,
+        default: true,
+      },
+    ]);
 
     if (confirm) return suggestion;
 
-    const { manual } = await inquirer.prompt({
-      type: "rawlist",
-      name: "manual",
-      message: "Select correct type:",
-      choices: allowedTypes,
-      default: allowedTypes[0],
-    });
+    const { manual } = await prompt([
+      {
+        type: "rawlist",
+        name: "manual",
+        message: "Select correct type:",
+        choices: allowedTypes,
+        default: allowedTypes[0],
+      },
+    ]);
 
     return manual;
   };

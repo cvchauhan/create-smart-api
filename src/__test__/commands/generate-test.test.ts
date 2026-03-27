@@ -1,11 +1,12 @@
 import generateTest from "../../commands/generate-test";
-import fs, { readFileSync } from "fs-extra";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import path from "path";
+import fs from "fs-extra";
 import { log } from "../../helper";
 import { execSync } from "child_process";
 
-jest.mock("inquirer", () => ({
+// ✅ Mock helper prompt (NEW)
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
@@ -28,7 +29,7 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 const execSyncMock = execSync as any;
 
 describe("generateTest command", () => {

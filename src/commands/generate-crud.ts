@@ -25,6 +25,6 @@ export default async function (
     log.error(`Please create project first using: create-smart-api create`);
     return;
   }
-
+  log.info("Generating CRUD module...");
   await crud(base, name, selectFramework, selectModuleType, selectdb);
 }

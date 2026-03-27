@@ -1,7 +1,7 @@
 import { log } from "../helper";
 import { showTablePreview } from "../helper/showTablePreview";
 import Field from "../types/field";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import fs from "fs-extra";
 import path from "path";
 import create from "./create";
@@ -39,7 +39,7 @@ export default async function generateModel(
   if (!fs.existsSync(srcPath) || !fs.lstatSync(srcPath).isDirectory()) {
     log.error("No project found.");
 
-    const { createNow } = await inquirer.prompt([
+    const { createNow } = await prompt([
       {
         type: "confirm",
         name: "createNow",
@@ -49,13 +49,12 @@ export default async function generateModel(
     ]);
 
     if (createNow) {
-      const { projectName } = await inquirer.prompt([
+      const { projectName } = await prompt([
         {
           type: "input",
           name: "projectName",
           message: "new project name?",
           default: "my-app",
-          required: true,
           validate: validateName,
         },
       ]);
@@ -68,7 +67,7 @@ export default async function generateModel(
   let selectedModule = config?.module || moduleType;
   let selectedDb = config?.db || db;
 
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "rawlist",
       name: "moduleType",
@@ -92,7 +91,7 @@ export default async function generateModel(
 
   selectedDb = selectedDb || answers.db;
   let modelFields: any[] = [];
-  const { inputMode } = await inquirer.prompt([
+  const { inputMode } = await prompt([
     {
       type: "rawlist",
       name: "inputMode",
@@ -118,19 +117,21 @@ export default async function generateModel(
   while (true) {
     showTablePreview(modelFields);
 
-    const { action } = await inquirer.prompt({
-      type: "rawlist",
-      name: "action",
-      default: "continue",
-      message: "Select action:",
-      choices: [
-        { name: "✅ Continue", value: "continue" },
-        { name: "✏️ Edit field", value: "edit" },
-        { name: "➕ Add new field", value: "add" },
-        { name: "❌ Delete field", value: "delete" },
-        { name: "🚪 Cancel", value: "cancel" },
-      ],
-    });
+    const { action } = await prompt([
+      {
+        type: "rawlist",
+        name: "action",
+        default: "continue",
+        message: "Select action:",
+        choices: [
+          { name: "✅ Continue", value: "continue" },
+          { name: "✏️ Edit field", value: "edit" },
+          { name: "➕ Add new field", value: "add" },
+          { name: "❌ Delete field", value: "delete" },
+          { name: "🚪 Cancel", value: "cancel" },
+        ],
+      },
+    ]);
 
     if (action === "continue") break;
 

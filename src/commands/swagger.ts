@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 
@@ -9,7 +9,7 @@ export default async function generateSwagger(
 ) {
   const base = process.cwd();
   const config = getConfig(base);
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "rawlist",
       name: "moduleType",

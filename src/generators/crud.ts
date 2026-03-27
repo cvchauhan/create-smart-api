@@ -1,6 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import generateModel from "../commands/model";
 import { genrateRouter } from "../utils/router.util";
@@ -20,7 +20,7 @@ export default async function generateCrud(
     return;
   }
 
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "select",
       name: "framework",

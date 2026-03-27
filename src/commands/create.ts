@@ -1,7 +1,6 @@
 import fs from "fs-extra";
 import path from "path";
-import inquirer from "inquirer";
-import { execSync } from "child_process";
+import { prompt } from "../helper/promptAdapter";
 import { createStructure } from "../generators/project";
 import generateCrud from "../generators/crud";
 import { log } from "../helper";
@@ -22,7 +21,7 @@ export default async function (name: string) {
     crud: boolean;
     moduleName: string;
     port: number;
-  } = await inquirer.prompt([
+  } = await prompt([
     {
       type: "input",
       name: "name",

@@ -2,7 +2,7 @@ import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 
 export default async function (
   name: string,
@@ -15,7 +15,7 @@ export default async function (
 
   const config = getConfig(process.cwd());
 
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "rawlist",
       name: "moduleType",

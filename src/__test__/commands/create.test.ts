@@ -1,5 +1,5 @@
 import create from "../../commands/create";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import fs from "fs-extra";
 import { execSync } from "child_process";
 import { createStructure } from "../../generators/project";
@@ -12,7 +12,7 @@ jest.mock("path", () => ({
   join: jest.fn((...args) => args.join("/")),
 }));
 
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
@@ -42,7 +42,7 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 
 describe("create command", () => {
   beforeEach(() => {

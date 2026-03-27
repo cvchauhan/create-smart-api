@@ -1,11 +1,11 @@
 import generateValidation from "../../commands/generate-validation";
 import fs from "fs-extra";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { execSync } from "child_process";
 import { log } from "../../helper";
 
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
@@ -27,7 +27,7 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 
 describe("generateValidation", () => {
   const cwdMock = "/mock-root";

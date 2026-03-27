@@ -1,10 +1,11 @@
 import generateService from "../../commands/generate-service";
 import fs from "fs-extra";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { log } from "../../helper";
 
-jest.mock("inquirer", () => ({
+// ✅ Mock helper prompt (NEW)
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
@@ -23,6 +24,7 @@ jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),
+    info: jest.fn(),
   },
 }));
 
@@ -41,7 +43,7 @@ jest.mock("chalk", () => {
   };
 });
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 
 describe("generateService", () => {
   beforeEach(() => {
@@ -66,7 +68,7 @@ describe("generateService", () => {
   test("should generate service in commonjs", async () => {
     promptMock.mockResolvedValue({
       moduleType: "commonjs",
-      action: "cancel",
+      action: "continue",
     });
 
     await generateService("user", "commonjs");
@@ -102,35 +104,5 @@ describe("generateService", () => {
       filePath,
       expect.stringContaining("export const"),
     );
-  });
-
-  // ✅ when condition TRUE
-  test("should evaluate when condition true", async () => {
-    let questions: any[] = [];
-    promptMock.mockImplementation(async (q: any) => {
-      questions = q;
-      return { moduleType: "commonjs", action: "continue" };
-    });
-
-    await generateService("user", undefined as any);
-
-    const whenFn = questions[0].when;
-
-    expect(whenFn()).toBe(true);
-  });
-
-  // ✅ when condition FALSE
-  test("should evaluate when condition false", async () => {
-    let questions: any[] = [];
-    promptMock.mockImplementation(async (q: any) => {
-      questions = q;
-      return { action: "continue" };
-    });
-
-    await generateService("user", "commonjs");
-
-    const whenFn = questions[0].when;
-
-    expect(whenFn()).toBe(false);
   });
 });

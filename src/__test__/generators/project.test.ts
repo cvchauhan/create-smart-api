@@ -8,7 +8,7 @@ jest.mock("fs-extra", () => ({
   writeFile: jest.fn(),
 }));
 
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 jest.mock("../../helper", () => ({

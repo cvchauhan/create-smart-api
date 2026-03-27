@@ -1,4 +1,4 @@
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import { fieldInputs, validateName } from "./field.validation.util";
 import { log } from "../helper";
 import fs from "fs-extra";
@@ -12,19 +12,21 @@ class Relations {
   askRelations = async () => {
     const relations: Relation[] = [];
 
-    const { hasRelations } = await inquirer.prompt({
-      type: "confirm",
-      name: "hasRelations",
-      message: "Do you want to add relations?",
-      default: false,
-    });
+    const { hasRelations } = await prompt([
+      {
+        type: "confirm",
+        name: "hasRelations",
+        message: "Do you want to add relations?",
+        default: false,
+      },
+    ]);
 
     if (!hasRelations) return relations;
 
     let addMore = true;
 
     while (addMore) {
-      const ans = await inquirer.prompt([
+      const ans = await prompt([
         {
           type: "select",
           name: "type",
@@ -66,12 +68,14 @@ class Relations {
         required: ans.required,
       });
 
-      const { more } = await inquirer.prompt({
-        type: "confirm",
-        name: "more",
-        message: "Add another relation?",
-        default: false,
-      });
+      const { more } = await prompt([
+        {
+          type: "confirm",
+          name: "more",
+          message: "Add another relation?",
+          default: false,
+        },
+      ]);
 
       addMore = more;
     }
@@ -111,7 +115,7 @@ class Relations {
 
       log.error(`Model "${target}" not found.`);
 
-      const { action } = await inquirer.prompt([
+      const { action } = await prompt([
         {
           type: "select",
           name: "action",

@@ -7,6 +7,7 @@ jest.mock("../../helper", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
+    info: jest.fn(),
   },
 }));
 

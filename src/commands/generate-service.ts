@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import { getConfig } from "../helper/getConfig";
 import serviceGenrate from "../templates/service.template";
 import generateModel from "./model";
@@ -15,7 +15,7 @@ export default async function (
     return;
   }
   const config = getConfig(process.cwd());
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "select",
       name: "db",
@@ -51,6 +51,7 @@ export default async function (
     true,
     modelPath,
   );
+  log.info("Generating service...");
   await serviceGenrate(selectedDb, isESM, relations, name, dir, false);
   log.success("Service created");
 }

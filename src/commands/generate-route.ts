@@ -1,6 +1,6 @@
 import path from "path";
 import { log } from "../helper";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import { getConfig } from "../helper/getConfig";
 import { genrateRouter } from "../utils/router.util";
 
@@ -20,7 +20,7 @@ export default async function (
   const config = getConfig(base);
   let selectedFramework = config?.framework || framework;
   let selectModuleType = config?.module || moduleType;
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "select",
       name: "framework",
@@ -44,5 +44,6 @@ export default async function (
 
   selectedFramework = selectedFramework || answers.framework;
   selectModuleType = selectModuleType || answers.moduleType;
+  log.info("Generating router...");
   await genrateRouter(name, selectedFramework, routesIndex, selectModuleType);
 }

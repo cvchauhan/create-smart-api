@@ -18,8 +18,8 @@ jest.mock("cli-table3", () => {
     default: mock,
   };
 });
-jest.mock("chalk", () => ({
-  chalk: jest.fn(),
+jest.mock("picocolors", () => ({
+  pc: jest.fn(),
   cyan: jest.fn(),
   bold: jest.fn(),
 }));

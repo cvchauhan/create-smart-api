@@ -1,9 +1,9 @@
 import pluginInstaller from "../../commands/add-plugin";
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
 import { log } from "../../helper";
 
 jest.mock("child_process", () => ({
-  execSync: jest.fn(),
+  spawnSync: jest.fn(),
 }));
 
 jest.mock("../../helper/index", () => ({
@@ -32,8 +32,9 @@ describe("Plugin Installer", () => {
   test("should install redis plugin and log success", async () => {
     await pluginInstaller("redis");
 
-    expect(execSync).toHaveBeenCalledWith("npm install redis", {
+    expect(spawnSync).toHaveBeenCalledWith("npm", ["install", "redis"], {
       stdio: "inherit",
+      shell: true,
     });
 
     expect(log.success).toHaveBeenCalledWith(
@@ -44,8 +45,9 @@ describe("Plugin Installer", () => {
   test("should install kafka plugin and log success", async () => {
     await pluginInstaller("kafka");
 
-    expect(execSync).toHaveBeenCalledWith("npm install kafkajs", {
+    expect(spawnSync).toHaveBeenCalledWith("npm", ["install", "kafkajs"], {
       stdio: "inherit",
+      shell: true,
     });
 
     expect(log.success).toHaveBeenCalledWith(

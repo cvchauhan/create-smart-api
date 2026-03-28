@@ -28,17 +28,20 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-jest.mock("chalk", () => {
+jest.mock("picocolors", () => {
   const white: any = jest.fn(); // function
   white.bold = jest.fn(); // attach property
 
   return {
+    pc: jest.fn(),
     bold: jest.fn(),
     cyan: jest.fn(),
     gray: jest.fn(),
     green: jest.fn(),
     red: jest.fn(),
     yellow: jest.fn(),
+    blue: jest.fn(),
+    magenta: jest.fn(),
     white, // ✅ both work now
   };
 });

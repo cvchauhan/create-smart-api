@@ -1,3 +1,5 @@
+import stripAnsi from "strip-ansi";
+
 const getBorderChars = (style: "round" | "single") => {
   if (style === "round") {
     return {
@@ -20,42 +22,50 @@ const getBorderChars = (style: "round" | "single") => {
   };
 };
 
+const visibleLength = (str: string) => stripAnsi(str).length;
+
 export const box = (
   text: string,
   options?: {
     padding?: number;
     borderStyle?: "round" | "single";
+    minWidth?: number;
   },
 ) => {
-  const padding = options?.padding ?? 0;
+  const padding = options?.padding ?? 1;
   const style = options?.borderStyle ?? "round";
 
   const b = getBorderChars(style);
 
-  const lines = text.split("\n");
-  const width = Math.max(...lines.map((l) => l.length));
+  const rawLines = text.split("\n");
 
-  const padLine = (line: string) => line + " ".repeat(width - line.length);
+  const width = Math.max(
+    options?.minWidth ?? 0,
+    ...rawLines.map((l) => visibleLength(l)),
+  );
+
+  const padRight = (line: string) =>
+    line + " ".repeat(width - visibleLength(line));
 
   const horizontal = b.h.repeat(width + padding * 2);
 
   const top = `${b.tl}${horizontal}${b.tr}`;
   const bottom = `${b.bl}${horizontal}${b.br}`;
 
-  const emptyPad = " ".repeat(width + padding * 2);
+  const emptyLine = `${b.v}${" ".repeat(width + padding * 2)}${b.v}`;
 
-  const padded = [
+  const contentLines = rawLines.map((line) => {
+    const clean = padRight(line);
+    return `${b.v}${" ".repeat(padding)}${clean}${" ".repeat(padding)}${b.v}`;
+  });
+
+  return [
     top,
-    ...Array(padding).fill(`${b.v}${emptyPad}${b.v}`),
-    ...lines.map(
-      (l) =>
-        `${b.v}${" ".repeat(padding)}${padLine(l)}${" ".repeat(padding)}${b.v}`,
-    ),
-    ...Array(padding).fill(`${b.v}${emptyPad}${b.v}`),
+    ...Array(padding).fill(emptyLine),
+    ...contentLines,
+    ...Array(padding).fill(emptyLine),
     bottom,
-  ];
-
-  return padded.join("\n");
+  ].join("\n");
 };
 
 export default box;

@@ -1,5 +1,3 @@
-import { tr } from "zod/locales";
-import { log } from "../../helper";
 import { generateDbConnectionCode } from "../../helper/serverDbInject";
 
 jest.mock("fs-extra", () => ({

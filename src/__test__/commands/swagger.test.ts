@@ -8,6 +8,13 @@ jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
+jest.mock("child_process", () => ({
+  spawnSync: jest.fn().mockReturnValue({
+    status: 0,
+    stdout: "mock success",
+    stderr: "",
+  }),
+}));
 jest.mock("fs-extra", () => ({
   ensureDir: jest.fn(),
   writeFile: jest.fn(),
@@ -18,6 +25,9 @@ jest.mock("fs-extra", () => ({
 jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
   },
 }));
 

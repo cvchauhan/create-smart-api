@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import { getConfig } from "../helper/getConfig";
 
 export default async function (
-  name?: string,
+  name: string,
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
 ) {
@@ -25,6 +25,6 @@ export default async function (
     log.error(`Please create project first using: create-smart-api create`);
     return;
   }
-
+  log.info("Generating CRUD module...");
   await crud(base, name, selectFramework, selectModuleType, selectdb);
 }

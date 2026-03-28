@@ -1,9 +1,8 @@
 import fs from "fs-extra";
 import path from "path";
-import { execSync } from "child_process";
-import inquirer from "inquirer";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
+import { prompt } from "../helper/promptAdapter";
 
 export default async function (
   name: string,
@@ -13,8 +12,10 @@ export default async function (
     log.error("Module name is required");
     return;
   }
+
   const config = getConfig(process.cwd());
-  const answers = await inquirer.prompt([
+
+  const answers = await prompt([
     {
       type: "rawlist",
       name: "moduleType",
@@ -27,32 +28,49 @@ export default async function (
       when: () => !moduleType && !config?.module,
     },
   ]);
-  execSync("npm install zod", { stdio: "inherit" });
+
+  const isModule = moduleType || answers.moduleType === "module";
 
   const dir = path.join(process.cwd(), "src/validation", name);
   await fs.mkdirp(dir);
-  const isModule = answers.moduleType === "module";
-  const controllerFile = isModule
-    ? `
-import { ${name}Schema } from "../../controllers/${name}.controller.js"; 
-export default function(req, res) { 
-    const validation = ${name}Schema.safeParse(req.body); 
-    if (!validation.success) { 
-        return res.status(400).json(validation.error); 
-    } 
-    res.json({ message: "${name} created", data: validation.data }); 
-}`
-    : `
-const { ${name}Schema } = require("../../controllers/${name}.controller.js"); 
-module.exports = function(req, res) { 
-    const validation = ${name}Schema.safeParse(req.body); 
-    if (!validation.success) { 
-        return res.status(400).json(validation.error); 
-    } 
-    res.json({ message: "${name} created", data: validation.data }); 
-}`;
 
-  await fs.writeFile(path.join(dir, `${name}.validation.js`), controllerFile);
+  // ✅ Only schema (no controller logic)
+  const validationContent = isModule
+    ? `import { z } from "zod";
+
+export const ${name}Schema = z.object({
+  // TODO: define fields
+});
+
+export const validate${capitalize(name)} = (data) => {
+  return ${name}Schema.safeParse(data);
+};
+`
+    : `const { z } = require("zod");
+
+const ${name}Schema = z.object({
+  // TODO: define fields
+});
+
+const validate${capitalize(name)} = (data) => {
+  return ${name}Schema.safeParse(data);
+};
+
+module.exports = {
+  ${name}Schema,
+  validate${capitalize(name)}
+};
+`;
+
+  await fs.writeFile(
+    path.join(dir, `${name}.validation.js`),
+    validationContent,
+  );
 
   log.success("Validation created");
+}
+
+// helper
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }

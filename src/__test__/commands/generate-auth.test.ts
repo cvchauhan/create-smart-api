@@ -1,16 +1,21 @@
 import generateAuth from "../../commands/generate-auth";
-import { execSync } from "child_process";
 import { writeFile, mkdirp } from "fs-extra";
-import inquirer from "inquirer";
-import { log } from "../../helper/chalk";
+import { prompt } from "../../helper/promptAdapter";
+import { log } from "../../helper";
+import { execSync } from "child_process";
 
 // ✅ Correct mocks
 
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
+    warn: jest.fn(),
+    info: jest.fn(),
   },
+}));
+jest.mock("../../helper/runner", () => ({
+  run: jest.fn().mockResolvedValue({ success: true }),
 }));
 
 jest.mock("child_process", () => ({
@@ -28,39 +33,12 @@ jest.mock("fs-extra", () => ({
 }));
 
 // ✅ FIX: match default import
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
-}));
 // ✅ Now this works
-const promptMock: any = inquirer.prompt as any;
+const promptMock: any = prompt as any;
 
 describe("Auth middleware generator", () => {
   beforeEach(() => {

@@ -1,13 +1,36 @@
 import crud from "../../generators/crud";
 import fs from "fs-extra";
-import inquirer from "inquirer";
-import { log } from "../../helper/chalk";
+import { prompt } from "../../helper/promptAdapter";
+import { log } from "../../helper";
+import generateModel from "../../commands/model";
 
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
-jest.mock("cli-table3", () => ({
-  Table: jest.fn(),
+jest.mock("cli-table3", () => {
+  const mock = jest.fn().mockImplementation(() => ({
+    push: jest.fn(),
+    toString: jest.fn().mockReturnValue("mock-table"),
+  }));
+
+  return {
+    __esModule: true,
+    default: mock,
+  };
+});
+jest.mock("picocolors", () => ({
+  pc: jest.fn(),
+  cyan: jest.fn(),
+  bold: jest.fn(),
+}));
+jest.mock("../../utils/field.util", () => ({
+  askFieldDetails: jest.fn(),
+  addField: jest.fn(),
+}));
+jest.mock("../../utils/model.util", () => ({
+  generateSequelizeModel: jest.fn(),
+  generateMongooseModel: jest.fn(),
+  generateSequelizeRelations: jest.fn(),
 }));
 jest.mock("../../helper/showTablePreview", () => ({
   showTablePreview: jest.fn(),
@@ -19,38 +42,19 @@ jest.mock("fs-extra", () => ({
   existsSync: jest.fn().mockReturnValue(true),
   lstatSync: jest.fn().mockReturnValue({ isDirectory: () => true }),
   readdirSync: jest.fn().mockReturnValue(["index.routes.js"]),
-}));
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
+  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
 }));
 
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
     warn: jest.fn(),
+    info: jest.fn(),
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 
 describe("crud generator", () => {
   beforeEach(() => {
@@ -83,6 +87,8 @@ describe("crud generator", () => {
 
     await crud("/base", "product");
 
+    await generateModel("", "module", "mongodb", true);
+
     expect(fs.writeFile).toHaveBeenCalled();
   });
 
@@ -108,6 +114,7 @@ describe("crud generator", () => {
     });
 
     await crud("/base", "product");
+    await generateModel("product", "module", "mongodb", true);
 
     expect(fs.writeFile).toHaveBeenCalled();
   });
@@ -141,8 +148,10 @@ describe("crud generator", () => {
 
     const frameworkWhen = firstCallQuestions[0].when;
     const moduleTypeWhen = firstCallQuestions[1].when;
+    const dbWhen = firstCallQuestions[2].when;
 
     expect(frameworkWhen()).toBe(true);
     expect(moduleTypeWhen()).toBe(true);
+    expect(dbWhen()).toBe(true);
   });
 });

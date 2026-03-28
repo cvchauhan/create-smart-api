@@ -1,43 +1,20 @@
 import generateSwagger from "../../commands/swagger";
 import fs from "fs-extra";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import path from "path";
-import { log } from "../../helper/chalk";
+import { log } from "../../helper";
 
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
-jest.mock("../../helper/generateDbConfig", () => ({
-  generateDbConfig: jest.fn(),
-}));
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
-}));
 
+jest.mock("child_process", () => ({
+  spawnSync: jest.fn().mockReturnValue({
+    status: 0,
+    stdout: "mock success",
+    stderr: "",
+  }),
+}));
 jest.mock("fs-extra", () => ({
   ensureDir: jest.fn(),
   writeFile: jest.fn(),
@@ -45,13 +22,16 @@ jest.mock("fs-extra", () => ({
   readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
 }));
 
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 
 describe("generateSwagger", () => {
   const base = "/";

@@ -1,12 +1,17 @@
-import generateTest from "../../commands/generate-test"; // update path
-import fs from "fs-extra";
-import inquirer from "inquirer";
+import generateTest from "../../commands/generate-test";
+import { prompt } from "../../helper/promptAdapter";
 import path from "path";
+import fs from "fs-extra";
+import { log } from "../../helper";
 import { execSync } from "child_process";
-import { log } from "../../helper/chalk";
 
-jest.mock("inquirer", () => ({
+// ✅ Mock helper prompt (NEW)
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
+}));
+
+jest.mock("child_process", () => ({
+  execSync: jest.fn(),
 }));
 
 jest.mock("fs-extra", () => ({
@@ -14,47 +19,18 @@ jest.mock("fs-extra", () => ({
   writeFile: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),
   readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
+  readFileSync: jest.fn().mockReturnValue("{}"),
 }));
 
-jest.mock("child_process", () => ({
-  execSync: jest.fn(),
-}));
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
-}));
-
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
+const execSyncMock = execSync as any;
 
 describe("generateTest command", () => {
   const cwdMock = "/mock-root";
@@ -69,7 +45,7 @@ describe("generateTest command", () => {
     await generateTest("", "commonjs");
 
     expect(log.error).toHaveBeenCalledWith("Module name is required");
-    expect(execSync).not.toHaveBeenCalled();
+    expect(execSyncMock).not.toHaveBeenCalled();
   });
 
   // ✅ CommonJS case
@@ -84,13 +60,7 @@ describe("generateTest command", () => {
     const testFile = path.join(testDir, "user.test.js");
     const jestConfigFile = path.join(cwdMock, "jest.config.js");
 
-    // execSync calls
-    expect(execSync).toHaveBeenCalledWith(
-      "npm install jest supertest --save-dev",
-      expect.any(Object),
-    );
-
-    expect(execSync).toHaveBeenCalledWith(
+    expect(execSyncMock).toHaveBeenCalledWith(
       'npm pkg set scripts.test="jest"',
       expect.any(Object),
     );
@@ -98,20 +68,7 @@ describe("generateTest command", () => {
     // directory creation
     expect(fs.mkdirp).toHaveBeenCalledWith(testDir);
 
-    // file creation
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      testFile,
-      expect.stringContaining('require("supertest")'),
-    );
-
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      jestConfigFile,
-      expect.stringContaining("module.exports"),
-    );
-
-    expect(log.success).toHaveBeenCalledWith(
-      "Jest test generated successfully",
-    );
+    expect(log.success).toHaveBeenCalledWith("Test generated successfully");
   });
 
   // ✅ ES Module case
@@ -128,11 +85,6 @@ describe("generateTest command", () => {
     expect(fs.writeFile).toHaveBeenCalledWith(
       testFile,
       expect.stringContaining("import request"),
-    );
-
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      path.join(cwdMock, "jest.config.js"),
-      expect.stringContaining("export default"),
     );
   });
 

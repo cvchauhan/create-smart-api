@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
+// @ts-ignore
+import cac from "cac";
+import pkg from "../../package.json";
 
 import {
   create,
@@ -13,73 +15,117 @@ import {
   test,
   swagger,
   model,
+  route,
 } from "../commands";
 
-import pkg from "../../package.json";
+const cli = cac("create-smart-api");
+
+/* ---------------- VERSION ---------------- */
 
 if (process.argv.includes("--version") || process.argv.includes("-v")) {
   console.log(pkg?.version || "unknown");
   process.exit(0);
 }
-const program = new Command();
 
-program
-  .command("create [name]")
-  .description("Create a new API project")
+/* ---------------- COMMANDS ---------------- */
+
+// create
+cli
+  .command("create [name]", "Create a new API project")
+  .alias("c")
   .action(create);
 
-program
-  .command("generate:crud [module] [framework] [moduleType]")
-  .description("Generate CRUD operations for a module")
+// CRUD
+cli
+  .command(
+    "generate:crud <module> [framework] [moduleType]",
+    "Generate CRUD operations for a module",
+  )
+  .alias("g:c")
   .action(crud);
-program
-  .command("generate:service [module] [moduleType]")
-  .description("Generate a new service")
+
+// service
+cli
+  .command("generate:service <module> [moduleType]", "Generate a new service")
+  .alias("g:s")
   .action(service);
-program
-  .command("generate:model [name] [moduleType] [db]")
-  .description("Generate a new model")
+
+// route
+cli
+  .command(
+    "generate:route <module> [framework] [moduleType]",
+    "Generate a new route",
+  )
+  .alias("g:r")
+  .action(route);
+
+// model
+cli
+  .command("generate:model <name> [moduleType] [db]", "Generate a new model")
+  .alias("g:m")
   .action(model as any);
-program
-  .command("generate:auth [framework] [moduleType]")
-  .description("Generate authentication setup")
+
+// auth
+cli
+  .command(
+    "generate:auth [framework] [moduleType]",
+    "Generate authentication setup",
+  )
+  .alias("g:a")
   .action(auth);
-program
-  .command("generate:validation [module] [moduleType]")
-  .description("Generate validation setup")
+
+// validation
+cli
+  .command(
+    "generate:validation <module> [moduleType]",
+    "Generate validation setup",
+  )
+  .alias("g:v")
   .action(validation);
 
-program
-  .command("generate:microservice <name>")
-  .description("Generate a new microservice")
+// microservice
+cli
+  .command("generate:microservice <name>", "Generate a new microservice")
+  .alias("g:ms")
   .action(micro);
 
-program
-  .command("add:plugin [name]")
-  .description("Add a new plugin")
+// plugin
+cli
+  .command("add:plugin [name]", "Add a new plugin")
+  .alias("add:p")
   .action(plugin);
 
-program
-  .command("generate:test [module] [moduleType]")
-  .description("Generate tests for a module")
+// tests
+cli
+  .command("generate:test <module> [moduleType]", "Generate tests for a module")
+  .alias("g:t")
   .action(test);
-program
-  .command("generate:swagger")
-  .description("Generate Swagger documentation setup")
+
+// swagger
+cli
+  .command("generate:swagger", "Generate Swagger documentation setup")
   .action(async () => {
     await swagger();
   });
-program.addHelpText(
-  "after",
-  `
+
+/* ---------------- HELP EXAMPLES ---------------- */
+
+cli.help(() => {
+  console.log(`
 Examples:
 
-  $ create-smart-api create my-api or $ create-smart-api create
-  $ create-smart-api generate:crud user or $ create-smart-api generate:crud user express module
-  $ create-smart-api generate:crud product express module
+  $ create-smart-api create my-api
+  $ create-smart-api create
+
+  $ create-smart-api generate:crud user
+  $ create-smart-api generate:crud user express module
+
   $ create-smart-api generate:service user
   $ create-smart-api generate:validation user
   $ create-smart-api generate:swagger
-`,
-);
-program.parse(process.argv);
+`);
+});
+
+/* ---------------- PARSE ---------------- */
+
+cli.parse();

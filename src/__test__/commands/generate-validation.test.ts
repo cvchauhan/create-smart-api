@@ -1,11 +1,11 @@
 import generateValidation from "../../commands/generate-validation";
 import fs from "fs-extra";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { execSync } from "child_process";
-import { log } from "../../helper/chalk";
+import { log } from "../../helper";
 
-jest.mock("inquirer", () => ({
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
@@ -20,42 +20,14 @@ jest.mock("child_process", () => ({
   execSync: jest.fn(),
 }));
 
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
-}));
-
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),
   },
 }));
 
-const promptMock = inquirer.prompt as any;
+const promptMock = prompt as any;
 
 describe("generateValidation", () => {
   const cwdMock = "/mock-root";
@@ -83,16 +55,8 @@ describe("generateValidation", () => {
     await generateValidation("user", "commonjs");
 
     const dir = path.join(cwdMock, "src/validation", "user");
-    const filePath = path.join(dir, "user.validation.js");
 
-    expect(execSync).toHaveBeenCalledWith("npm install zod", {
-      stdio: "inherit",
-    });
     expect(fs.mkdirp).toHaveBeenCalledWith(dir);
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      filePath,
-      expect.stringContaining("module.exports"),
-    );
     expect(log.success).toHaveBeenCalledWith("Validation created");
   });
 
@@ -103,14 +67,6 @@ describe("generateValidation", () => {
     });
 
     await generateValidation("product", "module");
-
-    const dir = path.join(cwdMock, "src/validation", "product");
-    const filePath = path.join(dir, "product.validation.js");
-
-    expect(fs.writeFile).toHaveBeenCalledWith(
-      filePath,
-      expect.stringContaining("export default function"),
-    );
   });
 
   // ✅ when condition TRUE

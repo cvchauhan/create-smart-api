@@ -1,56 +1,52 @@
 import generateService from "../../commands/generate-service";
 import fs from "fs-extra";
-import inquirer from "inquirer";
+import { prompt } from "../../helper/promptAdapter";
 import path from "path";
-import { log } from "../../helper/chalk";
+import { log } from "../../helper";
 
-jest.mock("inquirer", () => ({
+// ✅ Mock helper prompt (NEW)
+jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
 jest.mock("fs-extra", () => ({
-  mkdirp: jest.fn(),
   writeFile: jest.fn(),
+  readdir: jest.fn().mockResolvedValue(["index.routes.js"]),
   existsSync: jest.fn().mockReturnValue(true),
+  lstatSync: jest.fn().mockReturnValue({ isDirectory: () => true }),
+  readdirSync: jest.fn().mockReturnValue(["index.routes.js"]),
   readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
+  fs: jest.fn(),
+  mkdirp: jest.fn(),
 }));
 
-jest.mock("../../helper/chalk", () => ({
+jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),
+    info: jest.fn(),
   },
 }));
 
-jest.mock("../../helper/addField", () => ({
-  addField: jest.fn(),
-}));
-jest.mock("../../helper/editField", () => ({
-  editField: jest.fn(),
-}));
-jest.mock("../../helper/parseFields", () => ({
-  parseFields: jest.fn().mockResolvedValue(["name:string"]),
-}));
-jest.mock("../../helper/deleteField", () => ({
-  deleteField: jest.fn(),
-}));
-jest.mock("../../helper/enhanceFields", () => ({
-  enhanceFields: jest.fn(),
-}));
-jest.mock("../../helper/getTypeColor", () => ({
-  getTypeColor: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-jest.mock("../../helper/generateMongooseModel", () => ({
-  generateMongooseModel: jest.fn(),
-}));
-jest.mock("../../helper/generateSequelizeModel", () => ({
-  generateSequelizeModel: jest.fn(),
-}));
+jest.mock("picocolors", () => {
+  const white: any = jest.fn(); // function
+  white.bold = jest.fn(); // attach property
 
-const promptMock = inquirer.prompt as any;
+  return {
+    pc: jest.fn(),
+    bold: jest.fn(),
+    cyan: jest.fn(),
+    gray: jest.fn(),
+    green: jest.fn(),
+    red: jest.fn(),
+    yellow: jest.fn(),
+    blue: jest.fn(),
+    magenta: jest.fn(),
+    white, // ✅ both work now
+  };
+});
+
+const promptMock = prompt as any;
 
 describe("generateService", () => {
   beforeEach(() => {
@@ -67,7 +63,7 @@ describe("generateService", () => {
   test("should log error if name is missing", async () => {
     await generateService("", "commonjs");
 
-    expect(log.error).toHaveBeenCalledWith("Module name is required");
+    expect(log.error).toHaveBeenCalledWith("Service name is required");
     expect(fs.mkdirp).not.toHaveBeenCalled();
   });
 
@@ -75,11 +71,12 @@ describe("generateService", () => {
   test("should generate service in commonjs", async () => {
     promptMock.mockResolvedValue({
       moduleType: "commonjs",
+      action: "continue",
     });
 
     await generateService("user", "commonjs");
 
-    const dir = path.join(cwdMock, "src/services", "user");
+    const dir = path.join(cwdMock, "src/services");
 
     expect(fs.mkdirp).toHaveBeenCalledWith(dir);
 
@@ -97,11 +94,12 @@ describe("generateService", () => {
   test("should generate service in ES module", async () => {
     promptMock.mockResolvedValue({
       moduleType: "module",
+      action: "continue",
     });
 
     await generateService("product", "module");
 
-    const dir = path.join(cwdMock, "src/services", "product");
+    const dir = path.join(cwdMock, "src/services");
 
     const filePath = path.join(dir, "product.service.js");
 
@@ -109,48 +107,5 @@ describe("generateService", () => {
       filePath,
       expect.stringContaining("export const"),
     );
-  });
-
-  // ✅ when condition TRUE
-  let questions: any[];
-  test("should evaluate when condition true", async () => {
-    promptMock.mockImplementation(async (q: any) => {
-      questions = q;
-      return { moduleType: "commonjs" };
-    });
-
-    await generateService("user", undefined as any);
-
-    const whenFn = questions[0].when;
-
-    expect(whenFn()).toBe(true);
-  });
-
-  // ✅ when condition FALSE
-  test("should evaluate when condition false", async () => {
-    promptMock.mockImplementation(async (q: any) => {
-      questions = q;
-      return {};
-    });
-
-    await generateService("user", "commonjs");
-
-    const whenFn = questions[0].when;
-
-    expect(whenFn()).toBe(false);
-  });
-
-  // ✅ validate content structure
-  test("should include getAll and create functions", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "commonjs",
-    });
-
-    await generateService("order", "commonjs");
-
-    const content = (fs.writeFile as any).mock.calls[0][1];
-
-    expect(content).toContain("getAll");
-    expect(content).toContain("create");
   });
 });

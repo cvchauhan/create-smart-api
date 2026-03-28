@@ -39,6 +39,12 @@ A powerful **CLI toolkit** to generate **production-ready Node.js REST APIs** wi
 npx create-smart-api create my-api
 ```
 
+### Or use short form
+
+```bash
+npx create-smart-api c my-api
+```
+
 ### Or install globally
 
 ```bash
@@ -51,6 +57,12 @@ npm install -g create-smart-api
 
 ```bash
 create-smart-api create my-api
+```
+
+## OR Use Short form
+
+```bash
+create-smart-api c my-api
 ```
 
 Follow CLI prompts:
@@ -72,6 +84,12 @@ Follow CLI prompts:
 
 ```bash
 create-smart-api generate:crud user
+```
+
+## OR Use Short form
+
+```bash
+create-smart-api g:c user
 ```
 
 ### ✨ Step 1: Bulk Field Input
@@ -112,7 +130,7 @@ name:string,email:string,age:number,status:enum
 
 ### 📊 Step 3: Table Preview
 
-````
+```
 ## 📊 Schema Preview
 
 | # | Field  | Type   | Req | Uniq | Default | Extra               |
@@ -122,15 +140,18 @@ name:string,email:string,age:number,status:enum
 | 3 | status | string | No  | No   | active  | enum(active,inact)  |
 
 ---
+```
 
 ### ✏️ Step 4: Edit Before Confirm
 
+```
 Options:
 
 - Edit field
 - Add new field
 - Delete field
 - Continue
+```
 
 ---
 
@@ -149,14 +170,19 @@ Options:
 - Default values
 - Ready-to-use models
 
-
 ## ⚙️ CLI Commands
 
 ### Create project
 
 ```bash
 create-smart-api create my-api
-````
+```
+
+### Or Use create-smart-api c my-api
+
+```bash
+create-smart-api c my-api
+```
 
 ---
 
@@ -164,6 +190,12 @@ create-smart-api create my-api
 
 ```bash
 create-smart-api generate:crud user
+```
+
+### Or Use create-smart-api g:c user
+
+```bash
+create-smart-api g:c user
 ```
 
 ---
@@ -174,12 +206,24 @@ create-smart-api generate:crud user
 create-smart-api generate:auth
 ```
 
+### Or Use create-smart-api g:a
+
+```bash
+create-smart-api g:a
+```
+
 ---
 
 ### Generate Service
 
 ```bash
 create-smart-api generate:service
+```
+
+### Or Use create-smart-api g:s
+
+```bash
+create-smart-api g:s
 ```
 
 ---
@@ -190,6 +234,12 @@ create-smart-api generate:service
 create-smart-api generate:model user
 ```
 
+### Or Use create-smart-api g:m user
+
+```bash
+create-smart-api g:m user
+```
+
 ---
 
 ### Generate Validation
@@ -198,12 +248,24 @@ create-smart-api generate:model user
 create-smart-api generate:validation user
 ```
 
+### Or Use create-smart-api g:v user
+
+```bash
+create-smart-api g:v user
+```
+
 ---
 
 ### Generate Tests
 
 ```bash
 create-smart-api generate:test user
+```
+
+### Or Use create-smart-api g:t user
+
+```bash
+create-smart-api g:t user
 ```
 
 ---
@@ -220,21 +282,6 @@ create-smart-api generate:swagger
 
 ```bash
 npm test
-```
-
----
-
-## ⚠️ Important Note
-
-If no models are created:
-
-```
-⚠️ Project created successfully, but no models were generated.
-
-Database operations and related features may not work.
-
-👉 Run:
-create-smart-api generate:crud <module-name>
 ```
 
 ---

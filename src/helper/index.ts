@@ -1,31 +1,22 @@
-import { addField } from "./addField";
-import { log } from "./chalk";
-import { deleteField } from "./deleteField";
-import { editField } from "./editField";
-import { enhanceFields } from "./enhanceFields";
-import { generateDbConfig } from "./generateDbConfig";
-import { generateMongooseModel } from "./generateMongooseModel";
-import { generateSequelizeModel } from "./generateSequelizeModel";
-import { mapType } from "./mapType";
-import { parseFields } from "./parseFields";
-import { showTablePreview } from "./showTablePreview";
-import { askRelations } from "./relations";
-import { generateMongooseRelations } from "./mongooseRelations";
-import { generateSequelizeRelations } from "./sequelizeRelations";
+import pc from "picocolors";
+import box from "./box";
 
-export {
-  mapType,
-  addField,
-  editField,
-  deleteField,
-  parseFields,
-  enhanceFields,
-  showTablePreview,
-  log,
-  generateDbConfig,
-  generateSequelizeModel,
-  generateMongooseModel,
-  askRelations,
-  generateMongooseRelations,
-  generateSequelizeRelations,
+export const log = {
+  success: (msg: string) =>
+    console.log(
+      box(pc.green(`✅ ${msg}`), { padding: 1, borderStyle: "round" }),
+    ),
+
+  error: (msg: string) =>
+    console.log(box(pc.red(`❌ ${msg}`), { padding: 1, borderStyle: "round" })),
+
+  warn: (msg: string) =>
+    console.log(
+      box(pc.yellow(`⚠️ ${msg}`), { padding: 1, borderStyle: "round" }),
+    ),
+
+  info: (msg: string) =>
+    console.log(
+      box(pc.cyan(`ℹ️ ${msg}`), { padding: 1, borderStyle: "round" }),
+    ),
 };

@@ -1,15 +1,16 @@
 import fs from "fs-extra";
 import path from "path";
-import inquirer from "inquirer";
+import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
+import { spawnSync } from "child_process";
 
 export default async function generateSwagger(
   moduleType?: "module" | "commonjs",
 ) {
   const base = process.cwd();
   const config = getConfig(base);
-  const answers = await inquirer.prompt([
+  const answers = await prompt([
     {
       type: "rawlist",
       name: "moduleType",
@@ -24,14 +25,17 @@ export default async function generateSwagger(
   ]);
   const swaggerDir = path.join(base, "src/config");
   await fs.ensureDir(swaggerDir);
+  log.info("Generating swagger...");
   let swaggerImport = "";
+  spawnSync("npm", ["install", "swagger-jsdoc", "swagger-ui-express"], {
+    stdio: "inherit",
+    shell: true,
+  });
   if (answers.moduleType === "module") {
-    swaggerImport = `
-import swaggerJsdoc from "swagger-jsdoc";
+    swaggerImport = `import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";`;
   } else {
-    swaggerImport = `
-const swaggerJsdoc = require("swagger-jsdoc");
+    swaggerImport = `const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");`;
   }
   const exportContent =

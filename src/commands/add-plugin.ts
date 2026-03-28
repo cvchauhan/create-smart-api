@@ -1,4 +1,4 @@
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
 import { log } from "../helper";
 
 export default async function (name: string) {
@@ -14,11 +14,11 @@ export default async function (name: string) {
     return;
   }
   if (name === "redis") {
-    execSync("npm install redis", { stdio: "inherit" });
+    spawnSync("npm", ["install", "redis"], { stdio: "inherit", shell: true });
   }
 
   if (name === "kafka") {
-    execSync("npm install kafkajs", { stdio: "inherit" });
+    spawnSync("npm", ["install", "kafkajs"], { stdio: "inherit", shell: true });
   }
 
   log.success(`Plugin ${name} added successfully!!`);

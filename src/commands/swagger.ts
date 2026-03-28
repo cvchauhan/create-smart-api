@@ -3,6 +3,7 @@ import path from "path";
 import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
+import { spawnSync } from "child_process";
 
 export default async function generateSwagger(
   moduleType?: "module" | "commonjs",
@@ -24,7 +25,12 @@ export default async function generateSwagger(
   ]);
   const swaggerDir = path.join(base, "src/config");
   await fs.ensureDir(swaggerDir);
+  log.info("Generating swagger...");
   let swaggerImport = "";
+  spawnSync("npm", ["install", "swagger-jsdoc", "swagger-ui-express"], {
+    stdio: "inherit",
+    shell: true,
+  });
   if (answers.moduleType === "module") {
     swaggerImport = `import swaggerJsdoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";`;

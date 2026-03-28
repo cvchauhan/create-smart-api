@@ -1,23 +1,23 @@
 import Field from "../types/field";
-import chalk from "chalk";
+import pc from "picocolors";
 export function getTypeColor(type: string) {
   switch (type) {
     case "string":
-      return chalk.blue(type);
+      return pc.blue(type);
     case "number":
-      return chalk.yellow(type);
+      return pc.yellow(type);
     case "boolean":
-      return chalk.green(type);
+      return pc.green(type);
     case "date":
-      return chalk.magenta(type);
+      return pc.magenta(type);
     default:
-      return chalk.white(type);
+      return pc.white(type);
   }
 }
 
 export function getExtraInfo(field: Field) {
   if (field.enumValues?.length) {
-    return chalk.cyan(`enum(${field.enumValues.join(",")})`);
+    return pc.cyan(`enum(${field.enumValues.join(",")})`);
   }
-  return chalk.gray("-");
+  return pc.gray("-");
 }

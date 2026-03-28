@@ -1,57 +1,57 @@
 import Field from "../types/field";
 import Table from "cli-table3";
-import chalk from "chalk";
+import pc from "picocolors";
 
 class TablePreview {
   showTablePreview = (fields: Field[]) => {
     const table = new Table({
       head: [
-        chalk.cyan("#"),
-        chalk.cyan("Field"),
-        chalk.cyan("Type"),
-        chalk.cyan("Req"),
-        chalk.cyan("Uniq"),
-        chalk.cyan("Default"),
-        chalk.cyan("Extra"),
+        pc.cyan("#"),
+        pc.cyan("Field"),
+        pc.cyan("Type"),
+        pc.cyan("Req"),
+        pc.cyan("Uniq"),
+        pc.cyan("Default"),
+        pc.cyan("Extra"),
       ],
       style: { head: [], border: [] },
     });
 
     fields.forEach((f, index) => {
       table.push([
-        chalk.yellow(index + 1),
-        chalk.white.bold(f.name),
+        pc.yellow(index + 1),
+        pc.bold(pc.white(f.name)),
         this.getTypeColor(f.type),
-        f.required ? chalk.green("✔") : chalk.gray("✖"),
-        f.unique ? chalk.green("✔") : chalk.gray("✖"),
-        f.default ? chalk.magenta(f.default) : chalk.gray("-"),
+        f.required ? pc.green("✔") : pc.gray("✖"),
+        f.unique ? pc.green("✔") : pc.gray("✖"),
+        f.default ? pc.magenta(f.default) : pc.gray("-"),
         this.getExtraInfo(f),
       ]);
     });
 
-    console.log("\n" + chalk.bold("📊 Schema Preview") + "\n");
+    console.log("\n" + pc.bold("📊 Schema Preview") + "\n");
     console.log(table.toString());
   };
 
   getTypeColor(type: string) {
     switch (type) {
       case "string":
-        return chalk.blue(type);
+        return pc.blue(type);
       case "number":
-        return chalk.yellow(type);
+        return pc.yellow(type);
       case "boolean":
-        return chalk.green(type);
+        return pc.green(type);
       case "date":
-        return chalk.magenta(type);
+        return pc.magenta(type);
       default:
-        return chalk.white(type);
+        return pc.white(type);
     }
   }
   getExtraInfo = (field: Field) => {
     if (field.enumValues?.length) {
-      return chalk.cyan(`enum(${field.enumValues.join(",")})`);
+      return pc.cyan(`enum(${field.enumValues.join(",")})`);
     }
-    return chalk.gray("-");
+    return pc.gray("-");
   };
 }
 

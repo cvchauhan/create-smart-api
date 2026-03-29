@@ -1,12 +1,13 @@
 import { prompt } from "../helper/promptAdapter";
 import { fieldInputs, validateName } from "./field.validation.util";
 import { log } from "../helper";
-import fs from "fs-extra";
 import path from "path";
 import Field from "../types/field";
 import { addField, parseFields } from "./field.util";
 import { generateMongooseModel, generateSequelizeModel } from "./model.util";
 import Relation from "../types/relation";
+import { existsSync, readdirSync } from "fs";
+import { writeFile } from "fs/promises";
 
 class Relations {
   askRelations = async () => {
@@ -95,9 +96,8 @@ class Relations {
     const normalize = (str: string) => str.toLowerCase();
 
     const existingModels = new Set(
-      fs.existsSync(modelsPath)
-        ? fs
-            .readdirSync(modelsPath)
+      existsSync(modelsPath)
+        ? readdirSync(modelsPath)
             .filter((f) => /\.model\.(js|ts)$/.test(f))
             .map((f) => normalize(f.replace(/\.model\.(js|ts)$/, "")))
         : [],
@@ -156,7 +156,7 @@ class Relations {
     );
 
     // prevent overwrite
-    if (fs.existsSync(modelPath)) {
+    if (existsSync(modelPath)) {
       log.warn(`Model ${modelName} already exists`);
       return;
     }
@@ -169,7 +169,7 @@ class Relations {
       content = generateSequelizeModel(modelFields, modelName, isESM, []);
     }
 
-    await fs.writeFile(modelPath, content);
+    await writeFile(modelPath, content);
     log.success(`Model ${modelName} created`);
   };
 }

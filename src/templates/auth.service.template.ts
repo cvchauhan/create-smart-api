@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
 export default async function generateAuthService(
@@ -6,7 +6,7 @@ export default async function generateAuthService(
   isModule: boolean,
 ) {
   const serviceDir = path.join(base, "src/services/auth");
-  await fs.mkdirp(serviceDir);
+  await mkdir(serviceDir, { recursive: true });
   const authService = isModule
     ? ` 
 import bcrypt from "bcrypt"; 
@@ -37,5 +37,5 @@ module.exports.login = async (user) => {
   const token = jwt.sign({ id: 1 }, "secret", { expiresIn: "1h" }); 
   return { token }; 
 }; `;
-  await fs.writeFile(path.join(serviceDir, `auth.service.js`), authService);
+  await writeFile(path.join(serviceDir, `auth.service.js`), authService);
 }

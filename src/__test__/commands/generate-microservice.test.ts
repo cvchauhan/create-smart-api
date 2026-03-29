@@ -1,9 +1,9 @@
 import { log } from "../../helper";
 import generateMicro from "../../commands/generate-microservice";
-import { mkdirp } from "fs-extra";
+import { mkdir } from "fs/promises";
 
-jest.mock("fs-extra", () => ({
-  mkdirp: jest.fn(),
+jest.mock("fs/promises", () => ({
+  mkdir: jest.fn(),
 }));
 
 jest.mock("../../helper", () => ({
@@ -23,7 +23,7 @@ describe("generate microservice command", () => {
     await generateMicro("");
 
     expect(log.error).toHaveBeenCalledWith("Microservice name is required");
-    expect(mkdirp).not.toHaveBeenCalled();
+    expect(mkdir).not.toHaveBeenCalled();
   });
 
   test("should create microservice folder structure", async () => {

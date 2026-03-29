@@ -1,10 +1,10 @@
 import create from "../../commands/create";
 import { prompt } from "../../helper/promptAdapter";
-import fs from "fs-extra";
 import { execSync } from "child_process";
 import { createStructure } from "../../generators/project";
 import generateCrud from "../../generators/crud";
 import { log } from "../../helper";
+import { mkdir } from "fs/promises";
 
 jest.spyOn(process, "chdir").mockImplementation(() => {});
 
@@ -16,13 +16,22 @@ jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
-jest.mock("fs-extra", () => ({
-  mkdirp: jest.fn(),
+jest.mock("fs/promises", () => ({
+  mkdir: jest.fn(),
   writeFile: jest.fn(),
+  readFile: jest.fn().mockResolvedValue(JSON.stringify({ createSmartApi: {} })),
+  readdir: jest.fn(),
+  access: jest.fn(),
+}));
+
+jest.mock("fs", () => ({
   existsSync: jest.fn().mockReturnValue(true),
-  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
-  readJSON: jest.fn().mockReturnValue({}),
-  writeJSON: jest.fn(),
+  lstatSync: jest.fn(() => ({
+    isDirectory: jest.fn().mockReturnValue(true),
+  })),
+  readFileSync: jest
+    .fn()
+    .mockReturnValue(JSON.stringify({ createSmartApi: {} })),
 }));
 
 jest.mock("child_process", () => ({
@@ -63,7 +72,7 @@ describe("create command", () => {
 
     await create("");
 
-    expect(fs.mkdirp).toHaveBeenCalled();
+    expect(mkdir).toHaveBeenCalled();
     expect(createStructure).toHaveBeenCalled();
 
     expect(execSync).toHaveBeenCalledWith("npm init -y", expect.any(Object));

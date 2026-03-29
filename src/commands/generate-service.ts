@@ -1,10 +1,10 @@
-import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper";
 import { prompt } from "../helper/promptAdapter";
 import { getConfig } from "../helper/getConfig";
 import serviceGenrate from "../templates/service.template";
 import generateModel from "./model";
+import { mkdir } from "fs/promises";
 
 export default async function (
   name: string,
@@ -37,7 +37,7 @@ export default async function (
     },
   ]);
   const dir = path.join(process.cwd(), "src/services");
-  await fs.mkdirp(dir);
+  await mkdir(dir, { recursive: true });
   const isESM = answers.moduleType === "module";
   const selectedDb = answers.db || config?.db;
   const modelName = name.charAt(0).toUpperCase() + name.slice(1);

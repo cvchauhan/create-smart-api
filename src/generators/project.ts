@@ -1,7 +1,7 @@
-import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper";
 import { generateDbConnectionCode } from "../helper/serverDbInject";
+import { mkdir, writeFile } from "fs/promises";
 
 export async function createStructure(
   base: string,
@@ -14,7 +14,7 @@ export async function createStructure(
 ) {
   const src = path.join(base, "src");
 
-  await fs.mkdirp(src);
+  await mkdir(src, { recursive: true });
 
   const folders = [
     "controllers",
@@ -26,7 +26,7 @@ export async function createStructure(
   ];
 
   for (const folder of folders) {
-    await fs.mkdirp(path.join(src, folder));
+    await mkdir(path.join(src, folder), { recursive: true });
   }
 
   const { framework, moduleType, port, db } = options;
@@ -145,7 +145,7 @@ app.listen({port:${port}});
     }
   }
 
-  await fs.writeFile(path.join(src, "server.js"), serverContent);
+  await writeFile(path.join(src, "server.js"), serverContent);
 
   // Create a default routes index file (so server can import it immediately)
   const routesIndexPath = path.join(src, "routes", "index.js");
@@ -153,7 +153,7 @@ app.listen({port:${port}});
     ? `export default function registerRoutes(app) {\n  // register routes here\n}\n`
     : `module.exports = function registerRoutes(app) {\n  // register routes here\n};\n`;
 
-  await fs.writeFile(routesIndexPath, routesIndexContent);
+  await writeFile(routesIndexPath, routesIndexContent);
   const errorHandlerPath = path.join(src, "helper", "errorHandler.js");
 
   const errorHandlerContent = isESM
@@ -182,6 +182,6 @@ function errorHandler(err, req, res, next) {
 module.exports = { errorHandler };
 `;
 
-  await fs.writeFile(errorHandlerPath, errorHandlerContent);
+  await writeFile(errorHandlerPath, errorHandlerContent);
   log.success(`Server file created successfully`);
 }

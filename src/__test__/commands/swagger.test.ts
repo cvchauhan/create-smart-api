@@ -1,8 +1,8 @@
 import generateSwagger from "../../commands/swagger";
-import fs from "fs-extra";
 import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { log } from "../../helper";
+import { mkdir, writeFile } from "fs/promises";
 
 jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
@@ -15,11 +15,10 @@ jest.mock("child_process", () => ({
     stderr: "",
   }),
 }));
-jest.mock("fs-extra", () => ({
-  ensureDir: jest.fn(),
+jest.mock("fs/promises", () => ({
+  mkdir: jest.fn(),
   writeFile: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),
-  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
 }));
 
 jest.mock("../../helper", () => ({
@@ -50,9 +49,11 @@ describe("generateSwagger", () => {
     await generateSwagger();
     const swaggerPath = path.join(base, "src/config", "swagger.js");
 
-    expect(fs.ensureDir).toHaveBeenCalledWith(path.join(base, "src/config"));
+    expect(mkdir).toHaveBeenCalledWith(path.join(base, "src/config"), {
+      recursive: true,
+    });
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       swaggerPath,
       expect.stringContaining('require("swagger-jsdoc")'),
     );
@@ -70,12 +71,12 @@ describe("generateSwagger", () => {
 
     const swaggerPath = path.join(base, "src/config", "swagger.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       swaggerPath,
       expect.stringContaining("import swaggerJsdoc"),
     );
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       swaggerPath,
       expect.stringContaining("export const swaggerDocs"),
     );
@@ -89,7 +90,9 @@ describe("generateSwagger", () => {
 
     await generateSwagger();
 
-    expect(fs.ensureDir).toHaveBeenCalledWith(path.join(base, "src/config"));
+    expect(mkdir).toHaveBeenCalledWith(path.join(base, "src/config"), {
+      recursive: true,
+    });
   });
 
   // ✅ when condition TRUE (moduleType not provided)
@@ -129,7 +132,7 @@ describe("generateSwagger", () => {
 
     await generateSwagger();
 
-    const content = (fs.writeFile as any).mock.calls[0][1];
+    const content = (writeFile as any).mock.calls[0][1];
 
     expect(content).toContain("/api-docs");
     expect(content).toContain("swaggerUi.setup");

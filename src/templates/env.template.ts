@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { writeFile } from "fs/promises";
 
 export default async function generateEnvFile(
   port: number,
@@ -17,5 +17,5 @@ export default async function generateEnvFile(
   DB_HOST=localhost
   PORT=${port}
   `;
-  await fs.writeFile(envPath, envContent);
+  await writeFile(envPath, envContent);
 }

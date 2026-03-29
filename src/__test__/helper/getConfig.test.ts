@@ -1,7 +1,7 @@
 import { log } from "../../helper";
 import { getConfig } from "../../helper/getConfig";
 
-jest.mock("fs-extra", () => ({
+jest.mock("fs", () => ({
   existsSync: jest.fn(),
 }));
 

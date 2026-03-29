@@ -1,8 +1,8 @@
-import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import { prompt } from "../helper/promptAdapter";
+import { mkdir, writeFile } from "fs/promises";
 
 export default async function (
   name: string,
@@ -32,7 +32,7 @@ export default async function (
   const isModule = moduleType || answers.moduleType === "module";
 
   const dir = path.join(process.cwd(), "src/validation", name);
-  await fs.mkdirp(dir);
+  await mkdir(dir, { recursive: true });
 
   // ✅ Only schema (no controller logic)
   const validationContent = isModule
@@ -62,10 +62,7 @@ module.exports = {
 };
 `;
 
-  await fs.writeFile(
-    path.join(dir, `${name}.validation.js`),
-    validationContent,
-  );
+  await writeFile(path.join(dir, `${name}.validation.js`), validationContent);
 
   log.success("Validation created");
 }

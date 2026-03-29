@@ -1,13 +1,16 @@
 import { askRelations, processRelations } from "../../utils/relation.util";
 
 import { prompt } from "../../helper/promptAdapter";
-import fs from "fs-extra";
+import fs from "fs";
 
 jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
-jest.mock("fs-extra");
+jest.mock("fs", () => ({
+  existsSync: jest.fn(),
+  readdirSync: jest.fn(),
+}));
 jest.mock("path");
 
 jest.mock("../../helper", () => ({

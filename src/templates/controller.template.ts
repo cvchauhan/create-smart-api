@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { writeFile } from "fs/promises";
 
 export default async function generateController(
   name: string,
@@ -65,5 +65,5 @@ module.exports.remove = async (req, res) => {
     `;
   }
 
-  await fs.writeFile(controllerPath, controllerContent);
+  await writeFile(controllerPath, controllerContent);
 }

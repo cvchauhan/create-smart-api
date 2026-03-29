@@ -1,6 +1,6 @@
-import fs from "fs-extra";
 import path from "path";
 import { execSync } from "child_process";
+import { readFile, writeFile } from "fs/promises";
 
 export default async function generatePackageJson(
   answers: {
@@ -42,7 +42,7 @@ export default async function generatePackageJson(
     execSync("npm install mysql2 sequelize", { stdio: "inherit" });
   }
   const pkgPath = path.join(base, "package.json");
-  const pkg = await fs.readJSON(pkgPath);
+  const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
 
   pkg.createSmartApi = {
     db: db,
@@ -50,5 +50,5 @@ export default async function generatePackageJson(
     framework: framework,
   };
 
-  await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
+  await writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 }

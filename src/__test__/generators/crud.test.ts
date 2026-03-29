@@ -1,8 +1,8 @@
 import crud from "../../generators/crud";
-import fs from "fs-extra";
 import { prompt } from "../../helper/promptAdapter";
 import { log } from "../../helper";
 import generateModel from "../../commands/model";
+import { writeFile } from "fs/promises";
 
 jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
@@ -36,15 +36,17 @@ jest.mock("../../helper/showTablePreview", () => ({
   showTablePreview: jest.fn(),
 }));
 
-jest.mock("fs-extra", () => ({
+jest.mock("fs/promises", () => ({
   writeFile: jest.fn(),
-  readdir: jest.fn().mockResolvedValue(["index.routes.js"]),
+}));
+jest.mock("fs", () => ({
   existsSync: jest.fn().mockReturnValue(true),
   lstatSync: jest.fn().mockReturnValue({ isDirectory: () => true }),
   readdirSync: jest.fn().mockReturnValue(["index.routes.js"]),
-  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
+  readFileSync: jest
+    .fn()
+    .mockReturnValue(JSON.stringify({ createSmartApi: {} })),
 }));
-
 jest.mock("../../helper", () => ({
   log: {
     error: jest.fn(),
@@ -71,7 +73,7 @@ describe("crud generator", () => {
 
     await crud("/base", "user");
 
-    expect(fs.writeFile).toHaveBeenCalled();
+    expect(writeFile).toHaveBeenCalled();
     expect(log.success).toHaveBeenCalledWith(
       "CRUD for user created successfully",
     );
@@ -89,7 +91,7 @@ describe("crud generator", () => {
 
     await generateModel("", "module", "mongodb", true);
 
-    expect(fs.writeFile).toHaveBeenCalled();
+    expect(writeFile).toHaveBeenCalled();
   });
 
   test("should handle fastify commonjs", async () => {
@@ -102,7 +104,7 @@ describe("crud generator", () => {
 
     await crud("/base", "product");
 
-    expect(fs.writeFile).toHaveBeenCalled();
+    expect(writeFile).toHaveBeenCalled();
   });
 
   test("should handle express module with module type", async () => {
@@ -116,7 +118,7 @@ describe("crud generator", () => {
     await crud("/base", "product");
     await generateModel("product", "module", "mongodb", true);
 
-    expect(fs.writeFile).toHaveBeenCalled();
+    expect(writeFile).toHaveBeenCalled();
   });
 
   test("should log error when module name missing", async () => {

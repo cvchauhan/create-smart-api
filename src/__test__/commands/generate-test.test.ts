@@ -1,9 +1,9 @@
 import generateTest from "../../commands/generate-test";
 import { prompt } from "../../helper/promptAdapter";
 import path from "path";
-import fs from "fs-extra";
 import { log } from "../../helper";
 import { execSync } from "child_process";
+import { mkdir, writeFile } from "fs/promises";
 
 // ✅ Mock helper prompt (NEW)
 jest.mock("../../helper/promptAdapter", () => ({
@@ -14,11 +14,12 @@ jest.mock("child_process", () => ({
   execSync: jest.fn(),
 }));
 
-jest.mock("fs-extra", () => ({
-  mkdirp: jest.fn(),
+jest.mock("fs/promises", () => ({
+  mkdir: jest.fn(),
   writeFile: jest.fn(),
+}));
+jest.mock("fs", () => ({
   existsSync: jest.fn().mockReturnValue(true),
-  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
   readFileSync: jest.fn().mockReturnValue("{}"),
 }));
 
@@ -66,7 +67,7 @@ describe("generateTest command", () => {
     );
 
     // directory creation
-    expect(fs.mkdirp).toHaveBeenCalledWith(testDir);
+    expect(mkdir).toHaveBeenCalledWith(testDir, { recursive: true });
 
     expect(log.success).toHaveBeenCalledWith("Test generated successfully");
   });
@@ -82,7 +83,7 @@ describe("generateTest command", () => {
     const testDir = path.join(cwdMock, "tests");
     const testFile = path.join(testDir, "product.test.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       testFile,
       expect.stringContaining("import request"),
     );
@@ -125,7 +126,7 @@ describe("generateTest command", () => {
 
     await generateTest("order", "commonjs");
 
-    const content = (fs.writeFile as any).mock.calls.find(
+    const content = (writeFile as any).mock.calls.find(
       ([file]: [string, string]) => file.includes("order.test.js"),
     )[1];
 

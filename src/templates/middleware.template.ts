@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
 export default async function generatAuthMiddleware(
@@ -7,7 +7,7 @@ export default async function generatAuthMiddleware(
   base: string,
 ) {
   const middlewareDir = path.join(base, "src/middlewares");
-  await fs.mkdirp(middlewareDir);
+  await mkdir(middlewareDir, { recursive: true });
   const middleware =
     selectedFramework === "express"
       ? isModule
@@ -61,8 +61,5 @@ module.exports = async function (req, reply) {
   } 
 };`;
 
-  await fs.writeFile(
-    path.join(middlewareDir, `auth.middleware.js`),
-    middleware,
-  );
+  await writeFile(path.join(middlewareDir, `auth.middleware.js`), middleware);
 }

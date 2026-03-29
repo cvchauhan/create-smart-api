@@ -1,19 +1,18 @@
 import generateValidation from "../../commands/generate-validation";
-import fs from "fs-extra";
 import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { execSync } from "child_process";
 import { log } from "../../helper";
+import { mkdir, writeFile } from "fs/promises";
 
 jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
 
-jest.mock("fs-extra", () => ({
-  mkdirp: jest.fn(),
+jest.mock("fs/promises", () => ({
+  mkdir: jest.fn(),
   writeFile: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),
-  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
 }));
 
 jest.mock("child_process", () => ({
@@ -42,7 +41,7 @@ describe("generateValidation", () => {
     await generateValidation("", "commonjs");
 
     expect(log.error).toHaveBeenCalledWith("Module name is required");
-    expect(fs.mkdirp).not.toHaveBeenCalled();
+    expect(mkdir).not.toHaveBeenCalled();
     expect(execSync).not.toHaveBeenCalled();
   });
 
@@ -56,7 +55,7 @@ describe("generateValidation", () => {
 
     const dir = path.join(cwdMock, "src/validation", "user");
 
-    expect(fs.mkdirp).toHaveBeenCalledWith(dir);
+    expect(mkdir).toHaveBeenCalledWith(dir, { recursive: true });
     expect(log.success).toHaveBeenCalledWith("Validation created");
   });
 
@@ -104,7 +103,7 @@ describe("generateValidation", () => {
 
     await generateValidation("order", "commonjs");
 
-    const content = (fs.writeFile as any).mock.calls[0][1];
+    const content = (writeFile as any).mock.calls[0][1];
     expect(content).toContain("orderSchema.safeParse");
   });
 });

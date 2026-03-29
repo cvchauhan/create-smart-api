@@ -1,6 +1,6 @@
-import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper";
+import { mkdir } from "fs/promises";
 
 export default async function (name: string) {
   if (!name) {
@@ -9,9 +9,9 @@ export default async function (name: string) {
   }
   const base = path.join(process.cwd(), name);
 
-  await fs.mkdirp(base + "/gateway");
-  await fs.mkdirp(base + "/services/user");
-  await fs.mkdirp(base + "/services/order");
+  await mkdir(base + "/gateway", { recursive: true });
+  await mkdir(base + "/services/user", { recursive: true });
+  await mkdir(base + "/services/order", { recursive: true });
 
   log.success("Microservice structure created");
 }

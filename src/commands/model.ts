@@ -2,7 +2,6 @@ import { log } from "../helper";
 import { showTablePreview } from "../helper/showTablePreview";
 import Field from "../types/field";
 import { prompt } from "../helper/promptAdapter";
-import fs from "fs-extra";
 import path from "path";
 import create from "./create";
 import {
@@ -20,6 +19,8 @@ import {
   generateMongooseModel,
 } from "../utils/model.util";
 import { getConfig } from "../helper/getConfig";
+import { existsSync, lstatSync } from "fs";
+import { writeFile } from "fs/promises";
 
 export default async function generateModel(
   name: string,
@@ -36,7 +37,7 @@ export default async function generateModel(
   const base = process.cwd();
   const srcPath = path.join(base, "./src");
   const config = getConfig(process.cwd());
-  if (!fs.existsSync(srcPath) || !fs.lstatSync(srcPath).isDirectory()) {
+  if (!existsSync(srcPath) || !lstatSync(srcPath).isDirectory()) {
     log.error("No project found.");
 
     const { createNow } = await prompt([
@@ -183,11 +184,11 @@ export default async function generateModel(
   let selectedModelPath =
     modelPath || path.join(base, "src/models", `${modelName}.model.js`);
   if (!isCrud) {
-    await fs.writeFile(selectedModelPath, modelContent);
+    await writeFile(selectedModelPath, modelContent);
     log.success(`Model ${modelName} created successfully`);
     return;
   }
-  await fs.writeFile(selectedModelPath, modelContent);
+  await writeFile(selectedModelPath, modelContent);
   return relations;
 }
 

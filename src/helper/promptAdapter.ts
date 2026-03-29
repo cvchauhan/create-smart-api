@@ -1,4 +1,5 @@
-import prompts, { PromptObject } from "prompts";
+import { PromptObject } from "prompts";
+
 import { log } from "./index";
 
 /* ---------------- TYPES ---------------- */
@@ -102,7 +103,7 @@ export async function prompt<T = Record<string, any>>(
       initial,
       validate: q.validate,
     };
-
+    const { default: prompts } = await import("prompts");
     const res = await prompts(promptObj, {
       onCancel: () => {
         log.error("Operation cancelled");

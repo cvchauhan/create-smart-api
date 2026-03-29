@@ -1,9 +1,10 @@
-import fs from "fs-extra";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { execSync } from "child_process";
 import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
+import { existsSync, readFileSync } from "fs";
 
 export default async function (
   module: string,
@@ -35,7 +36,7 @@ export default async function (
 
   /* -------- INSTALL DEPENDENCIES (SAFE) -------- */
   const pkgPath = path.join(base, "package.json");
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
 
   const devDeps = pkg.devDependencies || {};
 
@@ -55,7 +56,7 @@ export default async function (
 
   /* -------- CREATE TEST DIR -------- */
   const dir = path.join(base, "tests");
-  await fs.mkdirp(dir);
+  await mkdir(dir, { recursive: true });
 
   const route = `/${module}s`; // ✅ fix plural
 
@@ -101,17 +102,17 @@ describe("${module} API", () => {
 `;
 
   /* -------- WRITE TEST FILE -------- */
-  await fs.writeFile(path.join(dir, `${module}.test.js`), testContent);
+  await writeFile(path.join(dir, `${module}.test.js`), testContent);
 
   /* -------- SAFE JEST CONFIG -------- */
   const jestConfigPath = path.join(base, "jest.config.js");
 
-  if (!fs.existsSync(jestConfigPath)) {
+  if (!existsSync(jestConfigPath)) {
     const jestConfig = isModule
       ? `export default { testEnvironment: "node" };`
       : `module.exports = { testEnvironment: "node" };`;
 
-    await fs.writeFile(jestConfigPath, jestConfig);
+    await writeFile(jestConfigPath, jestConfig);
   }
 
   log.success("Test generated successfully");

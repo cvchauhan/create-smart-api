@@ -1,23 +1,34 @@
 import generateService from "../../commands/generate-service";
-import fs from "fs-extra";
 import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { log } from "../../helper";
+import { mkdir, writeFile } from "fs/promises";
 
 // ✅ Mock helper prompt (NEW)
 jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
+jest.mock("../../commands/model", () => ({
+  __esModule: true,
+  default: jest.fn().mockResolvedValue([
+    {
+      type: "1:1",
+      target: "User",
+      field: "userId",
+      required: true,
+    },
+  ]),
+}));
 
-jest.mock("fs-extra", () => ({
+const modelMock = require("../../commands/model").default as jest.Mock;
+
+jest.mock("fs/promises", () => ({
+  mkdir: jest.fn(),
   writeFile: jest.fn(),
   readdir: jest.fn().mockResolvedValue(["index.routes.js"]),
   existsSync: jest.fn().mockReturnValue(true),
   lstatSync: jest.fn().mockReturnValue({ isDirectory: () => true }),
   readdirSync: jest.fn().mockReturnValue(["index.routes.js"]),
-  readJSONSync: jest.fn().mockReturnValue({ createSmartApi: {} }),
-  fs: jest.fn(),
-  mkdirp: jest.fn(),
 }));
 
 jest.mock("../../helper", () => ({
@@ -25,6 +36,7 @@ jest.mock("../../helper", () => ({
     success: jest.fn(),
     error: jest.fn(),
     info: jest.fn(),
+    warn: jest.fn(),
   },
 }));
 
@@ -64,7 +76,7 @@ describe("generateService", () => {
     await generateService("", "commonjs");
 
     expect(log.error).toHaveBeenCalledWith("Service name is required");
-    expect(fs.mkdirp).not.toHaveBeenCalled();
+    expect(mkdir).not.toHaveBeenCalled();
   });
 
   // ✅ CommonJS case
@@ -72,17 +84,18 @@ describe("generateService", () => {
     promptMock.mockResolvedValue({
       moduleType: "commonjs",
       action: "continue",
+      db: "mongodb",
     });
 
     await generateService("user", "commonjs");
 
     const dir = path.join(cwdMock, "src/services");
 
-    expect(fs.mkdirp).toHaveBeenCalledWith(dir);
+    expect(mkdir).toHaveBeenCalledWith(dir, { recursive: true });
 
     const filePath = path.join(dir, "user.service.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       filePath,
       expect.stringContaining("module.exports"),
     );
@@ -92,9 +105,18 @@ describe("generateService", () => {
 
   // ✅ ES Module case
   test("should generate service in ES module", async () => {
+    modelMock.mockResolvedValueOnce([
+      {
+        type: "N:N",
+        target: "Profile",
+        field: "profileId",
+        required: true,
+      },
+    ]);
     promptMock.mockResolvedValue({
       moduleType: "module",
       action: "continue",
+      db: "mongodb",
     });
 
     await generateService("product", "module");
@@ -103,7 +125,33 @@ describe("generateService", () => {
 
     const filePath = path.join(dir, "product.service.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
+      filePath,
+      expect.stringContaining("export const"),
+    );
+  });
+  test("should generate service in ES module with mssql db", async () => {
+    modelMock.mockResolvedValueOnce([
+      {
+        type: "N:N",
+        target: "Profile",
+        field: "profileId",
+        required: true,
+      },
+    ]);
+    promptMock.mockResolvedValue({
+      moduleType: "module",
+      action: "continue",
+      db: "mssql",
+    });
+
+    await generateService("product", "module");
+
+    const dir = path.join(cwdMock, "src/services");
+
+    const filePath = path.join(dir, "product.service.js");
+
+    expect(writeFile).toHaveBeenCalledWith(
       filePath,
       expect.stringContaining("export const"),
     );

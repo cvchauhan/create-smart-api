@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { prompt } from "../helper/promptAdapter";
 import { createStructure } from "../generators/project";
@@ -78,7 +78,7 @@ export default async function (name: string) {
   ]);
 
   const base = path.join(process.cwd(), name || answers.name);
-  await fs.mkdirp(base);
+  await mkdir(base, { recursive: true });
 
   await createStructure(base, answers);
 
@@ -93,7 +93,7 @@ export default async function (name: string) {
           ? "mongodb"
           : "sqlite";
 
-  await fs.writeFile(dbPath, generateDbConfig(answers.moduleType, dialect));
+  await writeFile(dbPath, generateDbConfig(answers.moduleType, dialect));
 
   /* -------- ENV FILE -------- */
 

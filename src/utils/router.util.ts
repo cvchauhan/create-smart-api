@@ -1,7 +1,8 @@
-import fs from "fs-extra";
 import path from "path";
 import routesContent from "../templates/route.template";
 import { log } from "../helper";
+import { writeFile } from "fs/promises";
+import { readdirSync } from "fs";
 
 class Router {
   genrateRouter = async (
@@ -22,11 +23,11 @@ class Router {
     const routePath = path.join(base, "src/routes", `${name}.routes.js`);
 
     const routeContent = routesContent(name, framework, isESM);
-    await fs.writeFile(routePath, routeContent);
+    await writeFile(routePath, routeContent);
 
     const routesDir = path.dirname(routesIndex);
 
-    const routeFiles = (await fs.readdir(routesDir)).filter(
+    const routeFiles = (await readdirSync(routesDir)).filter(
       (f) => f.endsWith(".routes.js") && f !== "index.js",
     );
 
@@ -104,7 +105,7 @@ ${registerLines.join("\n")}
       }
     }
 
-    await fs.writeFile(routesIndex, routesIndexContent);
+    await writeFile(routesIndex, routesIndexContent);
   };
 }
 

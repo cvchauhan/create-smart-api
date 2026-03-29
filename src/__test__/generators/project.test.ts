@@ -1,10 +1,10 @@
 import { createStructure } from "../../generators/project";
-import fs from "fs-extra";
 import path from "path";
 import { log } from "../../helper";
+import { mkdir, writeFile } from "fs/promises";
 
-jest.mock("fs-extra", () => ({
-  mkdirp: jest.fn(),
+jest.mock("fs/promises", () => ({
+  mkdir: jest.fn(),
   writeFile: jest.fn(),
 }));
 
@@ -34,12 +34,14 @@ describe("createStructure", () => {
 
     const src = path.join(base, "src");
 
-    expect(fs.mkdirp).toHaveBeenCalledWith(src);
+    expect(mkdir).toHaveBeenCalledWith(src, { recursive: true });
 
     const folders = ["controllers", "services", "models", "routes", "config"];
 
     folders.forEach((folder) => {
-      expect(fs.mkdirp).toHaveBeenCalledWith(path.join(src, folder));
+      expect(mkdir).toHaveBeenCalledWith(path.join(src, folder), {
+        recursive: true,
+      });
     });
   });
 
@@ -53,7 +55,7 @@ describe("createStructure", () => {
 
     const serverPath = path.join(base, "src", "server.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       serverPath,
       expect.stringContaining('require("express")'),
     );
@@ -69,7 +71,7 @@ describe("createStructure", () => {
 
     const serverPath = path.join(base, "src", "server.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       serverPath,
       expect.stringContaining("import express"),
     );
@@ -85,7 +87,7 @@ describe("createStructure", () => {
 
     const serverPath = path.join(base, "src", "server.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       serverPath,
       expect.stringContaining('require("fastify")'),
     );
@@ -101,7 +103,7 @@ describe("createStructure", () => {
 
     const serverPath = path.join(base, "src", "server.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       serverPath,
       expect.stringContaining("import Fastify"),
     );
@@ -117,7 +119,7 @@ describe("createStructure", () => {
 
     const routesIndexPath = path.join(base, "src", "routes", "index.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       routesIndexPath,
       expect.stringContaining("module.exports"),
     );
@@ -133,7 +135,7 @@ describe("createStructure", () => {
 
     const routesIndexPath = path.join(base, "src", "routes", "index.js");
 
-    expect(fs.writeFile).toHaveBeenCalledWith(
+    expect(writeFile).toHaveBeenCalledWith(
       routesIndexPath,
       expect.stringContaining("export default"),
     );

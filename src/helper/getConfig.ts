@@ -1,11 +1,13 @@
-import fs from "fs-extra";
 import path from "path";
 import { log } from "../helper";
+import { existsSync, readFileSync } from "fs";
 export function getConfig(base: string) {
-  if (!fs.existsSync(path.join(base, "package.json"))) {
+  if (!existsSync(path.join(base, "package.json"))) {
     log.error("Not inside a valid project");
     return;
   }
-  const pkg = fs.readJSONSync(path.join(base, "package.json"));
+  const pkg = JSON.parse(
+    readFileSync(path.join(base, "package.json"), "utf-8"),
+  );
   return pkg.createSmartApi || {};
 }

@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { writeFile } from "fs/promises";
 import path from "path";
 
 const serviceGenrate = async (
@@ -135,9 +135,9 @@ module.exports.remove = async (id) => {
 `;
   }
   if (isCrud) {
-    await fs.writeFile(servicePath, serviceContent);
+    await writeFile(servicePath, serviceContent);
   } else {
-    await fs.writeFile(
+    await writeFile(
       path.join(servicePath, `${name}.service.js`),
       serviceContent,
     );

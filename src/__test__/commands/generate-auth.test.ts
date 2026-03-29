@@ -1,8 +1,8 @@
 import generateAuth from "../../commands/generate-auth";
-import { writeFile, mkdirp } from "fs-extra";
 import { prompt } from "../../helper/promptAdapter";
 import { log } from "../../helper";
 import { execSync } from "child_process";
+import { mkdir, writeFile } from "fs/promises";
 
 // ✅ Correct mocks
 
@@ -22,14 +22,10 @@ jest.mock("child_process", () => ({
   execSync: jest.fn(),
 }));
 
-// ✅ FIX: named exports (not default)
-jest.mock("fs-extra", () => ({
+jest.mock("fs/promises", () => ({
   writeFile: jest.fn(),
-  mkdirp: jest.fn(),
+  mkdir: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),
-  readJSONSync: jest
-    .fn()
-    .mockReturnValue({ createSmartApi: { db: "mongodb" } }),
 }));
 
 // ✅ FIX: match default import
@@ -53,7 +49,7 @@ describe("Auth middleware generator", () => {
 
     await generateAuth();
 
-    expect(mkdirp).toHaveBeenCalled();
+    expect(mkdir).toHaveBeenCalled();
 
     expect(execSync).toHaveBeenCalledWith("npm install jsonwebtoken bcrypt", {
       stdio: "inherit",

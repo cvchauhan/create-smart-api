@@ -1,9 +1,9 @@
-import fs from "fs-extra";
 import path from "path";
 import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import { spawnSync } from "child_process";
+import { mkdir, writeFile } from "fs/promises";
 
 export default async function generateSwagger(
   moduleType?: "module" | "commonjs",
@@ -24,7 +24,7 @@ export default async function generateSwagger(
     },
   ]);
   const swaggerDir = path.join(base, "src/config");
-  await fs.ensureDir(swaggerDir);
+  await mkdir(swaggerDir, { recursive: true });
   log.info("Generating swagger...");
   let swaggerImport = "";
   spawnSync("npm", ["install", "swagger-jsdoc", "swagger-ui-express"], {
@@ -75,7 +75,7 @@ const swaggerSpec = swaggerJsdoc(options);
 ${exportContent}
 `;
 
-  await fs.writeFile(path.join(swaggerDir, "swagger.js"), content);
+  await writeFile(path.join(swaggerDir, "swagger.js"), content);
 
   log.success("Swagger configuration created");
 }

@@ -1,6 +1,6 @@
 import { generateDbConnectionCode } from "../../helper/serverDbInject";
 
-jest.mock("fs-extra", () => ({
+jest.mock("fs/promises", () => ({
   existsSync: jest.fn(),
 }));
 

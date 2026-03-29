@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
 export default async function generateAuthController(
@@ -7,7 +7,7 @@ export default async function generateAuthController(
   base: string,
 ) {
   const authDir = path.join(base, "src/controllers/auth");
-  await fs.mkdirp(authDir);
+  await mkdir(authDir, { recursive: true });
   const importLine = isModule
     ? `import { register, login } from "../../services/auth/auth.service.js";`
     : `const { register, login } = require("../../services/auth/auth.service");`;
@@ -61,5 +61,5 @@ module.exports = async function (fastify) {
 };
 `;
 
-  await fs.writeFile(path.join(authDir, `auth.controller.js`), authController);
+  await writeFile(path.join(authDir, `auth.controller.js`), authController);
 }

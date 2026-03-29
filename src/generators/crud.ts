@@ -1,4 +1,3 @@
-import fs from "fs-extra";
 import path from "path";
 import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";

@@ -12,21 +12,31 @@ const serviceGenrate = async (
   let serviceContent = "";
 
   if (selectedDb === "mongodb") {
-    const populateFields = relations?.map((r: any) =>
-      r.type === "1:N" || r.type === "N:N"
-        ? `${r.target.toLowerCase()}s`
-        : r.target.toLowerCase(),
-    );
+    const populateFields = relations?.map((r: any) => r.field).filter(Boolean);
+    const uniqueTargets = [...new Set(relations.map((r: any) => r.target))];
+
+    const relationImportsESM = uniqueTargets
+      .map((t) => `import ${t} from "../models/${t}.model.js";`)
+      .join("\n");
+
+    const relationImportsCJS = uniqueTargets
+      .map((t) => `require("../models/${t}.model");`)
+      .join("\n");
 
     serviceContent = isESM
-      ? `import ${name} from "../models/${name}.model.js";
+      ? `${relationImportsESM}
+import ${name} from "../models/${name}.model.js";
 
 export const getAll = async () => {
-  return await ${name}.find().populate(${JSON.stringify(populateFields)});
+  return await ${name}.find().populate(${JSON.stringify(
+    populateFields,
+  )}.map(f => ({ path: f })));
 };
 
 export const getById = async (id) => {
-  return await ${name}.findById(id).populate(${JSON.stringify(populateFields)});
+  return await ${name}.findById(id).populate(${JSON.stringify(
+    populateFields,
+  )}.map(f => ({ path: f })));
 };
 
 export const create = async (data) => {
@@ -42,13 +52,18 @@ export const remove = async (id) => {
 };
 `
       : `const ${name} = require("../models/${name}.model");
+${relationImportsCJS}
 
 module.exports.getAll = async () => {
-  return await ${name}.find().populate(${JSON.stringify(populateFields)});
+  return await ${name}.find().populate(${JSON.stringify(
+    populateFields,
+  )}.map(f => ({ path: f })));
 };
 
 module.exports.getById = async (id) => {
-  return await ${name}.findById(id).populate(${JSON.stringify(populateFields)});
+  return await ${name}.findById(id).populate(${JSON.stringify(
+    populateFields,
+  )}.map(f => ({ path: f })));
 };
 
 module.exports.create = async (data) => {

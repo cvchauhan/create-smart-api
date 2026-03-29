@@ -25,8 +25,8 @@ export default async function (name: string) {
     {
       type: "input",
       name: "name",
-      message: "Project name",
-      default: "my-app",
+      message: "Project name (Default: Current Directory)",
+      default: ".",
       when: () => !name,
       validate: validateName,
     },
@@ -76,7 +76,10 @@ export default async function (name: string) {
       validate: validateOnlyNumber,
     },
   ]);
-
+  if (name === ".") {
+    const targetDir = process.cwd();
+    name = path.basename(targetDir);
+  }
   const base = path.join(process.cwd(), name || answers.name);
   await mkdir(base, { recursive: true });
 

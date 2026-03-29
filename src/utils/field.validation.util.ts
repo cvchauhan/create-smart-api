@@ -44,7 +44,7 @@ class FieldValidation {
   };
 
   validateName = async (input: string) => {
-    const regex = /^[a-zA-Z0-9_-]+$/;
+    const regex = /^[a-zA-Z0-9._-]+$/;
 
     if (!input) {
       return "Name is required";

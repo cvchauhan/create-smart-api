@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-// @ts-ignore
-import cac from "cac";
 import pkg from "../../package.json";
 
 import {
@@ -18,114 +16,113 @@ import {
   route,
 } from "../commands";
 
-const cli = cac("create-smart-api");
+/* ---------------- TYPES ---------------- */
+
+type CommandHandler = (...args: any[]) => any;
+
+interface Command {
+  name: string;
+  alias?: string;
+  handler: CommandHandler;
+}
+
+/* ---------------- COMMANDS MAP ---------------- */
+
+const commands: Command[] = [
+  { name: "create", alias: "c", handler: create },
+  { name: "generate:crud", alias: "g:c", handler: crud },
+  { name: "generate:service", alias: "g:s", handler: service },
+  { name: "generate:route", alias: "g:r", handler: route },
+  { name: "generate:model", alias: "g:m", handler: model as any },
+  { name: "generate:auth", alias: "g:a", handler: auth },
+  { name: "generate:validation", alias: "g:v", handler: validation },
+  { name: "generate:microservice", alias: "g:ms", handler: micro },
+  { name: "generate:test", alias: "g:t", handler: test },
+  { name: "add:plugin", alias: "add:p", handler: plugin },
+  { name: "generate:swagger", handler: swagger },
+];
+
+/* ---------------- HELP ---------------- */
+
+function showHelp() {
+  console.log(`
+Usage: create-smart-api <command> [options]
+
+Commands:
+  create [name]                     Create a new API project
+
+  generate:crud <module>            Generate CRUD
+  generate:service <module>         Generate service
+  generate:route <module>           Generate route
+  generate:model <name>             Generate model
+  generate:auth                     Setup authentication
+  generate:validation <module>      Generate validation
+  generate:microservice <name>      Generate microservice
+  generate:test <module>            Generate test
+
+  add:plugin [name]                 Add plugin
+
+  generate:swagger                  Setup Swagger
+
+Aliases:
+  c, g:c, g:s, g:r, g:m, g:a, g:v, g:ms, g:t, add:p
+
+Examples:
+  create-smart-api create my-api
+  create-smart-api create .
+  create-smart-api generate:crud user
+  create-smart-api generate:service user
+  create-smart-api generate:swagger
+`);
+}
 
 /* ---------------- VERSION ---------------- */
 
-if (process.argv.includes("--version") || process.argv.includes("-v")) {
+function showVersion() {
   console.log(pkg?.version || "unknown");
-  process.exit(0);
 }
 
-/* ---------------- COMMANDS ---------------- */
+/* ---------------- FIND COMMAND ---------------- */
 
-// create
-cli
-  .command("create [name]", "Create a new API project")
-  .alias("c")
-  .action(create);
+function findCommand(cmd: string): Command | undefined {
+  return commands.find((c) => c.name === cmd || c.alias === cmd);
+}
 
-// CRUD
-cli
-  .command(
-    "generate:crud <module> [framework] [moduleType]",
-    "Generate CRUD operations for a module",
-  )
-  .alias("g:c")
-  .action(crud);
+/* ---------------- MAIN ---------------- */
 
-// service
-cli
-  .command("generate:service <module> [moduleType]", "Generate a new service")
-  .alias("g:s")
-  .action(service);
+async function main() {
+  const args = process.argv.slice(2);
 
-// route
-cli
-  .command(
-    "generate:route <module> [framework] [moduleType]",
-    "Generate a new route",
-  )
-  .alias("g:r")
-  .action(route);
+  const cmd = args[0];
 
-// model
-cli
-  .command("generate:model <name> [moduleType] [db]", "Generate a new model")
-  .alias("g:m")
-  .action(model as any);
+  // version
+  if (args.includes("--version") || args.includes("-v")) {
+    showVersion();
+    return;
+  }
 
-// auth
-cli
-  .command(
-    "generate:auth [framework] [moduleType]",
-    "Generate authentication setup",
-  )
-  .alias("g:a")
-  .action(auth);
+  // help
+  if (!cmd || cmd === "--help" || cmd === "-h") {
+    showHelp();
+    return;
+  }
 
-// validation
-cli
-  .command(
-    "generate:validation <module> [moduleType]",
-    "Generate validation setup",
-  )
-  .alias("g:v")
-  .action(validation);
+  const command = findCommand(cmd);
 
-// microservice
-cli
-  .command("generate:microservice <name>", "Generate a new microservice")
-  .alias("g:ms")
-  .action(micro);
+  if (!command) {
+    console.log(`❌ Unknown command: ${cmd}`);
+    console.log(`👉 Run 'create-smart-api --help'`);
+    return;
+  }
 
-// plugin
-cli
-  .command("add:plugin [name]", "Add a new plugin")
-  .alias("add:p")
-  .action(plugin);
+  try {
+    // pass remaining args
+    await command.handler(...args.slice(1));
+  } catch (err: any) {
+    console.error("❌ Error:", err?.message || err);
+  }
+}
 
-// tests
-cli
-  .command("generate:test <module> [moduleType]", "Generate tests for a module")
-  .alias("g:t")
-  .action(test);
+/* ---------------- RUN ---------------- */
 
-// swagger
-cli
-  .command("generate:swagger", "Generate Swagger documentation setup")
-  .action(async () => {
-    await swagger();
-  });
-
-/* ---------------- HELP EXAMPLES ---------------- */
-
-cli.help(() => {
-  console.log(`
-Examples:
-
-  $ create-smart-api create my-api
-  $ create-smart-api create
-
-  $ create-smart-api generate:crud user
-  $ create-smart-api generate:crud user express module
-
-  $ create-smart-api generate:service user
-  $ create-smart-api generate:validation user
-  $ create-smart-api generate:swagger
-`);
-});
-
-/* ---------------- PARSE ---------------- */
-
-cli.parse();
+main();

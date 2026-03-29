@@ -15,8 +15,13 @@ class Model {
 
         if (f.required) str += `\n    allowNull: false,`;
         if (f.unique) str += `\n    unique: true,`;
-        if (f.default)
-          str += `\n    defaultValue: ${JSON.stringify(f.default)},`;
+        if (f.default !== undefined) {
+          const parsed = this.parseDefaultValue(f.default, f.type);
+
+          str += `\n    defaultValue: ${
+            typeof parsed === "string" ? JSON.stringify(parsed) : parsed
+          },`;
+        }
 
         if (f.enumValues) {
           str += `\n    validate: { isIn: [${JSON.stringify(f.enumValues)}] },`;
@@ -117,7 +122,13 @@ module.exports = ${name};
 
         if (f.required) str += `\n    required: true,`;
         if (f.unique) str += `\n    unique: true,`;
-        if (f.default) str += `\n    default: ${JSON.stringify(f.default)},`;
+        if (f.default !== undefined) {
+          const parsed = this.parseDefaultValue(f.default, f.type);
+
+          str += `\n    default: ${
+            typeof parsed === "string" ? JSON.stringify(parsed) : parsed
+          },`;
+        }
 
         if (f.enumValues) {
           str += `\n    enum: ${JSON.stringify(f.enumValues)},`;
@@ -193,6 +204,25 @@ module.exports = mongoose.model("${name}", ${schemaName}Schema);
     };
     return map[type] || "DataTypes.STRING";
   };
+  parseDefaultValue(value: any, type: string) {
+    if (value === undefined) return value;
+
+    switch (type.toLowerCase()) {
+      case "boolean":
+        if (value === "true" || value === true) return true;
+        if (value === "false" || value === false) return false;
+        return undefined;
+
+      case "number":
+        return Number(value);
+
+      case "string":
+        return String(value);
+
+      default:
+        return value;
+    }
+  }
 }
 
 const model = new Model();

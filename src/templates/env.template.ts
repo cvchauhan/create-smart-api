@@ -8,14 +8,14 @@ export default async function generateEnvFile(
   const envContent =
     dialect === "mongodb"
       ? `DB_URL=mongodb://localhost:27017/mydb
-  PORT=${port}
+PORT=${port}
         `
       : `
-  DB_NAME=test_db
-  DB_USER=root
-  DB_PASS=password
-  DB_HOST=localhost
-  PORT=${port}
+DB_NAME=test_db
+DB_USER=root
+DB_PASS=password
+DB_HOST=localhost
+PORT=${port}
   `;
   await writeFile(envPath, envContent);
 }

@@ -21,7 +21,7 @@ export default async function (
       when: () => !framework && !config?.framework,
     },
     {
-      type: "rawlist",
+      type: "select",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

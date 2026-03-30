@@ -70,7 +70,7 @@ export default async function generateModel(
 
   const answers = await prompt([
     {
-      type: "rawlist",
+      type: "select",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",
@@ -94,7 +94,7 @@ export default async function generateModel(
   let modelFields: any[] = [];
   const { inputMode } = await prompt([
     {
-      type: "rawlist",
+      type: "select",
       name: "inputMode",
       message: "create-smart-api > How do you want to define fields?",
       choices: [
@@ -120,7 +120,7 @@ export default async function generateModel(
 
     const { action } = await prompt([
       {
-        type: "rawlist",
+        type: "select",
         name: "action",
         default: "continue",
         message: "Select action:",

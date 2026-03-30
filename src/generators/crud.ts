@@ -29,7 +29,7 @@ export default async function generateCrud(
       when: () => !framework,
     },
     {
-      type: "rawlist",
+      type: "select",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

@@ -25,7 +25,7 @@ export default async function (
       when: () => !config?.db,
     },
     {
-      type: "rawlist",
+      type: "select",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

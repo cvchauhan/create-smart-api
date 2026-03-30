@@ -22,7 +22,7 @@ export async function resolveType(type: string): Promise<string> {
 
   const { manual } = await prompt([
     {
-      type: "rawlist",
+      type: "select",
       name: "manual",
       message: "Select correct type:",
       choices: allowedTypes,

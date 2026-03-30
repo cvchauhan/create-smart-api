@@ -30,7 +30,7 @@ export default async function (
       when: () => !selectedFramework,
     },
     {
-      type: "rawlist",
+      type: "select",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

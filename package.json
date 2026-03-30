@@ -1,17 +1,17 @@
 {
   "name": "create-smart-api",
-  "version": "4.3.7",
+  "version": "4.3.8",
   "description": "CLI to generate production-ready Node.js APIs with CRUD, auth, validation, testing and microservices",
   "preferGlobal": true,
-  "main": "dist/bin/cli.js",
-  "types": "dist/bin/cli.d.ts",
+  "main": "dist/cli.js",
+  "types": "dist/cli.d.ts",
   "bin": {
-    "create-smart-api": "dist/bin/cli.js"
+    "create-smart-api": "dist/cli.js"
   },
   "scripts": {
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "build": "tsc",
+    "build": "tsup",
     "dev": "ts-node src/bin/cli.ts",
     "dev:test": "npm run build && npm link",
     "publish": "npm run build && npm publish",
@@ -78,6 +78,7 @@
     "jest": "^30.3.0",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   }
 }

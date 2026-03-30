@@ -12,7 +12,7 @@ export default async function generateSwagger(
   const config = getConfig(base);
   const answers = await prompt([
     {
-      type: "rawlist",
+      type: "select",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

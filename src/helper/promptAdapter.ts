@@ -1,4 +1,4 @@
-import { PromptObject } from "prompts";
+import type { PromptObject } from "prompts";
 
 import { log } from "./index";
 
@@ -37,8 +37,6 @@ function mapType(
   switch (resolved) {
     case "input":
       return "text";
-    case "rawlist":
-    case "list":
     case "select":
       return "select";
     case "confirm":
@@ -103,8 +101,7 @@ export async function prompt<T = Record<string, any>>(
       initial,
       validate: q.validate,
     };
-    const { default: prompts } = await import("prompts");
-    const res = await prompts(promptObj, {
+    const res = await runPrompt(promptObj, {
       onCancel: () => {
         log.error("Operation cancelled");
         process.exit(1);
@@ -115,4 +112,9 @@ export async function prompt<T = Record<string, any>>(
   }
 
   return answers as T; // 🔥 GENERIC FIX
+}
+
+export async function runPrompt(promptObj: any, options?: any) {
+  const prompts = (await import("prompts")).default;
+  return prompts(promptObj, options);
 }

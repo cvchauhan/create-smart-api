@@ -25,7 +25,7 @@ export default async function (name: string) {
     {
       type: "input",
       name: "name",
-      message: "Project name (Default: Current Directory)",
+      message: "Project name (Press Enter for current directory)",
       default: ".",
       when: () => !name,
       validate: validateName,
@@ -38,7 +38,7 @@ export default async function (name: string) {
       choices: ["express", "fastify"],
     },
     {
-      type: "rawlist",
+      type: "select",
       name: "moduleType",
       message: "Module system",
       default: "commonjs",

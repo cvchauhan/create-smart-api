@@ -1,5 +1,12 @@
 export default {
   entry: ["src/bin/cli.ts"],
-  format: ["cjs", "esm"],
-  external: ["prompts"],
+  OutDir: "dist",
+  format: ["cjs"],
+  dts: true,
+  clean: true,
+  minify: true,
+  treeshake: true,
+  splitting: false,
+  sourcemap: true,
+  external: ["prompts", "cli-table3"],
 };

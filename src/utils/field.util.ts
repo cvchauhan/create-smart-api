@@ -70,7 +70,7 @@ class Fields {
 
     const { property } = await prompt([
       {
-        type: "rawlist",
+        type: "select",
         name: "property",
         message: `What do you want to edit for "${field.name}"?(type, required, unique, default, enum)`,
         default: "type",
@@ -383,7 +383,7 @@ class Fields {
 
     const { manual } = await prompt([
       {
-        type: "rawlist",
+        type: "select",
         name: "manual",
         message: "Select correct type:",
         choices: allowedTypes,

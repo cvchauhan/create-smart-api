@@ -10,7 +10,7 @@ export default defineConfig({
   minify: true,
   treeshake: true,
   splitting: false,
-  sourcemap: true,
+  sourcemap: false,
   platform: "node",
   external: [...builtinModules, "prompts", "cli-table3"],
 });

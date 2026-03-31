@@ -4,3 +4,4 @@ coverage
 dist
 build
 .vscode
+publish.txt

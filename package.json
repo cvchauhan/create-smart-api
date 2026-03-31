@@ -17,7 +17,8 @@
     "publish": "npm run build && npm publish",
     "patch": "npm run build && npm version patch && npm publish",
     "minor": "npm run build && npm version minor && npm publish",
-    "major": "npm run build && npm version major && npm publish"
+    "major": "npm run build && npm version major && npm publish",
+    "prepublishOnly": "echo 'Use GitHub Actions to publish' && exit 1"
   },
   "keywords": [
     "create-smart-api",
@@ -80,5 +81,8 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "provenance": true
   }
 }

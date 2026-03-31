@@ -1,6 +1,9 @@
-export default {
+import { defineConfig } from "tsup";
+import { builtinModules } from "module";
+
+export default defineConfig({
   entry: ["src/bin/cli.ts"],
-  OutDir: "dist",
+  outDir: "dist",
   format: ["cjs"],
   dts: true,
   clean: true,
@@ -8,5 +11,6 @@ export default {
   treeshake: true,
   splitting: false,
   sourcemap: true,
-  external: ["prompts", "cli-table3"],
-};
+  platform: "node",
+  external: [...builtinModules, "prompts", "cli-table3"],
+});

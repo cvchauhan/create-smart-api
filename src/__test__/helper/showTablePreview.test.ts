@@ -1,12 +1,4 @@
 import { showTablePreview } from "../../helper/showTablePreview";
-import Table from "cli-table3";
-
-jest.mock("cli-table3", () => {
-  return jest.fn().mockImplementation(() => ({
-    push: jest.fn(),
-    toString: jest.fn().mockReturnValue("TABLE_OUTPUT"),
-  }));
-});
 
 jest.mock("picocolors", () => ({
   bold: (t: string) => t,
@@ -60,7 +52,9 @@ describe("showTablePreview", () => {
 
     showTablePreview(fields as any);
 
-    expect(consoleSpy).toHaveBeenCalled();
+    const logs = consoleSpy.mock.calls.flat().join(" ");
+
+    expect(logs).toContain("enum(active, inactive)");
   });
 
   it("should calculate summary correctly", () => {
@@ -93,27 +87,21 @@ describe("showTablePreview", () => {
 
     showTablePreview(fields as any);
 
-    expect(consoleSpy).toHaveBeenCalled();
+    const logs = consoleSpy.mock.calls.flat().join(" ");
+
+    expect(logs).toContain("a");
+    expect(logs).toContain("b");
   });
 
-  it("should push rows into table", () => {
-    const mockPush = jest.fn();
-
-    (Table as any).mockImplementation(() => ({
-      push: mockPush,
-      toString: jest.fn().mockReturnValue("TABLE"),
-    }));
-
-    const fields = [
-      { name: "a", type: "string" },
-      { name: "b", type: "number" },
-      { name: "c", type: "boolean" },
-      { name: "d", type: "date" },
-      { name: "e" },
-    ];
+  it("should render table borders", () => {
+    const fields = [{ name: "a", type: "string" }];
 
     showTablePreview(fields as any);
 
-    expect(mockPush).toHaveBeenCalledTimes(5);
+    const logs = consoleSpy.mock.calls.flat().join(" ");
+
+    expect(logs).toContain("╭");
+    expect(logs).toContain("╯");
+    expect(logs).toContain("│");
   });
 });

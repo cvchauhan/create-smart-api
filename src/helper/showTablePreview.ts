@@ -1,87 +1,84 @@
 import Field from "../types/field";
-import Table from "cli-table3";
 import pc from "picocolors";
 
 class TablePreview {
   showTablePreview = (fields: Field[]) => {
     this.showSummary(fields);
-    const table = new Table({
-      head: this.getHeader(),
-      style: this.getTableStyle(),
-      colWidths: [5, 22, 14, 6, 6, 14, 22],
-      wordWrap: true,
-      chars: this.getTableChars(),
-    });
 
-    fields.forEach((f, index) => {
-      const isEven = index % 2 === 0;
+    const headers = ["#", "Field", "Type", "Req", "Uniq", "Default", "Extra"];
 
-      table.push(this.getRow(f, index, isEven));
-    });
+    const rows = fields.map((f, index) => [
+      String(index + 1),
+      f.name,
+      f.type,
+      f.required ? "✔" : "✖",
+      f.unique ? "✔" : "✖",
+      f.default ? String(f.default) : "-",
+      f.enumValues?.length ? `enum(${f.enumValues.join(", ")})` : "-",
+    ]);
 
     console.log("\n" + pc.bold(pc.cyan("📊 Schema Preview")) + "\n");
-    console.log(table.toString());
+
+    this.printTable(headers, rows);
+
     console.log();
   };
 
-  /* ---------------- HEADER ---------------- */
+  /* ---------------- SIMPLE TABLE ---------------- */
 
-  private getHeader() {
-    return [
-      pc.bold(pc.cyan("#")),
-      pc.bold(pc.cyan("Field")),
-      pc.bold(pc.cyan("Type")),
-      pc.bold(pc.cyan("Req")),
-      pc.bold(pc.cyan("Uniq")),
-      pc.bold(pc.cyan("Default")),
-      pc.bold(pc.cyan("Extra")),
-    ];
-  }
+  private printTable(headers: string[], rows: string[][]) {
+    const allRows = [headers, ...rows];
 
-  /* ---------------- ROW ---------------- */
+    // calculate column widths
+    const colWidths = headers.map((_, colIndex) =>
+      Math.max(...allRows.map((row) => (row[colIndex] || "").length)),
+    );
 
-  private getRow(f: Field, index: number, isEven: boolean) {
-    const bg = (text: string) => (isEven ? pc.white(text) : pc.gray(text));
+    const pad = (text: string, width: number) =>
+      text + " ".repeat(width - text.length);
 
-    return [
-      bg(pc.yellow(String(index + 1))),
-      pc.bold(f.name),
-      this.getTypeColor(f.type),
-      f.required ? pc.green("✔") : pc.gray("✖"),
-      f.unique ? pc.green("✔") : pc.gray("✖"),
-      f.default ? pc.magenta(String(f.default)) : pc.gray("-"),
-      this.getExtraInfo(f),
-    ];
-  }
-
-  /* ---------------- STYLE ---------------- */
-
-  private getTableStyle() {
-    return {
-      head: [],
-      border: [],
-      compact: false,
+    const drawLine = (left: string, mid: string, right: string) => {
+      const line = colWidths.map((w) => "─".repeat(w + 2)).join(mid);
+      console.log(left + line + right);
     };
-  }
 
-  private getTableChars() {
-    return {
-      top: "─",
-      "top-mid": "┬",
-      "top-left": "╭",
-      "top-right": "╮",
-      bottom: "─",
-      "bottom-mid": "┴",
-      "bottom-left": "╰",
-      "bottom-right": "╯",
-      left: "│",
-      "left-mid": "├",
-      mid: "─",
-      "mid-mid": "┼",
-      right: "│",
-      "right-mid": "┤",
-      middle: "│",
-    };
+    // top border
+    drawLine("╭", "┬", "╮");
+
+    // header
+    const headerRow = headers
+      .map((h, i) => " " + pc.bold(pc.cyan(pad(h, colWidths[i]))) + " ")
+      .join("│");
+    console.log("│" + headerRow + "│");
+
+    // separator
+    drawLine("├", "┼", "┤");
+
+    // rows
+    rows.forEach((row, index) => {
+      const isEven = index % 2 === 0;
+
+      const line = row
+        .map((cell, i) => {
+          let value = pad(cell, colWidths[i]);
+
+          // coloring
+          if (i === 0) value = pc.yellow(value);
+          if (i === 2) value = this.getTypeColor(value);
+          if (i === 3 || i === 4)
+            value = cell === "✔" ? pc.green(value) : pc.gray(value);
+          if (i === 5 && cell !== "-") value = pc.magenta(value);
+          if (i === 6 && cell.startsWith("enum")) value = pc.cyan(value);
+
+          return " " + (isEven ? pc.white(value) : pc.gray(value)) + " ";
+        })
+        .join("│");
+
+      console.log("│" + line + "│");
+    });
+
+    // bottom border
+    drawLine("╰", "┴", "╯");
   }
 
   /* ---------------- TYPE COLOR ---------------- */
@@ -101,14 +98,8 @@ class TablePreview {
     }
   }
 
-  /* ---------------- EXTRA INFO ---------------- */
+  /* ---------------- SUMMARY ---------------- */
 
-  private getExtraInfo(field: Field) {
-    if (field.enumValues?.length) {
-      return pc.cyan(`enum(${field.enumValues.join(", ")})`);
-    }
-    return pc.gray("-");
-  }
   private showSummary(fields: Field[]) {
     const total = fields.length;
     const required = fields.filter((f) => f.required).length;
@@ -116,13 +107,13 @@ class TablePreview {
     const optional = total - required;
     const enums = fields.filter((f) => f.enumValues?.length).length;
 
-    console.log("\n" + pc.bold(pc.cyan("📊 Schema Preview")) + "\n");
+    console.log("\n" + pc.bold(pc.cyan("📊 Schema Summary")) + "\n");
 
-    console.log(`${pc.yellow("Total Fields")}   : ${pc.white(total)}`);
-    console.log(`${pc.green("Required")}       : ${pc.white(required)}`);
-    console.log(`${pc.blue("Unique")}         : ${pc.white(unique)}`);
-    console.log(`${pc.gray("Optional")}       : ${pc.white(optional)}`);
-    console.log(`${pc.magenta("Enums")}          : ${pc.white(enums)}\n`);
+    console.log(`${pc.yellow("Total Fields")} : ${pc.white(total)}`);
+    console.log(`${pc.green("Required")}     : ${pc.white(required)}`);
+    console.log(`${pc.blue("Unique")}       : ${pc.white(unique)}`);
+    console.log(`${pc.gray("Optional")}     : ${pc.white(optional)}`);
+    console.log(`${pc.magenta("Enums")}     : ${pc.white(enums)}\n`);
   }
 }
 

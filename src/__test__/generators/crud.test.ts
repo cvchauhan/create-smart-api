@@ -7,17 +7,7 @@ import { writeFile } from "fs/promises";
 jest.mock("../../helper/promptAdapter", () => ({
   prompt: jest.fn(),
 }));
-jest.mock("cli-table3", () => {
-  const mock = jest.fn().mockImplementation(() => ({
-    push: jest.fn(),
-    toString: jest.fn().mockReturnValue("mock-table"),
-  }));
 
-  return {
-    __esModule: true,
-    default: mock,
-  };
-});
 jest.mock("picocolors", () => ({
   pc: jest.fn(),
   cyan: jest.fn(),

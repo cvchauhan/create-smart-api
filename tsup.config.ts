@@ -12,5 +12,5 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   platform: "node",
-  external: [...builtinModules, "prompts", "cli-table3"],
+  external: [...builtinModules, "prompts"],
 });

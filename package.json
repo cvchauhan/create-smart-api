@@ -15,8 +15,7 @@
     "build": "tsup",
     "dev": "ts-node src/bin/cli.ts",
     "test": "jest",
-    "test:coverage": "jest --coverage",
-    "prepublishOnly": "node -e \"if(!process.env.CI){console.error('Use GitHub Actions to publish');process.exit(1)}\""
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "create-smart-api",

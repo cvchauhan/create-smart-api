@@ -1,56 +1,53 @@
 {
   "name": "create-smart-api",
   "version": "4.3.9",
-  "description": "CLI to generate production-ready Node.js APIs with CRUD, auth, validation, testing and microservices",
+  "description": "CLI tool to quickly generate production-ready Node.js REST APIs with CRUD, authentication, validation, testing, and microservices support",
   "preferGlobal": true,
   "main": "dist/cli.js",
   "types": "dist/cli.d.ts",
   "bin": {
     "create-smart-api": "dist/cli.js"
   },
+  "exports": {
+    ".": "./dist/cli.js"
+  },
   "scripts": {
-    "test": "jest",
-    "test:coverage": "jest --coverage",
     "build": "tsup",
     "dev": "ts-node src/bin/cli.ts",
-    "dev:test": "npm run build && npm link",
-    "publish": "npm run build && npm publish",
-    "patch": "npm run build && npm version patch && npm publish",
-    "minor": "npm run build && npm version minor && npm publish",
-    "major": "npm run build && npm version major && npm publish",
-    "prepublishOnly": "echo 'Use GitHub Actions to publish' && exit 1"
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "prepublishOnly": "node -e \"if(!process.env.CI){console.error('Use GitHub Actions to publish');process.exit(1)}\""
   },
   "keywords": [
     "create-smart-api",
-    "smart-api",
-    "api",
-    "generator",
-    "codegen",
-    "cli-tool",
-    "code-generator",
-    "scaffolding",
-    "modules",
+    "nodejs cli",
+    "api generator",
+    "rest api generator",
+    "express generator",
+    "backend generator",
+    "node boilerplate",
+    "api scaffolding",
+    "code generator",
+    "crud api",
     "authentication",
-    "crud",
-    "validation",
-    "testing",
-    "typescript",
-    "zod",
-    "jsonwebtoken",
-    "bcrypt",
-    "nodejs",
-    "cli",
-    "api-generator",
-    "express",
-    "crud",
+    "jwt auth",
+    "zod validation",
+    "typescript api",
     "microservices",
-    "jest",
-    "backend",
-    "javascript",
-    "swagger",
-    "fastify"
+    "swagger api",
+    "fastify",
+    "cli tool",
+    "backend cli",
+    "developer tools"
   ],
-  "author": "",
+  "author": {
+    "name": "Chirag Chauhan",
+    "url": "https://github.com/cvchauhan"
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/cvchauhan"
+  },
   "license": "MIT",
   "engines": {
     "node": ">=18"
@@ -82,6 +79,7 @@
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
+  "homepage": "https://github.com/cvchauhan/create-smart-api#readme",
   "publishConfig": {
     "provenance": true
   }

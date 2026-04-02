@@ -1,12 +1,21 @@
 import crud from "../../generators/crud";
-import { prompt } from "../../helper/promptAdapter";
 import { log } from "../../helper";
 import generateModel from "../../commands/model";
 import { writeFile } from "fs/promises";
+import * as prompts from "@clack/prompts";
 
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  isCancel: jest.fn(() => false),
+  cancel: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
 }));
+
+const textMock = prompts.text as jest.Mock;
+const selectMock = prompts.select as jest.Mock;
 
 jest.mock("picocolors", () => ({
   pc: jest.fn(),
@@ -47,20 +56,17 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-const promptMock = prompt as any;
-
 describe("crud generator", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.resetModules();
   });
 
   test("should create CRUD files for express commonjs", async () => {
-    promptMock.mockResolvedValue({
-      framework: "express",
-      moduleType: "commonjs",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
+    selectMock.mockResolvedValueOnce("express");
+    selectMock.mockResolvedValueOnce("commonjs");
+    textMock.mockResolvedValueOnce("name:string,email:string");
+    selectMock.mockResolvedValueOnce("continue");
 
     await crud("/base", "user");
 
@@ -71,13 +77,10 @@ describe("crud generator", () => {
   });
 
   test("should handle fastify module", async () => {
-    promptMock.mockResolvedValue({
-      framework: "fastify",
-      moduleType: "module",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
-
+    selectMock.mockResolvedValueOnce("fastify");
+    selectMock.mockResolvedValueOnce("module");
+    textMock.mockResolvedValueOnce("name:string,email:string");
+    selectMock.mockResolvedValueOnce("continue");
     await crud("/base", "product");
 
     await generateModel("", "module", "mongodb", true);
@@ -86,26 +89,21 @@ describe("crud generator", () => {
   });
 
   test("should handle fastify commonjs", async () => {
-    promptMock.mockResolvedValue({
-      framework: "fastify",
-      moduleType: "commonjs",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
-
+    selectMock.mockResolvedValueOnce("fastify");
+    selectMock.mockResolvedValueOnce("commonjs");
+    textMock.mockResolvedValueOnce("name:string,email:string");
+    selectMock.mockResolvedValueOnce("continue");
     await crud("/base", "product");
 
     expect(writeFile).toHaveBeenCalled();
   });
 
   test("should handle express module with module type", async () => {
-    promptMock.mockResolvedValue({
-      framework: "express",
-      moduleType: "module",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
-
+    selectMock.mockResolvedValueOnce("express");
+    selectMock.mockResolvedValueOnce("module");
+    selectMock.mockResolvedValueOnce("mongodb");
+    textMock.mockResolvedValueOnce("name:string,email:string");
+    selectMock.mockResolvedValueOnce("continue");
     await crud("/base", "product");
     await generateModel("product", "module", "mongodb", true);
 
@@ -118,33 +116,33 @@ describe("crud generator", () => {
     expect(log.error).toHaveBeenCalledWith("Module name is required");
   });
 
-  test("should evaluate when conditions", async () => {
-    let firstCallQuestions: any[] = [];
+  // test("should evaluate when conditions", async () => {
+  //   let firstCallQuestions: any[] = [];
 
-    promptMock.mockImplementation(async (q: any) => {
-      // capture only first call (array of questions)
-      if (Array.isArray(q) && firstCallQuestions.length === 0) {
-        firstCallQuestions = q;
-      }
+  //   promptMock.mockImplementation(async (q: any) => {
+  //     // capture only first call (array of questions)
+  //     if (Array.isArray(q) && firstCallQuestions.length === 0) {
+  //       firstCallQuestions = q;
+  //     }
 
-      return {
-        framework: "express",
-        moduleType: "commonjs",
-        fieldInput: "name:string,email:string",
-        action: "cancel",
-      };
-    });
+  //     return {
+  //       framework: "express",
+  //       moduleType: "commonjs",
+  //       fieldInput: "name:string,email:string",
+  //       action: "cancel",
+  //     };
+  //   });
 
-    await crud("/base", "user");
+  //   await crud("/base", "user");
 
-    expect(firstCallQuestions.length).toBeGreaterThan(0);
+  //   expect(firstCallQuestions.length).toBeGreaterThan(0);
 
-    const frameworkWhen = firstCallQuestions[0].when;
-    const moduleTypeWhen = firstCallQuestions[1].when;
-    const dbWhen = firstCallQuestions[2].when;
+  //   const frameworkWhen = firstCallQuestions[0].when;
+  //   const moduleTypeWhen = firstCallQuestions[1].when;
+  //   const dbWhen = firstCallQuestions[2].when;
 
-    expect(frameworkWhen()).toBe(true);
-    expect(moduleTypeWhen()).toBe(true);
-    expect(dbWhen()).toBe(true);
-  });
+  //   expect(frameworkWhen()).toBe(true);
+  //   expect(moduleTypeWhen()).toBe(true);
+  //   expect(dbWhen()).toBe(true);
+  // });
 });

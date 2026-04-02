@@ -1,11 +1,6 @@
 import { askRelations, processRelations } from "../../utils/relation.util";
-
-import { prompt } from "../../helper/promptAdapter";
 import fs from "fs";
-
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
-}));
+import * as prompts from "@clack/prompts";
 
 jest.mock("fs", () => ({
   existsSync: jest.fn(),
@@ -20,28 +15,33 @@ jest.mock("../../helper", () => ({
     success: jest.fn(),
   },
 }));
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  isCancel: jest.fn(() => false),
+  cancel: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
+}));
 
-const mockedPrompt = prompt as jest.Mock;
 const mockedFs = fs as jest.Mocked<typeof fs>;
+const confirmMock = prompts.confirm as jest.Mock;
+const selectMock = prompts.select as jest.Mock;
+const taxtMock = prompts.text as jest.Mock;
 
 describe("askRelations", () => {
   it("should return empty array when hasRelations is false", async () => {
-    mockedPrompt.mockResolvedValueOnce({ hasRelations: false });
-
+    confirmMock.mockResolvedValueOnce(false);
     const result = await askRelations();
 
     expect(result).toEqual([]);
   });
   it("should skip duplicate relation field", async () => {
-    mockedPrompt
-      .mockResolvedValueOnce({ hasRelations: true }) // first confirm
-      .mockResolvedValueOnce({
-        type: "1:1",
-        target: "User",
-        field: "roleId",
-        required: true,
-      }) // relation input
-      .mockResolvedValueOnce({ more: false }); // stop loop
+    confirmMock.mockResolvedValueOnce(false);
+    selectMock.mockResolvedValueOnce("1:1").mockResolvedValueOnce("User");
+    taxtMock.mockResolvedValueOnce("roleId");
+    confirmMock.mockResolvedValueOnce(true);
 
     const result = await askRelations();
 
@@ -80,8 +80,7 @@ describe("processRelations", () => {
   it("should skip relation when user chooses Skip", async () => {
     mockedFs.existsSync.mockReturnValue(false);
     mockedFs.readdirSync.mockReturnValue([]);
-
-    mockedPrompt.mockResolvedValueOnce({ action: "Skip Relation" });
+    selectMock.mockResolvedValueOnce("Skip Relation");
 
     const result = await processRelations(
       [

@@ -4,18 +4,23 @@ import {
   validateName,
   validateOnlyNumber,
 } from "../../utils/field.validation.util";
+import * as prompts from "@clack/prompts";
 
-import { prompt } from "../../helper/promptAdapter";
-
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  isCancel: jest.fn(() => false),
+  cancel: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
 }));
 
-const mockedPrompt = prompt as jest.Mock;
+const mockedPrompt = prompts.text as jest.Mock;
 
 describe("fieldInputs", () => {
   it("should call prompt when fields are not provided", async () => {
-    mockedPrompt.mockResolvedValue({ fieldInput: "name:string" });
+    mockedPrompt.mockResolvedValue("name:string");
 
     const result = await fieldInputs([]);
 

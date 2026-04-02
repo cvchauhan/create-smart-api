@@ -1,28 +1,33 @@
 import path from "path";
-import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import { spawnSync } from "child_process";
 import { mkdir, writeFile } from "fs/promises";
+import { select } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
 
 export default async function generateSwagger(
   moduleType?: "module" | "commonjs",
 ) {
   const base = process.cwd();
   const config = getConfig(base);
-  const answers = await prompt([
-    {
-      type: "select",
-      name: "moduleType",
-      message: "Module system",
-      default: "commonjs",
-      choices: [
-        { name: "ES Module", value: "module" },
-        { name: "CommonJS", value: "commonjs" },
-      ],
-      when: () => !moduleType && !config?.module,
-    },
-  ]);
+
+  const answers = {} as any;
+
+  if (!moduleType && !config?.module) {
+    const res = handleCancel(
+      await select({
+        message: "Module system",
+        options: [
+          { label: "ES Module", value: "module" },
+          { label: "CommonJS", value: "commonjs" },
+        ],
+        initialValue: "commonjs",
+      }),
+    );
+
+    answers.moduleType = res;
+  }
   const swaggerDir = path.join(base, "src/config");
   await mkdir(swaggerDir, { recursive: true });
   log.info("Generating swagger...");

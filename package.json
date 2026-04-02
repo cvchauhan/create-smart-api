@@ -52,9 +52,9 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@clack/prompts": "^1.2.0",
     "fastest-levenshtein": "^1.0.16",
-    "picocolors": "^1.1.1",
-    "prompts": "^2.4.2"
+    "picocolors": "^1.1.1"
   },
   "files": [
     "dist",

@@ -1,8 +1,9 @@
 import path from "path";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
-import { prompt } from "../helper/promptAdapter";
 import { mkdir, writeFile } from "fs/promises";
+import { select } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
 
 export default async function (
   name: string,
@@ -15,19 +16,22 @@ export default async function (
 
   const config = getConfig(process.cwd());
 
-  const answers = await prompt([
-    {
-      type: "select",
-      name: "moduleType",
-      message: "Module system",
-      default: "commonjs",
-      choices: [
-        { name: "ES Module", value: "module" },
-        { name: "CommonJS", value: "commonjs" },
-      ],
-      when: () => !moduleType && !config?.module,
-    },
-  ]);
+  const answers = {} as any;
+
+  if (!moduleType && !config?.module) {
+    const res = handleCancel(
+      await select({
+        message: "Module system",
+        options: [
+          { label: "ES Module", value: "module" },
+          { label: "CommonJS", value: "commonjs" },
+        ],
+        initialValue: "commonjs",
+      }),
+    );
+
+    answers.moduleType = res;
+  }
 
   const isModule = moduleType || answers.moduleType === "module";
 

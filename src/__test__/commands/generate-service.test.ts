@@ -1,13 +1,8 @@
 import generateService from "../../commands/generate-service";
-import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { log } from "../../helper";
 import { mkdir, writeFile } from "fs/promises";
 
-// ✅ Mock helper prompt (NEW)
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
-}));
 jest.mock("../../commands/model", () => ({
   __esModule: true,
   default: jest.fn().mockResolvedValue([

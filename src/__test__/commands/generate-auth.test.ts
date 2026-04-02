@@ -12,6 +12,7 @@ jest.mock("../../helper", () => ({
     success: jest.fn(),
     warn: jest.fn(),
     info: jest.fn(),
+    successBox: jest.fn(),
   },
 }));
 jest.mock("../../helper/runner", () => ({
@@ -61,7 +62,7 @@ describe("Auth middleware generator", () => {
     );
 
     expect(log.success).toHaveBeenCalledWith(
-      "Auth module + middleware generated successfully",
+      "Auth module + middleware generated successfully!",
     );
   });
 

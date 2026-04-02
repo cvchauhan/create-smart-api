@@ -76,11 +76,14 @@ export default async function (name: string) {
       validate: validateOnlyNumber,
     },
   ]);
-  if (name === ".") {
-    const targetDir = process.cwd();
-    name = path.basename(targetDir);
-  }
-  const base = path.join(process.cwd(), name || answers.name);
+  log.step("Creating project structure...");
+
+  const folderName =
+    name || answers.name === "."
+      ? path.basename(process.cwd())
+      : path.basename(name || answers.name);
+
+  const base = path.join(process.cwd(), folderName);
   await mkdir(base, { recursive: true });
 
   await createStructure(base, answers);
@@ -101,11 +104,17 @@ export default async function (name: string) {
   /* -------- ENV FILE -------- */
 
   const envPath = path.join(base, ".env");
+  log.step("Generating .env file...");
   await generateEnvFile(answers.port, envPath, dialect);
+  log.info(".env file created");
 
+  log.step("Generating package.json file...");
   process.chdir(base);
   await generatePackageJson(answers, base);
+  log.info("package.json file created");
+
   if (answers.crud) {
+    log.step("Generating crud module...");
     await generateCrud(
       base,
       answers.moduleName,
@@ -114,9 +123,13 @@ export default async function (name: string) {
       answers.db,
       true,
     );
+    log.info("CRUD module created");
   }
 
-  log.success(
-    `Project ${name || answers.name} created successfully!! with ${answers.framework}, ${answers.db} and PORT: ${answers.port}  `,
-  );
+  log.successBox("Project setup complete! 🚀", {
+    name: folderName,
+    framework: answers.framework,
+    database: answers.db,
+    port: answers.port.toString(),
+  });
 }

@@ -170,7 +170,7 @@ class Relations {
     }
 
     await writeFile(modelPath, content);
-    log.success(`Model ${modelName} created`);
+    log.success(`Related model "${modelName}" created successfully!`);
   };
 }
 

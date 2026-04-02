@@ -64,7 +64,7 @@ module.exports = {
 
   await writeFile(path.join(dir, `${name}.validation.js`), validationContent);
 
-  log.success("Validation created");
+  log.success(`Validation for ${name} created successfully!`);
 }
 
 // helper

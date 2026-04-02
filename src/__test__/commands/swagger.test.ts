@@ -27,6 +27,7 @@ jest.mock("../../helper", () => ({
     error: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
+    successBox: jest.fn(),
   },
 }));
 
@@ -58,7 +59,12 @@ describe("generateSwagger", () => {
       expect.stringContaining('require("swagger-jsdoc")'),
     );
 
-    expect(log.success).toHaveBeenCalledWith("Swagger configuration created");
+    expect(log.successBox).toHaveBeenCalledWith(
+      "Swagger configuration created",
+      {
+        name: "swagger.js",
+      },
+    );
   });
 
   // ✅ ESM case

@@ -100,7 +100,9 @@ describe("generateService", () => {
       expect.stringContaining("module.exports"),
     );
 
-    expect(log.success).toHaveBeenCalledWith("Service created");
+    expect(log.success).toHaveBeenCalledWith(
+      "Service user created successfully!!",
+    );
   });
 
   // ✅ ES Module case

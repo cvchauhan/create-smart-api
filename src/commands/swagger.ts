@@ -77,5 +77,7 @@ ${exportContent}
 
   await writeFile(path.join(swaggerDir, "swagger.js"), content);
 
-  log.success("Swagger configuration created");
+  log.successBox("Swagger configuration created", {
+    name: "swagger.js",
+  });
 }

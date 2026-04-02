@@ -56,7 +56,9 @@ describe("generateValidation", () => {
     const dir = path.join(cwdMock, "src/validation", "user");
 
     expect(mkdir).toHaveBeenCalledWith(dir, { recursive: true });
-    expect(log.success).toHaveBeenCalledWith("Validation created");
+    expect(log.success).toHaveBeenCalledWith(
+      "Validation for user created successfully!",
+    );
   });
 
   // ✅ ES Module case

@@ -185,7 +185,10 @@ export default async function generateModel(
     modelPath || path.join(base, "src/models", `${modelName}.model.js`);
   if (!isCrud) {
     await writeFile(selectedModelPath, modelContent);
-    log.success(`Model ${modelName} created successfully`);
+    log.successBox(`Model ${modelName} created successfully!`, {
+      name: modelName,
+      database: selectedDb,
+    });
     return;
   }
   await writeFile(selectedModelPath, modelContent);

@@ -10,6 +10,7 @@ jest.spyOn(process, "chdir").mockImplementation(() => {});
 
 jest.mock("path", () => ({
   join: jest.fn((...args) => args.join("/")),
+  basename: jest.fn().mockReturnValue("test-app"),
 }));
 
 jest.mock("../../helper/promptAdapter", () => ({
@@ -48,6 +49,9 @@ jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),
+    step: jest.fn(),
+    info: jest.fn(),
+    successBox: jest.fn(),
   },
 }));
 
@@ -94,7 +98,7 @@ describe("create command", () => {
       true,
     );
 
-    expect(log.success).toHaveBeenCalled();
+    expect(log.successBox).toHaveBeenCalled();
   });
 
   test("should skip CRUD when disabled", async () => {
@@ -178,6 +182,7 @@ describe("create command", () => {
       questions = q;
       return {
         crud: true,
+        port: 3000,
       };
     });
 

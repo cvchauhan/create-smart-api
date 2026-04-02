@@ -150,7 +150,7 @@ describe("createStructure", () => {
     });
 
     expect(log.success).toHaveBeenCalledWith(
-      "Server file created successfully",
+      "Server file created with express on port 3000 using mongodb database!",
     );
   });
 });

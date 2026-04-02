@@ -27,6 +27,7 @@ jest.mock("../../helper", () => ({
   log: {
     success: jest.fn(),
     error: jest.fn(),
+    info: jest.fn(),
   },
 }));
 
@@ -69,7 +70,9 @@ describe("generateTest command", () => {
     // directory creation
     expect(mkdir).toHaveBeenCalledWith(testDir, { recursive: true });
 
-    expect(log.success).toHaveBeenCalledWith("Test generated successfully");
+    expect(log.success).toHaveBeenCalledWith(
+      "Test file for user created successfully!",
+    );
   });
 
   // ✅ ES Module case

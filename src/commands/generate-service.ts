@@ -53,5 +53,5 @@ export default async function (
   );
   log.info("Generating service...");
   await serviceGenrate(selectedDb, isESM, relations, name, dir, false);
-  log.success("Service created");
+  log.success(`Service ${name} created successfully!!`);
 }

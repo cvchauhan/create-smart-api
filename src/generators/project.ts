@@ -183,5 +183,7 @@ module.exports = { errorHandler };
 `;
 
   await writeFile(errorHandlerPath, errorHandlerContent);
-  log.success(`Server file created successfully`);
+  log.success(
+    `Server file created with ${framework} on port ${port} using ${db} database!`,
+  );
 }

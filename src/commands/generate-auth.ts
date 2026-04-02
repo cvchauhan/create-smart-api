@@ -47,5 +47,5 @@ export default async function (
 
   await generateAuthController(selectedFramework, isModule, base);
 
-  log.success("Auth module + middleware generated successfully");
+  log.success("Auth module + middleware generated successfully!");
 }

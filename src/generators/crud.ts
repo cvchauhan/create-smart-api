@@ -82,6 +82,6 @@ export default async function generateCrud(
   await genrateRouter(name, selectedFramework, routesIndex, selectModuleType);
 
   if (!isCreate) {
-    log.success(`CRUD for ${name} created successfully`);
+    log.success(`CRUD module "${name}" created successfully!`);
   }
 }

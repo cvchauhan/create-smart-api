@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "ts-node src/bin/cli.ts",
+    "dev": "tsup && npm link",
     "test": "jest",
     "test:coverage": "jest --coverage"
   },

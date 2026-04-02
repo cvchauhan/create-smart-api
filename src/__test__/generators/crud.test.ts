@@ -43,6 +43,7 @@ jest.mock("../../helper", () => ({
     success: jest.fn(),
     warn: jest.fn(),
     info: jest.fn(),
+    successBox: jest.fn(),
   },
 }));
 
@@ -65,7 +66,7 @@ describe("crud generator", () => {
 
     expect(writeFile).toHaveBeenCalled();
     expect(log.success).toHaveBeenCalledWith(
-      "CRUD for user created successfully",
+      'CRUD module "user" created successfully!',
     );
   });
 

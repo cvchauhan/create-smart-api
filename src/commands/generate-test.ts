@@ -41,7 +41,7 @@ export default async function (
   const devDeps = pkg.devDependencies || {};
 
   if (!devDeps.jest || !devDeps.supertest) {
-    log.success("Installing jest & supertest...");
+    log.info("Installing jest & supertest...");
     execSync("npm install jest supertest --save-dev", {
       stdio: "inherit",
     });
@@ -115,5 +115,5 @@ describe("${module} API", () => {
     await writeFile(jestConfigPath, jestConfig);
   }
 
-  log.success("Test generated successfully");
+  log.success(`Test file for ${module} created successfully!`);
 }

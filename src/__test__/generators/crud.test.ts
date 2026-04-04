@@ -5,20 +5,20 @@ jest.mock("path", () => ({
   join: jest.fn((...args) => args.join("/")),
 }));
 
-jest.mock("../helper", () => ({
+jest.mock("../../helper", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
   },
 }));
 
-jest.mock("../commands/model", () => jest.fn());
-jest.mock("../utils/router.util", () => ({
+jest.mock("../../commands/model", () => jest.fn());
+jest.mock("../../utils/router.util", () => ({
   genrateRouter: jest.fn(),
 }));
 
-jest.mock("../templates/service.template", () => jest.fn());
-jest.mock("../templates/controller.template", () => jest.fn());
+jest.mock("../../templates/service.template", () => jest.fn());
+jest.mock("../../templates/controller.template", () => jest.fn());
 
 jest.mock("@clack/prompts", () => ({
   intro: jest.fn(),
@@ -26,17 +26,17 @@ jest.mock("@clack/prompts", () => ({
   select: jest.fn(),
 }));
 
-jest.mock("../utils/prompt.util", () => ({
+jest.mock("../../utils/prompt.util", () => ({
   handleCancel: jest.fn((val) => val),
 }));
 
 describe("generateCrud", () => {
-  const generateModel = require("../commands/model");
-  const serviceGenrate = require("../templates/service.template");
-  const generateController = require("../templates/controller.template");
-  const { genrateRouter } = require("../utils/router.util");
+  const generateModel = require("../../commands/model");
+  const serviceGenrate = require("../../templates/service.template");
+  const generateController = require("../../templates/controller.template");
+  const { genrateRouter } = require("../../utils/router.util");
   const { select } = require("@clack/prompts");
-  const { log } = require("../helper");
+  const { log } = require("../../helper");
 
   beforeEach(() => {
     jest.clearAllMocks();

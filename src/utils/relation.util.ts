@@ -60,21 +60,15 @@ class Relations {
       );
 
       // 🔥 duplicate check
-      if (
-        relations.some(
-          (r) => r.field.toLowerCase() === (field as string).toLowerCase(),
-        )
-      ) {
+      if (this.isDuplicateField(field as string, relations)) {
         log.error(`Field "${field}" already used in another relation`);
         continue;
       }
 
       relations.push({
         type: type as "1:1" | "1:N" | "N:N",
-        target:
-          (target as string).charAt(0).toUpperCase() +
-          (target as string).slice(1),
-        field: (field as string).trim(),
+        target: this.formatTarget(target as string),
+        field: (field as string)?.trim() || "",
         required: required as boolean,
       });
 
@@ -185,6 +179,21 @@ class Relations {
     await writeFile(modelPath, content);
 
     log.success(`Related model "${modelName}" created successfully!`);
+  };
+  isDuplicateField = (field: string, relations: Relation[]) => {
+    if (!field) return false;
+
+    const f = field.trim().toLowerCase();
+
+    return relations.some((r) => r.field && r.field.trim().toLowerCase() === f);
+  };
+
+  formatTarget = (target?: string) => {
+    const t = target?.trim();
+
+    if (!t) return "";
+
+    return t.charAt(0).toUpperCase() + t.slice(1);
   };
 }
 

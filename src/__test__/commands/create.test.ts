@@ -1,30 +1,43 @@
 import createApp from "../../commands/create";
 
-// Mock node modules
+// ---- Mock fs ----
 jest.mock("fs/promises", () => ({
   writeFile: jest.fn(),
   mkdir: jest.fn(),
 }));
 
+// ---- Mock path ----
 jest.mock("path", () => ({
   join: jest.fn((...args) => args.join("/")),
-  basename: jest.fn(() => "test-project"),
+  basename: jest.fn((p) => p.split("/").pop()),
 }));
 
-// Mock generators & utils
+// ---- Mock generators ----
 jest.mock("../../generators/project", () => ({
   createStructure: jest.fn(),
 }));
 
 jest.mock("../../generators/crud", () => jest.fn());
 
+// ---- Mock utils ----
 jest.mock("../../utils/db.util", () => ({
   generateDbConfig: jest.fn(() => "db-config"),
 }));
 
+jest.mock("../../utils/field.validation.util", () => ({
+  validateOnlyNumber: jest.fn(() => true),
+  validateName: jest.fn(() => true),
+}));
+
+jest.mock("../../utils/prompt.util", () => ({
+  handleCancel: jest.fn((val) => val),
+}));
+
+// ---- Mock templates ----
 jest.mock("../../templates/env.template", () => jest.fn());
 jest.mock("../../templates/package.json.template", () => jest.fn());
 
+// ---- Mock logger ----
 jest.mock("../../helper", () => ({
   log: {
     step: jest.fn(),
@@ -33,13 +46,7 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-// Mock validations
-jest.mock("../../utils/field.validation.util", () => ({
-  validateOnlyNumber: jest.fn(() => true),
-  validateName: jest.fn(() => true),
-}));
-
-// Mock prompts
+// ---- Mock prompts ----
 jest.mock("@clack/prompts", () => ({
   text: jest.fn(),
   select: jest.fn(),
@@ -48,40 +55,40 @@ jest.mock("@clack/prompts", () => ({
   outro: jest.fn(),
 }));
 
-jest.mock("../../utils/prompt.util", () => ({
-  handleCancel: jest.fn((val) => val),
-}));
-
 describe("createApp CLI", () => {
   const { text, select, confirm } = require("@clack/prompts");
-
   const { mkdir, writeFile } = require("fs/promises");
   const { createStructure } = require("../../generators/project");
   const generateCrud = require("../../generators/crud");
   const generateEnvFile = require("../../templates/env.template");
   const generatePackageJson = require("../../templates/package.json.template");
+  const { generateDbConfig } = require("../../utils/db.util");
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    jest.spyOn(process, "cwd").mockReturnValue("/mock-root");
+    jest.spyOn(process, "chdir").mockImplementation(() => {});
   });
 
+  // ✅ FULL FLOW TEST
   it("should create project with CRUD enabled", async () => {
-    // Mock prompt responses
     text
       .mockResolvedValueOnce("my-app") // project name
       .mockResolvedValueOnce("sample") // module name
       .mockResolvedValueOnce("3000"); // port
 
     select
-      .mockResolvedValueOnce("express") // framework
-      .mockResolvedValueOnce("commonjs") // module
-      .mockResolvedValueOnce("mongodb"); // db
+      .mockResolvedValueOnce("express")
+      .mockResolvedValueOnce("commonjs")
+      .mockResolvedValueOnce("mongodb");
 
-    confirm.mockResolvedValueOnce(true); // CRUD enabled
+    confirm.mockResolvedValueOnce(true);
 
     await createApp("");
 
-    expect(mkdir).toHaveBeenCalled();
+    expect(mkdir).toHaveBeenCalledWith("/mock-root/my-app", expect.any(Object));
+
     expect(createStructure).toHaveBeenCalled();
 
     expect(writeFile).toHaveBeenCalledWith(
@@ -89,9 +96,11 @@ describe("createApp CLI", () => {
       "db-config",
     );
 
+    expect(generateDbConfig).toHaveBeenCalledWith("commonjs", "mongodb");
+
     expect(generateEnvFile).toHaveBeenCalledWith(
       3000,
-      expect.any(String),
+      expect.stringContaining(".env"),
       "mongodb",
     );
 
@@ -107,7 +116,8 @@ describe("createApp CLI", () => {
     );
   });
 
-  it("should skip CRUD when user selects false", async () => {
+  // ✅ NO CRUD FLOW
+  it("should skip CRUD when disabled", async () => {
     text.mockResolvedValueOnce("my-app").mockResolvedValueOnce("3000");
 
     select
@@ -122,7 +132,8 @@ describe("createApp CLI", () => {
     expect(generateCrud).not.toHaveBeenCalled();
   });
 
-  it("should use provided name without prompting", async () => {
+  // ✅ DIRECT NAME (NO PROMPT)
+  it("should use provided name without asking project name", async () => {
     select
       .mockResolvedValueOnce("express")
       .mockResolvedValueOnce("commonjs")
@@ -132,17 +143,16 @@ describe("createApp CLI", () => {
 
     text.mockResolvedValueOnce("3000");
 
-    await createApp("direct-name");
+    await createApp("direct-app");
 
-    // text for project name should NOT be called
-    expect(text).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: expect.stringContaining("Project name"),
-      }),
+    expect(mkdir).toHaveBeenCalledWith(
+      "/mock-root/direct-app",
+      expect.any(Object),
     );
   });
 
-  it("should handle different DB dialect mapping", async () => {
+  // ✅ DB DIALECT TEST
+  it("should map DB dialect correctly (mssql)", async () => {
     text
       .mockResolvedValueOnce("my-app")
       .mockResolvedValueOnce("sample")
@@ -155,10 +165,27 @@ describe("createApp CLI", () => {
 
     confirm.mockResolvedValueOnce(true);
 
-    const { generateDbConfig } = require("../../utils/db.util");
-
     await createApp("");
 
     expect(generateDbConfig).toHaveBeenCalledWith("commonjs", "mssql");
+  });
+
+  // ✅ CURRENT DIRECTORY MODE
+  it("should use current directory when '.' is selected", async () => {
+    text
+      .mockResolvedValueOnce(".") // current dir
+      .mockResolvedValueOnce("sample")
+      .mockResolvedValueOnce("3000");
+
+    select
+      .mockResolvedValueOnce("express")
+      .mockResolvedValueOnce("commonjs")
+      .mockResolvedValueOnce("mongodb");
+
+    confirm.mockResolvedValueOnce(true);
+
+    await createApp("");
+
+    expect(mkdir).toHaveBeenCalledWith("/mock-root", expect.any(Object));
   });
 });

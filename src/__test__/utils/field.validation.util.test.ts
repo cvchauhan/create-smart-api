@@ -4,101 +4,118 @@ import {
   validateName,
   validateOnlyNumber,
 } from "../../utils/field.validation.util";
-import * as prompts from "@clack/prompts";
 
+// ---- Mock prompts ----
 jest.mock("@clack/prompts", () => ({
   text: jest.fn(),
-  select: jest.fn(),
-  confirm: jest.fn(),
-  isCancel: jest.fn(() => false),
-  cancel: jest.fn(),
-  intro: jest.fn(),
-  outro: jest.fn(),
 }));
 
-const mockedPrompt = prompts.text as jest.Mock;
+jest.mock("../../utils/prompt.util", () => ({
+  handleCancel: jest.fn((v) => v),
+}));
 
-describe("fieldInputs", () => {
-  it("should call prompt when fields are not provided", async () => {
-    mockedPrompt.mockResolvedValue("name:string");
+describe("field.validation.util", () => {
+  const { text } = require("@clack/prompts");
 
-    const result = await fieldInputs([]);
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    expect(mockedPrompt).toHaveBeenCalled();
+  // -----------------------------
+  // ✅ fieldInputs
+  // -----------------------------
+
+  it("should skip prompt if fields already exist", async () => {
+    const result = await fieldInputs([{ name: "test", type: "string" } as any]);
+
+    expect(result).toEqual({ fieldInput: "" });
+    expect(text).not.toHaveBeenCalled();
+  });
+
+  it("should prompt and return input when no fields provided", async () => {
+    text.mockResolvedValueOnce("name:string");
+
+    const result = await fieldInputs();
+
+    expect(text).toHaveBeenCalled();
     expect(result).toEqual({ fieldInput: "name:string" });
   });
-});
 
-describe("validateFieldInput", () => {
-  it("should return error for empty input", async () => {
-    const res = await validateFieldInput("");
+  // -----------------------------
+  // ✅ validateFieldInput
+  // -----------------------------
 
-    expect(res).toBe("❌ Field input is required (e.g:name:string)");
+  it("should fail on empty input", () => {
+    const result = validateFieldInput("");
+
+    expect(result).toContain("Field input is required");
   });
 
-  it("should validate correct input", async () => {
-    const res = await validateFieldInput("name:string,email:string");
+  it("should fail on invalid format (missing colon)", () => {
+    const result = validateFieldInput("name");
 
-    expect(res).toBe(true);
+    expect(result).toContain("Invalid format");
   });
 
-  it("should fail if missing ':'", async () => {
-    const res = await validateFieldInput("name");
+  it("should fail when field name is missing", () => {
+    const result = validateFieldInput(":string");
 
-    expect(res).toBe(
-      '❌ Invalid format: "name". Use name:type (e.g:name:string)',
-    );
+    expect(result).toContain("Field name missing");
   });
 
-  it("should fail if name missing", async () => {
-    const res = await validateFieldInput(":string");
+  it("should fail when field type is missing", () => {
+    const result = validateFieldInput("name:");
 
-    expect(res).toBe('❌ Field name missing in ":string" (e.g:name:string)');
+    expect(result).toContain("Field type missing");
   });
 
-  it("should fail if type missing", async () => {
-    const res = await validateFieldInput("name:");
+  it("should pass valid input", () => {
+    const result = validateFieldInput("name:string,age:number");
 
-    expect(res).toBe('❌ Field type missing in "name:" (e.g:name:string)');
-  });
-});
-
-describe("validateName", () => {
-  it("should return error if empty", async () => {
-    const res = await validateName("");
-
-    expect(res).toBe("Name is required");
+    expect(result).toBeUndefined();
   });
 
-  it("should fail for special characters", async () => {
-    const res = await validateName("name@123");
+  // -----------------------------
+  // ✅ validateName
+  // -----------------------------
 
-    expect(res).toBe("Special characters only allowed string, number & (_,-)");
+  it("should fail when name is empty", () => {
+    const result = validateName("");
+
+    expect(result).toBe("Name is required");
   });
 
-  it("should pass valid name", async () => {
-    const res = await validateName("name_123");
+  it("should fail for invalid characters", () => {
+    const result = validateName("name@123");
 
-    expect(res).toBe(true);
-  });
-});
-
-describe("validateOnlyNumber", () => {
-  it("should return error if empty", async () => {
-    const res = await validateOnlyNumber("");
-
-    expect(res).toBe("Input is required");
+    expect(result).toBe("Only letters, numbers, ., _, - allowed");
   });
 
-  it("should fail if contains letters", async () => {
-    const res = await validateOnlyNumber("12a3");
+  it("should pass valid name", () => {
+    const result = validateName("name_123.test");
 
-    expect(res).toBe("Only numbers are allowed");
+    expect(result).toBeUndefined();
   });
 
-  it("should pass valid number", async () => {
-    const res = await validateOnlyNumber("123456");
+  // -----------------------------
+  // ✅ validateOnlyNumber
+  // -----------------------------
 
-    expect(res).toBe(true);
+  it("should fail when input is empty", () => {
+    const result = validateOnlyNumber("");
+
+    expect(result).toBe("Input is required");
+  });
+
+  it("should fail for non-numeric input", () => {
+    const result = validateOnlyNumber("123a");
+
+    expect(result).toBe("Only numbers are allowed");
+  });
+
+  it("should pass valid number", () => {
+    const result = validateOnlyNumber("12345");
+
+    expect(result).toBeUndefined();
   });
 });

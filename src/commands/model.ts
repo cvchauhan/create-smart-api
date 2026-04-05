@@ -16,6 +16,7 @@ import { askRelations, processRelations } from "../utils/relation.util";
 import {
   generateSequelizeModel,
   generateMongooseModel,
+  generateSequelizeIndex,
 } from "../utils/model.util";
 import { getConfig } from "../helper/getConfig";
 import { existsSync, lstatSync } from "fs";
@@ -196,6 +197,8 @@ export default async function generateModel(
       selectModuleType,
       relations,
     );
+    const indexContent = generateSequelizeIndex(isESM);
+    await writeFile(path.join(base, "src/models", "index.js"), indexContent);
   }
 
   const selectedModelPath =

@@ -22,8 +22,16 @@ export default async function (name: string) {
     const res = handleCancel(
       await text({
         message: "Project name (Press Enter for current directory)",
-        initialValue: ".",
-        validate: validateName as any,
+        initialValue: "",
+        validate: (input: any) => {
+          const regex = /^[a-zA-Z0-9._-]+$/;
+
+          if (input && !regex.test(input)) {
+            return "Only letters, numbers, ., _, - allowed";
+          }
+
+          return undefined; //
+        },
       }),
     );
 
@@ -96,10 +104,7 @@ export default async function (name: string) {
       await text({
         message: "CRUD module name",
         initialValue: "sample",
-        validate: (val: any) => {
-          const r = validateName(val) as any;
-          return r;
-        },
+        validate: validateName as any,
       }),
     );
 
@@ -127,7 +132,7 @@ export default async function (name: string) {
 
   const inputName = name || answers.name;
 
-  const isCurrentDir = inputName === ".";
+  const isCurrentDir = !inputName || inputName === ".";
 
   const base = isCurrentDir
     ? process.cwd()

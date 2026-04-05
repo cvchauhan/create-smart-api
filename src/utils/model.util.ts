@@ -70,29 +70,105 @@ module.exports = ${name};
     let code = "";
 
     relations.forEach((r) => {
-      const fk = `${r.target.toLowerCase()}Id`;
+      const source = name;
+      const target = r.target;
+
+      const as = r.field || target.toLowerCase();
+      const inverseAs =
+        r.inverseField || source.toLowerCase() + (r.type === "1:N" ? "" : "s");
+
+      const fk = `${source.toLowerCase()}Id`;
 
       if (r.type === "1:N") {
+        // A hasMany B, B belongsTo A
         code += `
-    ${name}.hasMany(models.${r.target}, { foreignKey: "${fk}" });
-    models.${r.target}.belongsTo(${name}, { foreignKey: "${fk}" });`;
+    ${source}.hasMany(models.${target}, { as: "${as}", foreignKey: "${fk}" });
+    models.${target}.belongsTo(${source}, { as: "${inverseAs}", foreignKey: "${fk}" });`;
+      }
+
+      if (r.type === "N:1") {
+        // A belongsTo B, B hasMany A
+        const fk = `${target.toLowerCase()}Id`;
+
+        code += `
+    ${source}.belongsTo(models.${target}, { as: "${as}", foreignKey: "${fk}" });
+    models.${target}.hasMany(${source}, { as: "${inverseAs}", foreignKey: "${fk}" });`;
       }
 
       if (r.type === "1:1") {
+        const fk = `${source.toLowerCase()}Id`;
+
         code += `
-    ${name}.hasOne(models.${r.target}, { foreignKey: "${fk}" });
-    models.${r.target}.belongsTo(${name}, { foreignKey: "${fk}" });`;
+    ${source}.hasOne(models.${target}, { as: "${as}", foreignKey: "${fk}" });
+    models.${target}.belongsTo(${source}, { as: "${inverseAs}", foreignKey: "${fk}" });`;
       }
 
       if (r.type === "N:N") {
-        const through = `${name}${r.target}`;
+        const through = r.through || `${source}${target}`;
+
         code += `
-    ${name}.belongsToMany(models.${r.target}, { through: "${through}" });
-    models.${r.target}.belongsToMany(${name}, { through: "${through}" });`;
+    ${source}.belongsToMany(models.${target}, { as: "${as}", through: "${through}" });
+    models.${target}.belongsToMany(${source}, { as: "${inverseAs}", through: "${through}" });`;
       }
     });
 
     return code;
+  };
+
+  generateSequelizeIndex = (isESM: boolean) => {
+    if (isESM) {
+      return `import { Sequelize, DataTypes } from "sequelize";
+import sequelize from "../config/db.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const models = {};
+const files = fs.readdirSync(__dirname).filter(file => file !== "index.js" && file.endsWith(".js"));
+
+// Initialize models
+for (const file of files) {
+  const modelModule = await import(\`./\${file}\`);
+  const model = modelModule.default;
+  models[model.name] = model;
+}
+
+// Run associations
+Object.keys(models).forEach((modelName) => {
+  if (models[modelName].associate) {
+    models[modelName].associate(models);
+  }
+});
+
+export { sequelize };
+export default models;
+`;
+    } else {
+      return `const { Sequelize, DataTypes } = require("sequelize");
+const sequelize = require("../config/db");
+const fs = require("fs");
+const path = require("path");
+
+const models = {};
+const files = fs.readdirSync(__dirname).filter(file => file !== "index.js" && file.endsWith(".js"));
+
+files.forEach((file) => {
+  const model = require(path.join(__dirname, file));
+  models[model.name] = model;
+});
+
+Object.keys(models).forEach((modelName) => {
+  if (models[modelName].associate) {
+    models[modelName].associate(models);
+  }
+});
+
+module.exports = { sequelize, ...models };
+`;
+    }
   };
 
   generateMongooseModel = (
@@ -159,6 +235,7 @@ ${modelFields}${relationFields ? "," + relationFields : ""}
 module.exports = mongoose.model("${name}", ${schemaName}Schema);
 `;
   };
+
   generateMongooseRelations = (relations: any[]) => {
     return relations
       .map((r) => {
@@ -168,19 +245,13 @@ module.exports = mongoose.model("${name}", ${schemaName}Schema);
             ? `${r.target.toLowerCase()}s`
             : r.target.toLowerCase());
 
-        if (r.type === "1:N" || r.type === "N:N") {
-          return `
-  ${fieldName}: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "${r.target}"
-  }]`;
-        }
+        const isArray = r.type === "1:N" || r.type === "N:N";
 
         return `
-  ${fieldName}: {
+  ${fieldName}: ${isArray ? "[" : ""}{
     type: mongoose.Schema.Types.ObjectId,
     ref: "${r.target}"
-  }`;
+  }${isArray ? "]" : ""}`;
       })
       .join(",");
   };
@@ -228,3 +299,4 @@ module.exports = mongoose.model("${name}", ${schemaName}Schema);
 const model = new Model();
 export const generateSequelizeModel = model.generateSequelizeModel.bind(model);
 export const generateMongooseModel = model.generateMongooseModel.bind(model);
+export const generateSequelizeIndex = model.generateSequelizeIndex.bind(model);

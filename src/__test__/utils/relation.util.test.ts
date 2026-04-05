@@ -1,18 +1,21 @@
 import { askRelations, processRelations } from "../../utils/relation.util";
 
-import { prompt } from "../../helper/promptAdapter";
-import fs from "fs";
-
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
-}));
-
+// ---- Mock fs ----
 jest.mock("fs", () => ({
   existsSync: jest.fn(),
   readdirSync: jest.fn(),
 }));
-jest.mock("path");
 
+jest.mock("fs/promises", () => ({
+  writeFile: jest.fn(),
+}));
+
+// ---- Mock path ----
+jest.mock("path", () => ({
+  join: jest.fn((...args) => args.join("/")),
+}));
+
+// ---- Mock helpers ----
 jest.mock("../../helper", () => ({
   log: {
     error: jest.fn(),
@@ -21,83 +24,194 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-const mockedPrompt = prompt as jest.Mock;
-const mockedFs = fs as jest.Mocked<typeof fs>;
+// ---- Mock field utils ----
+jest.mock("../../utils/field.util", () => ({
+  addField: jest.fn(),
+  parseFields: jest.fn(),
+}));
 
-describe("askRelations", () => {
-  it("should return empty array when hasRelations is false", async () => {
-    mockedPrompt.mockResolvedValueOnce({ hasRelations: false });
+jest.mock("../../utils/field.validation.util", () => ({
+  validateName: jest.fn(() => true),
+  fieldInputs: jest.fn(async () => ({
+    fieldInput: "name:string",
+  })),
+}));
+
+// ---- Mock model generators ----
+jest.mock("../../utils/model.util", () => ({
+  generateMongooseModel: jest.fn(() => "mongoose-model"),
+  generateSequelizeModel: jest.fn(() => "sequelize-model"),
+}));
+
+// ---- Mock prompts ----
+jest.mock("@clack/prompts", () => ({
+  select: jest.fn(),
+  confirm: jest.fn(),
+  text: jest.fn(),
+}));
+
+jest.mock("../../utils/prompt.util", () => ({
+  handleCancel: jest.fn((v) => v),
+}));
+
+describe("relation.util", () => {
+  const { confirm, select, text } = require("@clack/prompts");
+  const { existsSync, readdirSync } = require("fs");
+  const { writeFile } = require("fs/promises");
+  const { log } = require("../../helper");
+  const { parseFields } = require("../../utils/field.util");
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  // -----------------------------
+  // ✅ askRelations
+  // -----------------------------
+
+  it("should return empty if user declines relations", async () => {
+    confirm.mockResolvedValueOnce(false);
 
     const result = await askRelations();
 
     expect(result).toEqual([]);
   });
-  it("should skip duplicate relation field", async () => {
-    mockedPrompt
-      .mockResolvedValueOnce({ hasRelations: true }) // first confirm
-      .mockResolvedValueOnce({
-        type: "1:1",
-        target: "User",
-        field: "roleId",
-        required: true,
-      }) // relation input
-      .mockResolvedValueOnce({ more: false }); // stop loop
+
+  it("should add a relation", async () => {
+    confirm
+      .mockResolvedValueOnce(true) // hasRelations
+      .mockResolvedValueOnce(false) // required
+      .mockResolvedValueOnce(false); // add more
+
+    select.mockResolvedValueOnce("1:1");
+
+    text
+      .mockResolvedValueOnce("user") // target
+      .mockResolvedValueOnce("userId"); // field
 
     const result = await askRelations();
 
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      type: "1:1",
+      target: "User",
+      field: "userId",
+      required: false,
+    });
   });
-});
 
-describe("processRelations", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
+  it("should prevent duplicate fields", async () => {
+    confirm
+      .mockResolvedValueOnce(true) // hasRelations
+      .mockResolvedValueOnce(false) // required (1st)
+      .mockResolvedValueOnce(true) // add more
+      .mockResolvedValueOnce(false) // required (2nd)
+      .mockResolvedValueOnce(false); // stop
+
+    select.mockResolvedValueOnce("1:1").mockResolvedValueOnce("1:N");
+
+    text
+      .mockResolvedValueOnce("user") // target 1
+      .mockResolvedValueOnce("userId") // field 1
+      .mockResolvedValueOnce("role") // target 2
+      .mockResolvedValueOnce("userId"); // field 2 (duplicate)
+
+    const result = await askRelations();
+
+    expect(result).toHaveLength(2);
   });
 
-  it("should skip relation if model already exists", async () => {
-    mockedFs.existsSync.mockReturnValue(true);
-    mockedFs.readdirSync.mockReturnValue(["user.model.js"] as any);
+  // -----------------------------
+  // ✅ processRelations
+  // -----------------------------
 
-    const relations = [
-      {
-        type: "1:1",
-        target: "User",
-        field: "roleId",
-        required: true,
-      },
-    ];
+  it("should skip if model already exists", async () => {
+    existsSync.mockReturnValue(true);
+    readdirSync.mockReturnValue(["user.model.js"]);
+
+    const relations = [{ target: "User", field: "userId" }];
 
     const result = await processRelations(
       relations,
-      "/app",
+      "/base",
       "mongodb",
       true,
-      "quick",
+      "interactive",
     );
 
-    expect(result.length).toBe(1);
+    expect(log.warn).toHaveBeenCalled();
+    expect(result).toHaveLength(1);
   });
-  it("should skip relation when user chooses Skip", async () => {
-    mockedFs.existsSync.mockReturnValue(false);
-    mockedFs.readdirSync.mockReturnValue([]);
 
-    mockedPrompt.mockResolvedValueOnce({ action: "Skip Relation" });
+  it("should create model when not exists (quick mode)", async () => {
+    existsSync
+      .mockReturnValueOnce(true) // models dir exists
+      .mockReturnValueOnce(false); // model file doesn't exist
+
+    readdirSync.mockReturnValue([]);
+
+    select.mockResolvedValueOnce("create");
+
+    parseFields.mockResolvedValueOnce([{ name: "name", type: "string" }]);
+
+    const relations = [{ target: "Role", field: "roleId" }];
 
     const result = await processRelations(
-      [
-        {
-          type: "1:1",
-          target: "Order",
-          field: "userId",
-          required: true,
-        },
-      ],
-      "/app",
+      relations,
+      "/base",
       "mongodb",
       true,
       "quick",
     );
 
-    expect(result.length).toBe(0);
+    expect(writeFile).toHaveBeenCalled(); // ✅ now works
+    expect(result).toHaveLength(1);
+  });
+
+  it("should skip relation when user ընտր skip", async () => {
+    existsSync.mockReturnValue(true);
+    readdirSync.mockReturnValue([]);
+
+    select.mockResolvedValueOnce("skip");
+
+    const relations = [{ target: "Role", field: "roleId" }];
+
+    const result = await processRelations(
+      relations,
+      "/base",
+      "mongodb",
+      true,
+      "interactive",
+    );
+
+    expect(log.warn).toHaveBeenCalled();
+    expect(result).toHaveLength(0);
+  });
+
+  // -----------------------------
+  // ✅ createModelFile via processRelations
+  // -----------------------------
+
+  it("should not overwrite existing model file", async () => {
+    existsSync
+      .mockReturnValueOnce(true) // models dir
+      .mockReturnValueOnce(true); // model exists
+
+    readdirSync.mockReturnValue([]);
+
+    select.mockResolvedValueOnce("create");
+
+    const relations = [{ target: "User", field: "userId" }];
+
+    const result = await processRelations(
+      relations,
+      "/base",
+      "mongodb",
+      true,
+      "interactive",
+    );
+
+    expect(writeFile).not.toHaveBeenCalled();
+    expect(log.warn).toHaveBeenCalled();
   });
 });

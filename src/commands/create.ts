@@ -1,6 +1,5 @@
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
-import { prompt } from "../helper/promptAdapter";
 import { createStructure } from "../generators/project";
 import generateCrud from "../generators/crud";
 import { log } from "../helper";
@@ -11,79 +10,134 @@ import {
 } from "../utils/field.validation.util";
 import generateEnvFile from "../templates/env.template";
 import generatePackageJson from "../templates/package.json.template";
+import { text, select, confirm, intro, outro } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
 
 export default async function (name: string) {
-  const answers: {
-    name: string;
-    framework: "express" | "fastify";
-    moduleType: "module" | "commonjs";
-    db: "mongodb" | "mssql" | "mysql";
-    crud: boolean;
-    moduleName: string;
-    port: number;
-  } = await prompt([
-    {
-      type: "input",
-      name: "name",
-      message: "Project name (Press Enter for current directory)",
-      default: ".",
-      when: () => !name,
-      validate: validateName,
-    },
-    {
-      type: "select",
-      name: "framework",
-      message: "Select Framework",
-      default: "express",
-      choices: ["express", "fastify"],
-    },
-    {
-      type: "select",
-      name: "moduleType",
-      message: "Module system",
-      default: "commonjs",
-      choices: [
-        { name: "ES Module", value: "module" },
-        { name: "CommonJS", value: "commonjs" },
-      ],
-    },
-    {
-      type: "select",
-      name: "db",
-      message: "Select DB",
-      default: "mongodb",
-      choices: ["mongodb", "mssql", "mysql"],
-    },
-    {
-      type: "confirm",
-      name: "crud",
-      message: "Generate sample CRUD module?",
-      default: true,
-    },
-    {
-      type: "input",
-      name: "moduleName",
-      message: "CRUD module name",
-      default: "sample",
-      when: (a) => a.crud,
-      validate: validateName,
-    },
-    {
-      type: "input",
-      name: "port",
-      message: "Port for the server",
-      default: 3000,
-      validate: validateOnlyNumber,
-    },
-  ]);
+  intro("Create Smart API 🚀");
+  const answers: any = {};
+
+  // Project name
+  if (!name) {
+    const res = handleCancel(
+      await text({
+        message: "Project name (Press Enter for current directory)",
+        initialValue: "",
+        validate: (input: any) => {
+          const regex = /^[a-zA-Z0-9._-]+$/;
+
+          if (input && !regex.test(input)) {
+            return "Only letters, numbers, ., _, - allowed";
+          }
+
+          return undefined; //
+        },
+      }),
+    );
+
+    answers.name = res;
+  }
+
+  // Framework
+  {
+    const res = handleCancel(
+      await select({
+        message: "Select Framework",
+        options: [
+          { label: "express", value: "express" },
+          { label: "fastify", value: "fastify" },
+        ],
+        initialValue: "express",
+      }),
+    );
+
+    answers.framework = res;
+  }
+
+  // Module type
+  {
+    const res = handleCancel(
+      await select({
+        message: "Module system",
+        options: [
+          { label: "ES Module", value: "module" },
+          { label: "CommonJS", value: "commonjs" },
+        ],
+        initialValue: "commonjs",
+      }),
+    );
+
+    answers.moduleType = res;
+  }
+
+  // DB
+  {
+    const res = handleCancel(
+      await select({
+        message: "Select DB",
+        options: [
+          { label: "mongodb", value: "mongodb" },
+          { label: "mssql", value: "mssql" },
+          { label: "mysql", value: "mysql" },
+        ],
+        initialValue: "mongodb",
+      }),
+    );
+    answers.db = res;
+  }
+
+  // CRUD confirm
+  {
+    const res = handleCancel(
+      await confirm({
+        message: "Generate sample CRUD module?",
+        initialValue: true,
+      }),
+    );
+
+    answers.crud = res;
+  }
+
+  // Module name (conditional)
+  if (answers.crud) {
+    const res = handleCancel(
+      await text({
+        message: "CRUD module name",
+        initialValue: "sample",
+        validate: validateName as any,
+      }),
+    );
+
+    answers.moduleName = res;
+  }
+
+  // Port
+  {
+    const res = handleCancel(
+      await text({
+        message: "Port for the server",
+        initialValue: "3000",
+        validate: (val: any) => {
+          const r = validateOnlyNumber(val) as any;
+          if (r === true) return;
+          if (r === false) return "Only numbers allowed";
+          return r;
+        },
+      }),
+    );
+
+    answers.port = Number(res);
+  }
   log.step("Creating project structure...");
 
-  const folderName =
-    name || answers.name === "."
-      ? path.basename(process.cwd())
-      : path.basename(name || answers.name);
+  const inputName = name || answers.name;
 
-  const base = path.join(process.cwd(), folderName);
+  const isCurrentDir = !inputName || inputName === ".";
+
+  const base = isCurrentDir
+    ? process.cwd()
+    : path.join(process.cwd(), inputName);
+
   await mkdir(base, { recursive: true });
 
   await createStructure(base, answers);
@@ -125,11 +179,15 @@ export default async function (name: string) {
     );
     log.info("CRUD module created");
   }
-
+  const folderName = isCurrentDir
+    ? path.basename(process.cwd())
+    : path.basename(name || answers.name);
   log.successBox("Project setup complete! 🚀", {
     name: folderName,
     framework: answers.framework,
     database: answers.db,
     port: answers.port.toString(),
   });
+
+  outro("Project setup complete!");
 }

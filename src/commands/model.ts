@@ -1,7 +1,6 @@
 import { log } from "../helper";
 import { showTablePreview } from "../helper/showTablePreview";
 import Field from "../types/field";
-import { prompt } from "../helper/promptAdapter";
 import path from "path";
 import create from "./create";
 import {
@@ -17,10 +16,14 @@ import { askRelations, processRelations } from "../utils/relation.util";
 import {
   generateSequelizeModel,
   generateMongooseModel,
+  generateSequelizeIndex,
 } from "../utils/model.util";
 import { getConfig } from "../helper/getConfig";
 import { existsSync, lstatSync } from "fs";
 import { writeFile } from "fs/promises";
+
+import { select, confirm, text } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
 
 export default async function generateModel(
   name: string,
@@ -34,77 +37,89 @@ export default async function generateModel(
     log.error("Model name is required");
     return;
   }
+
   const base = process.cwd();
   const srcPath = path.join(base, "./src");
-  const config = getConfig(process.cwd());
+  const config = getConfig(base);
+
+  // ❌ No project found
   if (!existsSync(srcPath) || !lstatSync(srcPath).isDirectory()) {
     log.error("No project found.");
 
-    const { createNow } = await prompt([
-      {
-        type: "confirm",
-        name: "createNow",
+    const createNow = handleCancel(
+      await confirm({
         message: "Create a new project now?",
-        default: true,
-      },
-    ]);
+        initialValue: true,
+      }),
+    );
 
     if (createNow) {
-      const { projectName } = await prompt([
-        {
-          type: "input",
-          name: "projectName",
-          message: "new project name?",
-          default: "my-app",
-          validate: validateName,
-        },
-      ]);
-      await create(projectName);
+      const projectName = handleCancel(
+        await text({
+          message: "New project name?",
+          initialValue: "my-app",
+          validate: validateName as any,
+        }),
+      );
+
+      await create(projectName as string);
     } else {
       log.warn("👉 Run: create-smart-api create");
     }
+
     return;
   }
+
   let selectedModule = config?.module || moduleType;
   let selectedDb = config?.db || db;
 
-  const answers = await prompt([
-    {
-      type: "select",
-      name: "moduleType",
-      message: "Module system",
-      default: "commonjs",
-      choices: [
-        { name: "ES Module", value: "module" },
-        { name: "CommonJS", value: "commonjs" },
-      ],
-      when: () => !selectedModule,
-    },
-    {
-      type: "select",
-      name: "db",
-      message: "Select DB",
-      default: "mongodb",
-      choices: ["mongodb", "mssql", "mysql"],
-      when: () => !selectedDb,
-    },
-  ]);
+  // ✅ Ask only if missing
+  if (!selectedModule) {
+    const res = handleCancel(
+      await select({
+        message: "Module system",
+        options: [
+          { label: "ES Module", value: "module" },
+          { label: "CommonJS", value: "commonjs" },
+        ],
+        initialValue: "commonjs",
+      }),
+    );
 
-  selectedDb = selectedDb || answers.db;
+    selectedModule = res as "module" | "commonjs";
+  }
+
+  if (!selectedDb) {
+    const res = handleCancel(
+      await select({
+        message: "Select DB",
+        options: [
+          { label: "mongodb", value: "mongodb" },
+          { label: "mssql", value: "mssql" },
+          { label: "mysql", value: "mysql" },
+        ],
+        initialValue: "mongodb",
+      }),
+    );
+
+    selectedDb = res as "mongodb" | "mssql" | "mysql";
+  }
+
   let modelFields: any[] = [];
-  const { inputMode } = await prompt([
-    {
-      type: "select",
-      name: "inputMode",
-      message: "create-smart-api > How do you want to define fields?",
-      choices: [
-        { name: "Interactive", value: "interactive" },
-        { name: "Quick input (name:string,...)", value: "quick" },
-      ],
-      default: "interactive",
-    },
-  ]);
 
+  // ✅ Input mode
+  const inputMode: any = handleCancel(
+    await select({
+      message: "create-smart-api > How do you want to define fields?",
+      options: [
+        { label: "Interactive", value: "interactive" },
+        { label: "Quick input (name:string,...)", value: "quick" },
+      ],
+      initialValue: "interactive",
+    }),
+  );
+
+  // ✅ Field input
   if (inputMode === "quick") {
     const { fieldInput } = await fieldInputs();
     modelFields = await parseFields(fieldInput);
@@ -115,24 +130,23 @@ export default async function generateModel(
 
   normalizeFields(modelFields);
 
+  // 🔁 Edit loop
   while (true) {
     showTablePreview(modelFields);
 
-    const { action } = await prompt([
-      {
-        type: "select",
-        name: "action",
-        default: "continue",
+    const action = handleCancel(
+      await select({
         message: "Select action:",
-        choices: [
-          { name: "✅ Continue", value: "continue" },
-          { name: "✏️ Edit field", value: "edit" },
-          { name: "➕ Add new field", value: "add" },
-          { name: "❌ Delete field", value: "delete" },
-          { name: "🚪 Cancel", value: "cancel" },
+        initialValue: "continue",
+        options: [
+          { label: "✅ Continue", value: "continue" },
+          { label: "✏️ Edit field", value: "edit" },
+          { label: "➕ Add new field", value: "add" },
+          { label: "❌ Delete field", value: "delete" },
+          { label: "🚪 Cancel", value: "cancel" },
         ],
-      },
-    ]);
+      }),
+    );
 
     if (action === "continue") break;
 
@@ -154,7 +168,8 @@ export default async function generateModel(
     }
   }
 
-  const selectModuleType = isESM || answers.moduleType === "module";
+  const selectModuleType = isESM || selectedModule === "module";
+
   let relations: any = await askRelations();
 
   relations = await processRelations(
@@ -164,8 +179,10 @@ export default async function generateModel(
     selectModuleType,
     inputMode,
   );
+
   let modelContent: any = "";
   const modelName = name.charAt(0).toUpperCase() + name.slice(1);
+
   if (selectedDb === "mongodb") {
     modelContent = generateMongooseModel(
       modelFields,
@@ -180,18 +197,23 @@ export default async function generateModel(
       selectModuleType,
       relations,
     );
+    const indexContent = generateSequelizeIndex(isESM);
+    await writeFile(path.join(base, "src/models", "index.js"), indexContent);
   }
-  let selectedModelPath =
+
+  const selectedModelPath =
     modelPath || path.join(base, "src/models", `${modelName}.model.js`);
+
+  await writeFile(selectedModelPath, modelContent);
+
   if (!isCrud) {
-    await writeFile(selectedModelPath, modelContent);
     log.successBox(`Model ${modelName} created successfully!`, {
       name: modelName,
       database: selectedDb,
     });
     return;
   }
-  await writeFile(selectedModelPath, modelContent);
+
   return relations;
 }
 

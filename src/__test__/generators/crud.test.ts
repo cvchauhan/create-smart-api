@@ -1,150 +1,179 @@
-import crud from "../../generators/crud";
-import { prompt } from "../../helper/promptAdapter";
-import { log } from "../../helper";
-import generateModel from "../../commands/model";
-import { writeFile } from "fs/promises";
+import generateCrud from "../../generators/crud";
 
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
+// Mock dependencies
+jest.mock("path", () => ({
+  join: jest.fn((...args) => args.join("/")),
 }));
 
-jest.mock("picocolors", () => ({
-  pc: jest.fn(),
-  cyan: jest.fn(),
-  bold: jest.fn(),
-}));
-jest.mock("../../utils/field.util", () => ({
-  askFieldDetails: jest.fn(),
-  addField: jest.fn(),
-}));
-jest.mock("../../utils/model.util", () => ({
-  generateSequelizeModel: jest.fn(),
-  generateMongooseModel: jest.fn(),
-  generateSequelizeRelations: jest.fn(),
-}));
-jest.mock("../../helper/showTablePreview", () => ({
-  showTablePreview: jest.fn(),
-}));
-
-jest.mock("fs/promises", () => ({
-  writeFile: jest.fn(),
-}));
-jest.mock("fs", () => ({
-  existsSync: jest.fn().mockReturnValue(true),
-  lstatSync: jest.fn().mockReturnValue({ isDirectory: () => true }),
-  readdirSync: jest.fn().mockReturnValue(["index.routes.js"]),
-  readFileSync: jest
-    .fn()
-    .mockReturnValue(JSON.stringify({ createSmartApi: {} })),
-}));
 jest.mock("../../helper", () => ({
   log: {
     error: jest.fn(),
     success: jest.fn(),
-    warn: jest.fn(),
-    info: jest.fn(),
-    successBox: jest.fn(),
   },
 }));
 
-const promptMock = prompt as any;
+jest.mock("../../commands/model", () => jest.fn());
+jest.mock("../../utils/router.util", () => ({
+  genrateRouter: jest.fn(),
+}));
 
-describe("crud generator", () => {
+jest.mock("../../templates/service.template", () => jest.fn());
+jest.mock("../../templates/controller.template", () => jest.fn());
+
+jest.mock("@clack/prompts", () => ({
+  intro: jest.fn(),
+  outro: jest.fn(),
+  select: jest.fn(),
+}));
+
+jest.mock("../../utils/prompt.util", () => ({
+  handleCancel: jest.fn((val) => val),
+}));
+
+describe("generateCrud", () => {
+  const generateModel = require("../../commands/model");
+  const serviceGenrate = require("../../templates/service.template");
+  const generateController = require("../../templates/controller.template");
+  const { genrateRouter } = require("../../utils/router.util");
+  const { select } = require("@clack/prompts");
+  const { log } = require("../../helper");
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test("should create CRUD files for express commonjs", async () => {
-    promptMock.mockResolvedValue({
-      framework: "express",
-      moduleType: "commonjs",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
+  it("should return error if moduleName is missing", async () => {
+    await generateCrud("/base", "" as any);
 
-    await crud("/base", "user");
+    expect(log.error).toHaveBeenCalledWith("Module name is required");
+    expect(generateModel).not.toHaveBeenCalled();
+  });
 
-    expect(writeFile).toHaveBeenCalled();
-    expect(log.success).toHaveBeenCalledWith(
-      'CRUD module "user" created successfully!',
+  it("should generate CRUD with all params provided (no prompts)", async () => {
+    generateModel.mockResolvedValueOnce(["relation"]);
+
+    await generateCrud("/base", "user", "express", "commonjs", "mongodb", true);
+
+    expect(generateModel).toHaveBeenCalledWith(
+      "user",
+      "commonjs",
+      "mongodb",
+      false,
+      true,
+      expect.stringContaining("User.model.js"),
+    );
+
+    expect(serviceGenrate).toHaveBeenCalledWith(
+      "mongodb",
+      false,
+      ["relation"],
+      "user",
+      expect.stringContaining("user.service.js"),
+      true,
+    );
+
+    expect(generateController).toHaveBeenCalledWith(
+      "user",
+      false,
+      expect.stringContaining("user.controller.js"),
+    );
+
+    expect(genrateRouter).toHaveBeenCalledWith(
+      "user",
+      "express",
+      expect.stringContaining("routes/index.js"),
+      "commonjs",
     );
   });
 
-  test("should handle fastify module", async () => {
-    promptMock.mockResolvedValue({
-      framework: "fastify",
-      moduleType: "module",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
+  it("should prompt for missing params", async () => {
+    generateModel.mockResolvedValueOnce([]);
 
-    await crud("/base", "product");
+    select
+      .mockResolvedValueOnce("fastify") // framework
+      .mockResolvedValueOnce("module") // moduleType
+      .mockResolvedValueOnce("mysql"); // db
 
-    await generateModel("", "module", "mongodb", true);
+    await generateCrud("/base", "product");
 
-    expect(writeFile).toHaveBeenCalled();
+    expect(select).toHaveBeenCalledTimes(3);
+
+    expect(generateModel).toHaveBeenCalledWith(
+      "product",
+      "module",
+      "mysql",
+      true,
+      true,
+      expect.any(String),
+    );
   });
 
-  test("should handle fastify commonjs", async () => {
-    promptMock.mockResolvedValue({
-      framework: "fastify",
-      moduleType: "commonjs",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
+  it("should correctly detect ESM mode", async () => {
+    generateModel.mockResolvedValueOnce([]);
 
-    await crud("/base", "product");
+    await generateCrud("/base", "order", "express", "module", "mongodb", true);
 
-    expect(writeFile).toHaveBeenCalled();
+    expect(generateModel).toHaveBeenCalledWith(
+      "order",
+      "module",
+      "mongodb",
+      true, // ESM = true
+      true,
+      expect.any(String),
+    );
   });
 
-  test("should handle express module with module type", async () => {
-    promptMock.mockResolvedValue({
-      framework: "express",
-      moduleType: "module",
-      fieldInput: "name:string, email:string",
-      action: "continue",
-    });
+  it("should lowercase module name and capitalize model name", async () => {
+    generateModel.mockResolvedValueOnce([]);
 
-    await crud("/base", "product");
-    await generateModel("product", "module", "mongodb", true);
+    await generateCrud(
+      "/base",
+      "UserProfile",
+      "express",
+      "commonjs",
+      "mongodb",
+      true,
+    );
 
-    expect(writeFile).toHaveBeenCalled();
+    expect(generateModel).toHaveBeenCalledWith(
+      "userprofile",
+      "commonjs",
+      "mongodb",
+      false,
+      true,
+      expect.stringContaining("Userprofile.model.js"),
+    );
   });
 
-  test("should log error when module name missing", async () => {
-    await crud("/base", "");
+  it("should call success log and outro when not isCreate", async () => {
+    generateModel.mockResolvedValueOnce([]);
 
-    expect(log.error).toHaveBeenCalledWith("Module name is required");
+    const { outro } = require("@clack/prompts");
+
+    await generateCrud(
+      "/base",
+      "user",
+      "express",
+      "commonjs",
+      "mongodb",
+      false,
+    );
+
+    expect(log.success).toHaveBeenCalledWith(
+      'CRUD module "user" created successfully!',
+    );
+
+    expect(outro).toHaveBeenCalled();
   });
 
-  test("should evaluate when conditions", async () => {
-    let firstCallQuestions: any[] = [];
+  it("should NOT call intro/outro when isCreate is true", async () => {
+    generateModel.mockResolvedValueOnce([]);
 
-    promptMock.mockImplementation(async (q: any) => {
-      // capture only first call (array of questions)
-      if (Array.isArray(q) && firstCallQuestions.length === 0) {
-        firstCallQuestions = q;
-      }
+    const { intro, outro } = require("@clack/prompts");
 
-      return {
-        framework: "express",
-        moduleType: "commonjs",
-        fieldInput: "name:string,email:string",
-        action: "cancel",
-      };
-    });
+    await generateCrud("/base", "user", "express", "commonjs", "mongodb", true);
 
-    await crud("/base", "user");
-
-    expect(firstCallQuestions.length).toBeGreaterThan(0);
-
-    const frameworkWhen = firstCallQuestions[0].when;
-    const moduleTypeWhen = firstCallQuestions[1].when;
-    const dbWhen = firstCallQuestions[2].when;
-
-    expect(frameworkWhen()).toBe(true);
-    expect(moduleTypeWhen()).toBe(true);
-    expect(dbWhen()).toBe(true);
+    expect(intro).not.toHaveBeenCalled();
+    expect(outro).not.toHaveBeenCalled();
   });
 });

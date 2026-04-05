@@ -1,10 +1,11 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { execSync } from "child_process";
-import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import { existsSync, readFileSync } from "fs";
+import { select } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
 
 export default async function (
   module: string,
@@ -18,19 +19,23 @@ export default async function (
   const base = process.cwd();
 
   const config = getConfig(base);
-  const answers = await prompt([
-    {
-      type: "select",
-      name: "moduleType",
-      message: "Module system",
-      default: "commonjs",
-      choices: [
-        { name: "ES Module", value: "module" },
-        { name: "CommonJS", value: "commonjs" },
-      ],
-      when: () => !moduleType && !config?.module,
-    },
-  ]);
+
+  const answers = {} as any;
+
+  if (!moduleType && !config?.module) {
+    const res = handleCancel(
+      await select({
+        message: "Module system",
+        options: [
+          { label: "ES Module", value: "module" },
+          { label: "CommonJS", value: "commonjs" },
+        ],
+        initialValue: "commonjs",
+      }),
+    );
+
+    answers.moduleType = res;
+  }
 
   const isModule = moduleType || answers.moduleType === "module";
 

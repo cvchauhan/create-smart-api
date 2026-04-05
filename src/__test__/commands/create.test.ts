@@ -1,197 +1,191 @@
-import create from "../../commands/create";
-import { prompt } from "../../helper/promptAdapter";
-import { execSync } from "child_process";
-import { createStructure } from "../../generators/project";
-import generateCrud from "../../generators/crud";
-import { log } from "../../helper";
-import { mkdir } from "fs/promises";
+import createApp from "../../commands/create";
 
-jest.spyOn(process, "chdir").mockImplementation(() => {});
+// ---- Mock fs ----
+jest.mock("fs/promises", () => ({
+  writeFile: jest.fn(),
+  mkdir: jest.fn(),
+}));
 
+// ---- Mock path ----
 jest.mock("path", () => ({
   join: jest.fn((...args) => args.join("/")),
-  basename: jest.fn().mockReturnValue("test-app"),
+  basename: jest.fn((p) => p.split("/").pop()),
 }));
 
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
-}));
-
-jest.mock("fs/promises", () => ({
-  mkdir: jest.fn(),
-  writeFile: jest.fn(),
-  readFile: jest.fn().mockResolvedValue(JSON.stringify({ createSmartApi: {} })),
-  readdir: jest.fn(),
-  access: jest.fn(),
-}));
-
-jest.mock("fs", () => ({
-  existsSync: jest.fn().mockReturnValue(true),
-  lstatSync: jest.fn(() => ({
-    isDirectory: jest.fn().mockReturnValue(true),
-  })),
-  readFileSync: jest
-    .fn()
-    .mockReturnValue(JSON.stringify({ createSmartApi: {} })),
-}));
-
-jest.mock("child_process", () => ({
-  execSync: jest.fn(),
-}));
-
+// ---- Mock generators ----
 jest.mock("../../generators/project", () => ({
   createStructure: jest.fn(),
 }));
 
 jest.mock("../../generators/crud", () => jest.fn());
 
+// ---- Mock utils ----
+jest.mock("../../utils/db.util", () => ({
+  generateDbConfig: jest.fn(() => "db-config"),
+}));
+
+jest.mock("../../utils/field.validation.util", () => ({
+  validateOnlyNumber: jest.fn(() => true),
+  validateName: jest.fn(() => true),
+}));
+
+jest.mock("../../utils/prompt.util", () => ({
+  handleCancel: jest.fn((val) => val),
+}));
+
+// ---- Mock templates ----
+jest.mock("../../templates/env.template", () => jest.fn());
+jest.mock("../../templates/package.json.template", () => jest.fn());
+
+// ---- Mock logger ----
 jest.mock("../../helper", () => ({
   log: {
-    success: jest.fn(),
-    error: jest.fn(),
     step: jest.fn(),
     info: jest.fn(),
     successBox: jest.fn(),
   },
 }));
 
-const promptMock = prompt as any;
+// ---- Mock prompts ----
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
+}));
 
-describe("create command", () => {
+describe("createApp CLI", () => {
+  const { text, select, confirm } = require("@clack/prompts");
+  const { mkdir, writeFile } = require("fs/promises");
+  const { createStructure } = require("../../generators/project");
+  const generateCrud = require("../../generators/crud");
+  const generateEnvFile = require("../../templates/env.template");
+  const generatePackageJson = require("../../templates/package.json.template");
+  const { generateDbConfig } = require("../../utils/db.util");
+
   beforeEach(() => {
     jest.clearAllMocks();
+
+    jest.spyOn(process, "cwd").mockReturnValue("/mock-root");
     jest.spyOn(process, "chdir").mockImplementation(() => {});
   });
 
-  test("should create project with express + mongodb + crud", async () => {
-    promptMock.mockResolvedValue({
-      name: "test-app",
-      framework: "express",
-      moduleType: "commonjs",
-      db: "mongodb",
-      crud: true,
-      moduleName: "user",
-      port: 3000,
-    });
+  // ✅ FULL FLOW TEST
+  it("should create project with CRUD enabled", async () => {
+    text
+      .mockResolvedValueOnce("my-app") // project name
+      .mockResolvedValueOnce("sample") // module name
+      .mockResolvedValueOnce("3000"); // port
 
-    await create("");
+    select
+      .mockResolvedValueOnce("express")
+      .mockResolvedValueOnce("commonjs")
+      .mockResolvedValueOnce("mongodb");
 
-    expect(mkdir).toHaveBeenCalled();
+    confirm.mockResolvedValueOnce(true);
+
+    await createApp("");
+
+    expect(mkdir).toHaveBeenCalledWith("/mock-root/my-app", expect.any(Object));
+
     expect(createStructure).toHaveBeenCalled();
 
-    expect(execSync).toHaveBeenCalledWith("npm init -y", expect.any(Object));
-    expect(execSync).toHaveBeenCalledWith(
-      "npm install express",
-      expect.any(Object),
+    expect(writeFile).toHaveBeenCalledWith(
+      expect.stringContaining("db.js"),
+      "db-config",
     );
-    expect(execSync).toHaveBeenCalledWith(
-      "npm install mongoose",
-      expect.any(Object),
+
+    expect(generateDbConfig).toHaveBeenCalledWith("commonjs", "mongodb");
+
+    expect(generateEnvFile).toHaveBeenCalledWith(
+      3000,
+      expect.stringContaining(".env"),
+      "mongodb",
     );
+
+    expect(generatePackageJson).toHaveBeenCalled();
 
     expect(generateCrud).toHaveBeenCalledWith(
       expect.any(String),
-      "user",
+      "sample",
       "express",
       "commonjs",
       "mongodb",
       true,
     );
-
-    expect(log.successBox).toHaveBeenCalled();
   });
 
-  test("should skip CRUD when disabled", async () => {
-    promptMock.mockResolvedValue({
-      name: "test-app",
-      framework: "fastify",
-      moduleType: "module",
-      db: "mysql",
-      crud: false,
-      moduleName: "user",
-      port: 4000,
-    });
+  // ✅ NO CRUD FLOW
+  it("should skip CRUD when disabled", async () => {
+    text.mockResolvedValueOnce("my-app").mockResolvedValueOnce("3000");
 
-    await create("");
+    select
+      .mockResolvedValueOnce("fastify")
+      .mockResolvedValueOnce("module")
+      .mockResolvedValueOnce("mysql");
 
-    expect(execSync).toHaveBeenCalledWith(
-      "npm install fastify",
-      expect.any(Object),
-    );
+    confirm.mockResolvedValueOnce(false);
 
-    expect(execSync).toHaveBeenCalledWith(
-      "npm install mysql2 sequelize",
-      expect.any(Object),
-    );
+    await createApp("");
 
     expect(generateCrud).not.toHaveBeenCalled();
   });
 
-  test("should set module type when module selected", async () => {
-    promptMock.mockResolvedValue({
-      name: "test-app",
-      framework: "express",
-      moduleType: "module",
-      db: "mongodb",
-      crud: false,
-      moduleName: "user",
-      port: 3000,
-    });
+  // ✅ DIRECT NAME (NO PROMPT)
+  it("should use provided name without asking project name", async () => {
+    select
+      .mockResolvedValueOnce("express")
+      .mockResolvedValueOnce("commonjs")
+      .mockResolvedValueOnce("mongodb");
 
-    await create("");
+    confirm.mockResolvedValueOnce(false);
 
-    expect(execSync).toHaveBeenCalledWith(
-      "npm pkg set type=module",
+    text.mockResolvedValueOnce("3000");
+
+    await createApp("direct-app");
+
+    expect(mkdir).toHaveBeenCalledWith(
+      "/mock-root/direct-app",
       expect.any(Object),
     );
   });
 
-  test("should use provided name (skip prompt condition)", async () => {
-    let questions: any[] = [];
+  // ✅ DB DIALECT TEST
+  it("should map DB dialect correctly (mssql)", async () => {
+    text
+      .mockResolvedValueOnce("my-app")
+      .mockResolvedValueOnce("sample")
+      .mockResolvedValueOnce("3000");
 
-    promptMock.mockImplementation(async (q: any) => {
-      if (Array.isArray(q) && questions.length === 0) {
-        questions = q;
-      }
+    select
+      .mockResolvedValueOnce("express")
+      .mockResolvedValueOnce("commonjs")
+      .mockResolvedValueOnce("mssql");
 
-      return {
-        framework: "express",
-        moduleType: "commonjs",
-        db: "mssql",
-        crud: false,
-        moduleName: "user",
-        port: 3000,
-      };
-    });
+    confirm.mockResolvedValueOnce(true);
 
-    await create("my-app");
+    await createApp("");
 
-    expect(questions.length).toBeGreaterThan(0);
-
-    const nameQuestion = questions.find((q: any) => q.name === "name");
-
-    expect(nameQuestion).toBeDefined();
-    expect(typeof nameQuestion.when).toBe("function");
-
-    expect(nameQuestion.when()).toBe(false);
+    expect(generateDbConfig).toHaveBeenCalledWith("commonjs", "mssql");
   });
 
-  test("should show moduleName when crud is true", async () => {
-    let questions: any[] = [];
-    promptMock.mockImplementation(async (q: any) => {
-      questions = q;
-      return {
-        crud: true,
-        port: 3000,
-      };
-    });
+  // ✅ CURRENT DIRECTORY MODE
+  it("should use current directory when '.' is selected", async () => {
+    text
+      .mockResolvedValueOnce(".") // current dir
+      .mockResolvedValueOnce("sample")
+      .mockResolvedValueOnce("3000");
 
-    await create("");
+    select
+      .mockResolvedValueOnce("express")
+      .mockResolvedValueOnce("commonjs")
+      .mockResolvedValueOnce("mongodb");
 
-    const moduleNameWhen = questions.find(
-      (q: any) => q.name === "moduleName",
-    ).when;
+    confirm.mockResolvedValueOnce(true);
 
-    expect(moduleNameWhen({ crud: true })).toBe(true); // ✅ covered
+    await createApp("");
+
+    expect(mkdir).toHaveBeenCalledWith("/mock-root", expect.any(Object));
   });
 });

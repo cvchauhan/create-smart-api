@@ -1,10 +1,11 @@
 import path from "path";
-import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import generateModel from "../commands/model";
 import { genrateRouter } from "../utils/router.util";
 import serviceGenrate from "../templates/service.template";
 import generateController from "../templates/controller.template";
+import { intro, outro, select } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
 
 export default async function generateCrud(
   base: string,
@@ -18,36 +19,55 @@ export default async function generateCrud(
     log.error("Module name is required");
     return;
   }
+  if (!isCreate) {
+    intro("Create Smart API Crud🚀");
+  }
+  const answers: any = {};
+  if (!framework) {
+    const res = handleCancel(
+      await select({
+        message: "Select Framework",
+        options: [
+          { label: "express", value: "express" },
+          { label: "fastify", value: "fastify" },
+        ],
+        initialValue: "express",
+      }),
+    );
 
-  const answers = await prompt([
-    {
-      type: "select",
-      name: "framework",
-      message: "Select Framework",
-      default: "express",
-      choices: ["express", "fastify"],
-      when: () => !framework,
-    },
-    {
-      type: "select",
-      name: "moduleType",
-      message: "Module system",
-      default: "commonjs",
-      choices: [
-        { name: "ES Module", value: "module" },
-        { name: "CommonJS", value: "commonjs" },
-      ],
-      when: () => !moduleType,
-    },
-    {
-      type: "select",
-      name: "db",
-      message: "Select DB",
-      default: "mongodb",
-      choices: ["mongodb", "mssql", "mysql"],
-      when: () => !db,
-    },
-  ]);
+    answers.framework = res;
+  }
+  if (!moduleType) {
+    const res = handleCancel(
+      await select({
+        message: "Module system",
+        options: [
+          { label: "ES Module", value: "module" },
+          { label: "CommonJS", value: "commonjs" },
+        ],
+        initialValue: "commonjs",
+      }),
+    );
+
+    answers.moduleType = res;
+  }
+
+  if (!db) {
+    const res = handleCancel(
+      await select({
+        message: "Select DB",
+        options: [
+          { label: "mongodb", value: "mongodb" },
+          { label: "mssql", value: "mssql" },
+          { label: "mysql", value: "mysql" },
+        ],
+        initialValue: "mongodb",
+      }),
+    );
+
+    answers.db = res;
+  }
+
   const name = moduleName.toLowerCase();
   const isESM = moduleType === "module" || answers.moduleType === "module";
   /* -------- MODEL -------- */
@@ -83,5 +103,6 @@ export default async function generateCrud(
 
   if (!isCreate) {
     log.success(`CRUD module "${name}" created successfully!`);
+    outro("Happy coding! 🚀");
   }
 }

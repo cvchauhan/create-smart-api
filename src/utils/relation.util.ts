@@ -1,4 +1,3 @@
-import { prompt } from "../helper/promptAdapter";
 import { fieldInputs, validateName } from "./field.validation.util";
 import { log } from "../helper";
 import path from "path";
@@ -9,80 +8,83 @@ import Relation from "../types/relation";
 import { existsSync, readdirSync } from "fs";
 import { writeFile } from "fs/promises";
 
+import { select, confirm, text } from "@clack/prompts";
+import { handleCancel } from "./prompt.util";
+
 class Relations {
   askRelations = async () => {
     const relations: Relation[] = [];
 
-    const { hasRelations } = await prompt([
-      {
-        type: "confirm",
-        name: "hasRelations",
+    const hasRelations = handleCancel(
+      await confirm({
         message: "Do you want to add relations?",
-        default: false,
-      },
-    ]);
+        initialValue: false,
+      }),
+    );
 
     if (!hasRelations) return relations;
 
     let addMore = true;
 
     while (addMore) {
-      const ans = await prompt([
-        {
-          type: "select",
-          name: "type",
+      const type = handleCancel(
+        await select({
           message: "Relation type",
-          choices: ["1:1", "1:N", "N:N"],
-        },
-        {
-          type: "input",
-          name: "target",
+          options: [
+            { label: "1:1", value: "1:1" },
+            { label: "1:N", value: "1:N" },
+            { label: "N:N", value: "N:N" },
+          ],
+        }),
+      );
+
+      const target = handleCancel(
+        await text({
           message: "Target model name",
-          validate: validateName,
-        },
-        {
-          type: "input",
-          name: "field",
+          validate: validateName as any,
+        }),
+      );
+
+      const field: any = handleCancel(
+        await text({
           message: "Field name for relation (e.g. roleId):",
-          validate: validateName,
-          filter: (val: string) => val.trim(),
-        },
-        {
-          type: "confirm",
-          name: "required",
+          validate: validateName as any,
+        }),
+      );
+
+      const required = handleCancel(
+        await confirm({
           message: "Is this relation required?",
-          default: false,
-        },
-      ]);
-      if (
-        relations.some(
-          (r: any) => r.field.toLowerCase() === ans.field.toLowerCase(),
-        )
-      ) {
-        log.error(`Field "${ans.field}" already used in another relation`);
+          initialValue: false,
+        }),
+      );
+
+      // 🔥 duplicate check
+      if (this.isDuplicateField(field as string, relations)) {
+        log.error(`Field "${field}" already used in another relation`);
         continue;
       }
+
       relations.push({
-        type: ans.type,
-        target: ans.target.charAt(0).toUpperCase() + ans.target.slice(1),
-        field: ans.field,
-        required: ans.required,
+        type: type as "1:1" | "1:N" | "N:N",
+        target: this.formatTarget(target as string),
+        field: (field as string)?.trim() || "",
+        required: required as boolean,
       });
 
-      const { more } = await prompt([
-        {
-          type: "confirm",
-          name: "more",
+      const more = handleCancel(
+        await confirm({
           message: "Add another relation?",
-          default: false,
-        },
-      ]);
+          initialValue: false,
+        }),
+      );
 
-      addMore = more;
+      addMore = more as boolean;
     }
 
     return relations;
   };
+
   processRelations = async (
     relations: any[],
     basePath: string,
@@ -93,6 +95,7 @@ class Relations {
     const modelsPath = path.join(basePath, "src/models");
     const finalRelations: any[] = [];
     const createdModels = new Set<string>();
+
     const normalize = (str: string) => str.toLowerCase();
 
     const existingModels = new Set(
@@ -102,10 +105,10 @@ class Relations {
             .map((f) => normalize(f.replace(/\.model\.(js|ts)$/, "")))
         : [],
     );
+
     for (const rel of relations) {
       const target = rel.target;
-
-      const targetName = normalize(rel.target);
+      const targetName = normalize(target);
 
       if (existingModels.has(targetName) || createdModels.has(targetName)) {
         finalRelations.push(rel);
@@ -115,24 +118,28 @@ class Relations {
 
       log.error(`Model "${target}" not found.`);
 
-      const { action } = await prompt([
-        {
-          type: "select",
-          name: "action",
+      const action = handleCancel(
+        await select({
           message: "What do you want to do?",
-          choices: ["Create Model", "Skip Relation"],
-        },
-      ]);
+          options: [
+            { label: "Create Model", value: "create" },
+            { label: "Skip Relation", value: "skip" },
+          ],
+        }),
+      );
 
-      if (action === "Create Model") {
+      if (action === "create") {
         let modelFields: Field[] = [];
+
         if (inputMode === "quick") {
           const { fieldInput } = await fieldInputs();
           modelFields = await parseFields(fieldInput);
         } else {
           await addField(modelFields);
         }
+
         await this.createModelFile(target, basePath, db, isESM, modelFields);
+
         createdModels.add(target);
         finalRelations.push(rel);
       } else {
@@ -142,6 +149,7 @@ class Relations {
 
     return finalRelations;
   };
+
   createModelFile = async (
     modelName: string,
     basePath: string,
@@ -155,7 +163,6 @@ class Relations {
       `${modelName}.model.js`,
     );
 
-    // prevent overwrite
     if (existsSync(modelPath)) {
       log.warn(`Model ${modelName} already exists`);
       return;
@@ -170,7 +177,23 @@ class Relations {
     }
 
     await writeFile(modelPath, content);
+
     log.success(`Related model "${modelName}" created successfully!`);
+  };
+  isDuplicateField = (field: string, relations: Relation[]) => {
+    if (!field) return false;
+
+    const f = field.trim().toLowerCase();
+
+    return relations.some((r) => r.field && r.field.trim().toLowerCase() === f);
+  };
+
+  formatTarget = (target?: string) => {
+    const t = target?.trim();
+
+    if (!t) return "";
+
+    return t.charAt(0).toUpperCase() + t.slice(1);
   };
 }
 

@@ -1,5 +1,6 @@
 import { closest } from "fastest-levenshtein";
-import { prompt } from "../helper/promptAdapter";
+import { confirm, select } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
 
 export async function resolveType(type: string): Promise<string> {
   const allowedTypes = ["string", "number", "boolean", "date", "enum"];
@@ -9,25 +10,24 @@ export async function resolveType(type: string): Promise<string> {
 
   const suggestion = closest(cleanType, allowedTypes);
 
-  const { confirm } = await prompt([
-    {
-      type: "confirm",
-      name: "confirm",
+  const confirmType = handleCancel(
+    await confirm({
       message: `Invalid type "${type}". Did you mean "${suggestion}"?`,
-      default: true,
-    },
-  ]);
+      initialValue: true,
+    }),
+  );
 
-  if (confirm) return suggestion;
+  if (confirmType) return suggestion;
 
-  const { manual } = await prompt([
-    {
-      type: "select",
-      name: "manual",
+  const manual = handleCancel(
+    await select({
       message: "Select correct type:",
-      choices: allowedTypes,
-    },
-  ]);
+      options: allowedTypes.map((v) => ({
+        label: v,
+        value: v,
+      })),
+    }),
+  );
 
-  return manual;
+  return manual as string;
 }

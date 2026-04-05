@@ -8,8 +8,15 @@ jest.mock("fs/promises", () => ({
   writeFile: jest.fn(),
 }));
 
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
+
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  isCancel: jest.fn(() => false),
+  cancel: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
 }));
 jest.mock("../../helper", () => ({
   log: {

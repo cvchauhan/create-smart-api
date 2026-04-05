@@ -1,4 +1,3 @@
-import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import generatAuthMiddleware from "../templates/middleware.template";
@@ -6,46 +5,61 @@ import generateAuthService from "../templates/auth.service.template";
 import generateAuthController from "../templates/auth.controller.template";
 import { execSync } from "child_process";
 
+import { select } from "@clack/prompts";
+import { handleCancel } from "../utils/prompt.util";
+
 export default async function (
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
 ) {
-  const config = getConfig(process.cwd());
-  const answers = await prompt([
-    {
-      type: "select",
-      name: "framework",
-      message: "Select Framework",
-      default: "express",
-      choices: ["express", "fastify"],
-      when: () => !framework && !config?.framework,
-    },
-    {
-      type: "select",
-      name: "moduleType",
-      message: "Module system",
-      default: "commonjs",
-      choices: [
-        { name: "ES Module", value: "module" },
-        { name: "CommonJS", value: "commonjs" },
-      ],
-      when: () => !moduleType && !config?.module,
-    },
-  ]);
-  const selectedFramework = framework || answers.framework;
-  const selectedModuleType = moduleType || answers.moduleType;
+  const config = getConfig(process.cwd()) || {};
+
+  let selectedFramework = framework || config?.framework;
+  let selectedModuleType = moduleType || config?.module;
+
+  // ✅ Ask only if missing
+  if (!selectedFramework) {
+    const res = handleCancel(
+      await select({
+        message: "Select Framework",
+        options: [
+          { label: "express", value: "express" },
+          { label: "fastify", value: "fastify" },
+        ],
+        initialValue: "express",
+      }),
+    );
+    selectedFramework = res as "express" | "fastify";
+  }
+
+  if (!selectedModuleType) {
+    const res = handleCancel(
+      await select({
+        message: "Module system",
+        options: [
+          { label: "ES Module", value: "module" },
+          { label: "CommonJS", value: "commonjs" },
+        ],
+        initialValue: "commonjs",
+      }),
+    );
+
+    selectedModuleType = res as "module" | "commonjs";
+  }
+
   const base = process.cwd();
-  execSync("npm install jsonwebtoken bcrypt", { stdio: "inherit" });
   const isModule = selectedModuleType === "module";
+
+  // 🚀 Install deps (optimized)
+  log.step("Installing auth dependencies...");
+  execSync("npm install jsonwebtoken bcrypt", { stdio: "inherit" });
 
   // 🔥 Generate files
   log.info("Generating auth module...");
 
-  await generatAuthMiddleware(selectedFramework, isModule, base);
-
+  await generatAuthMiddleware(selectedFramework!, isModule, base);
   await generateAuthService(base, isModule);
-
-  await generateAuthController(selectedFramework, isModule, base);
+  await generateAuthController(selectedFramework!, isModule, base);
 
   log.success("Auth module + middleware generated successfully!");
 }

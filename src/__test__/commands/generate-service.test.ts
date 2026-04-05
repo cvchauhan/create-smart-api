@@ -1,13 +1,21 @@
 import generateService from "../../commands/generate-service";
-import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { log } from "../../helper";
 import { mkdir, writeFile } from "fs/promises";
+import * as prompts from "@clack/prompts";
 
-// ✅ Mock helper prompt (NEW)
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  isCancel: jest.fn(() => false),
+  cancel: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
 }));
+
+const selectMock = prompts.select as jest.Mock;
+
 jest.mock("../../commands/model", () => ({
   __esModule: true,
   default: jest.fn().mockResolvedValue([
@@ -58,8 +66,6 @@ jest.mock("picocolors", () => {
   };
 });
 
-const promptMock = prompt as any;
-
 describe("generateService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -81,11 +87,9 @@ describe("generateService", () => {
 
   // ✅ CommonJS case
   test("should generate service in commonjs", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "commonjs",
-      action: "continue",
-      db: "mongodb",
-    });
+    selectMock.mockResolvedValueOnce("commonjs");
+    selectMock.mockResolvedValueOnce("continue");
+    selectMock.mockResolvedValueOnce("mongodb");
 
     await generateService("user", "commonjs");
 
@@ -115,11 +119,9 @@ describe("generateService", () => {
         required: true,
       },
     ]);
-    promptMock.mockResolvedValue({
-      moduleType: "module",
-      action: "continue",
-      db: "mongodb",
-    });
+    selectMock.mockResolvedValueOnce("module");
+    selectMock.mockResolvedValueOnce("continue");
+    selectMock.mockResolvedValueOnce("mongodb");
 
     await generateService("product", "module");
 
@@ -141,11 +143,9 @@ describe("generateService", () => {
         required: true,
       },
     ]);
-    promptMock.mockResolvedValue({
-      moduleType: "module",
-      action: "continue",
-      db: "mssql",
-    });
+    selectMock.mockResolvedValueOnce("module");
+    selectMock.mockResolvedValueOnce("continue");
+    selectMock.mockResolvedValueOnce("mssql");
 
     await generateService("product", "module");
 

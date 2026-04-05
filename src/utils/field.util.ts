@@ -1,8 +1,10 @@
 import Field from "../types/field";
-import { prompt } from "../helper/promptAdapter";
 import { log } from "../helper/index";
 import { closest } from "fastest-levenshtein";
 import { validateFieldInput, validateName } from "./field.validation.util";
+
+import { text, select, confirm } from "@clack/prompts";
+import { handleCancel } from "./prompt.util";
 
 class Fields {
   addField = async (fields: Field[], mode?: string) => {
@@ -11,16 +13,14 @@ class Fields {
 
       // ✅ QUICK MODE
       if (mode === "quick") {
-        const { input } = await prompt([
-          {
-            type: "input",
-            name: "input",
+        const input = handleCancel(
+          await text({
             message: "Enter field (name:type)",
-            validate: validateFieldInput,
-          },
-        ]);
+            validate: validateFieldInput as any,
+          }),
+        );
 
-        const parsed = await this.parseFields(input);
+        const parsed = await this.parseFields(input as string);
         newField = parsed[0];
       }
 
@@ -42,128 +42,114 @@ class Fields {
       }
 
       // 🔁 ASK AGAIN
-      const { addMore } = await prompt([
-        {
-          type: "confirm",
-          name: "addMore",
+      const addMore = handleCancel(
+        await confirm({
           message: "Add another field?",
-          default: false,
-        },
-      ]);
+          initialValue: false,
+        }),
+      );
 
       if (!addMore) break;
     }
   };
 
   editField = async (fields: Field[]) => {
-    const { fieldName } = await prompt([
-      {
-        type: "select",
-        name: "fieldName",
+    const fieldName = handleCancel(
+      await select({
         message: "Select field to edit:",
-        choices: fields.map((f) => f.name),
-      },
-    ]);
-
+        options: fields.map((f) => ({
+          label: f.name,
+          value: f.name,
+        })),
+      }),
+    );
     const field = fields.find((f) => f.name === fieldName);
     if (!field) return;
 
-    const { property } = await prompt([
-      {
-        type: "select",
-        name: "property",
-        message: `What do you want to edit for "${field.name}"?(type, required, unique, default, enum)`,
-        default: "type",
-        choices: [
-          { name: "Type", value: "type" },
-          { name: "Required", value: "required" },
-          { name: "Unique", value: "unique" },
-          { name: "Default", value: "default" },
-          { name: "Enum Values", value: "enum" },
+    const property = handleCancel(
+      await select({
+        message: `What do you want to edit for "${field.name}"?`,
+        initialValue: "type",
+        options: [
+          { label: "Type", value: "type" },
+          { label: "Required", value: "required" },
+          { label: "Unique", value: "unique" },
+          { label: "Default", value: "default" },
+          { label: "Enum Values", value: "enum" },
         ],
-      },
-    ]);
+      }),
+    );
 
     switch (property) {
       case "type": {
-        const { newType } = await prompt([
-          {
-            type: "select",
-            name: "newType",
+        const newType = handleCancel(
+          await select({
             message: "Enter new type:",
-            default: field.type,
-            choices: [
+            initialValue: field.type,
+            options: [
               "string",
               "number",
               "boolean",
               "date",
               "enum",
               "objectid",
-            ],
-          },
-        ]);
+            ].map((v) => ({ label: v, value: v })),
+          }),
+        );
 
-        field.type = await this.resolveType(newType);
+        field.type = await this.resolveType(newType as string);
         break;
       }
 
       case "required": {
-        const { val } = await prompt([
-          {
-            type: "confirm",
-            name: "val",
+        const val = handleCancel(
+          await confirm({
             message: "Required?",
-            default: field.required,
-          },
-        ]);
+            initialValue: field.required,
+          }),
+        );
 
-        field.required = val;
+        field.required = val as boolean;
         break;
       }
 
       case "unique": {
-        const { val } = await prompt([
-          {
-            type: "confirm",
-            name: "val",
+        const val = handleCancel(
+          await confirm({
             message: "Unique?",
-            default: field.unique,
-          },
-        ]);
+            initialValue: field.unique,
+          }),
+        );
 
-        field.unique = val;
+        field.unique = val as boolean;
         break;
       }
 
       case "default": {
-        const { val } = await prompt([
-          {
-            type: "input",
-            name: "val",
+        const val = handleCancel(
+          await text({
             message: "Default value:",
-            default: field.default || "",
-          },
-        ]);
+            initialValue: field.default || "",
+          }),
+        );
 
-        field.default = val;
+        field.default = val as string;
         break;
       }
 
       case "enum": {
-        const { val } = await prompt([
-          {
-            type: "input",
-            name: "val",
+        const val = handleCancel(
+          await text({
             message: "Enter enum values (comma separated):",
-            default: field.enumValues?.join(",") || "",
-            validate: (input: string) => {
-              if (!input.trim()) return "Enum values are required";
-              return true;
+            initialValue: field.enumValues?.join(",") || "",
+            validate: (value: string | undefined) => {
+              if (!value || !value.trim()) return "Enum values are required";
+              return undefined;
             },
-          },
-        ]);
+          }),
+        );
 
-        field.enumValues = val.split(",").map((v: string) => v.trim());
+        field.enumValues = (val as string).split(",").map((v) => v.trim());
         break;
       }
     }
@@ -177,98 +163,95 @@ class Fields {
       return;
     }
 
-    const { fieldName } = await prompt([
-      {
-        type: "select",
-        name: "fieldName",
+    const fieldName: any = handleCancel(
+      await select({
         message: "Select field to delete:",
-        choices: fields.map((f) => f.name),
-      },
-    ]);
+        options: fields.map((f) => ({
+          label: f.name,
+          value: f.name,
+        })),
+        initialValue: fields[0].name,
+      }),
+    );
 
     const index = fields.findIndex((f) => f.name === fieldName);
 
     if (index !== -1) {
       fields.splice(index, 1);
-      log.success(`Field "${fieldName}" deleted`);
+      log.success(`Field ${fieldName} deleted`);
     }
   };
 
   askFieldDetails = async (existing?: Field): Promise<Field> => {
     let obj: any = {};
 
-    const { name } = await prompt([
-      {
-        type: "input",
-        name: "name",
+    const name: any = handleCancel(
+      await text({
         message: "Field name:",
-        default: existing?.name,
-        validate: validateName,
-      },
-    ]);
+        initialValue: existing?.name,
+        validate: validateName as any,
+      }),
+    );
 
-    const { type } = await prompt([
-      {
-        type: "select",
-        name: "type",
+    const type = handleCancel(
+      await select({
         message: "Select field type:",
-        choices: ["string", "number", "boolean", "date", "enum", "objectid"],
-        default: existing?.type || "string",
-      },
-    ]);
+        options: [
+          "string",
+          "number",
+          "boolean",
+          "date",
+          "enum",
+          "objectid",
+        ].map((v) => ({ label: v, value: v })),
+        initialValue: existing?.type || "string",
+      }),
+    );
 
-    const { required } = await prompt([
-      {
-        type: "confirm",
-        name: "required",
+    const required = handleCancel(
+      await confirm({
         message: "Is required?",
-        default: existing?.required ?? false,
-      },
-    ]);
+        initialValue: existing?.required ?? false,
+      }),
+    );
 
-    const { unique } = await prompt([
-      {
-        type: "confirm",
-        name: "unique",
+    const unique = handleCancel(
+      await confirm({
         message: "Is unique?",
-        default: existing?.unique ?? false,
-      },
-    ]);
+        initialValue: existing?.unique ?? false,
+      }),
+    );
 
-    const { hasDefault } = await prompt([
-      {
-        type: "confirm",
-        name: "hasDefault",
+    const hasDefault = handleCancel(
+      await confirm({
         message: `${name} default value?`,
-        default: false,
-      },
-    ]);
+        initialValue: false,
+      }),
+    );
 
     if (hasDefault) {
-      const { value } = await prompt([
-        {
-          type: "input",
-          name: "value",
+      const value = handleCancel(
+        await text({
           message: `Default value for ${name}`,
-        },
-      ]);
+        }),
+      );
+
       obj.default = value;
     }
 
     let enumValues: string[] | undefined;
 
     if (type === "enum") {
-      const { values } = await prompt([
-        {
-          type: "input",
-          name: "values",
+      const values = handleCancel(
+        await text({
           message: "Enter enum values (comma separated):",
-          default: existing?.enumValues?.join(",") || "",
-        },
-      ]);
+          initialValue: existing?.enumValues?.join(",") || "",
+        }),
+      );
 
-      enumValues = values.split(",").map((v: string) => v.trim());
+      enumValues = (values as string).split(",").map((v) => v.trim());
     }
+
     obj = {
       ...obj,
       name,
@@ -283,56 +266,49 @@ class Fields {
 
   enhanceFields = async (fields: Field[]) => {
     for (const field of fields) {
-      const { required, unique } = await prompt([
-        {
-          type: "confirm",
-          name: "required",
+      const required = handleCancel(
+        await confirm({
           message: `${field.name} required?`,
-          default: false,
-        },
-        {
-          type: "confirm",
-          name: "unique",
-          message: `${field.name} unique?`,
-          default: false,
-        },
-      ]);
+          initialValue: false,
+        }),
+      );
 
-      field.required = required;
-      field.unique = unique;
+      const unique = handleCancel(
+        await confirm({
+          message: `${field.name} unique?`,
+          initialValue: false,
+        }),
+      );
+
+      field.required = required as boolean;
+      field.unique = unique as boolean;
 
       if (field.type === "enum") {
-        const { values } = await prompt([
-          {
-            type: "input",
-            name: "values",
+        const values = handleCancel(
+          await text({
             message: `Enter enum values for ${field.name}`,
-          },
-        ]);
+          }),
+        );
 
-        field.enumValues = values.split(",").map((v: string) => v.trim());
+        field.enumValues = (values as string).split(",").map((v) => v.trim());
         field.type = "string";
       }
 
-      const { hasDefault } = await prompt([
-        {
-          type: "confirm",
-          name: "hasDefault",
+      const hasDefault = handleCancel(
+        await confirm({
           message: `${field.name} default value?`,
-          default: false,
-        },
-      ]);
+          initialValue: false,
+        }),
+      );
 
       if (hasDefault) {
-        const { value } = await prompt([
-          {
-            type: "input",
-            name: "value",
+        const value = handleCancel(
+          await text({
             message: `Default value for ${field.name}`,
-          },
-        ]);
+          }),
+        );
 
-        field.default = value;
+        field.default = value as string;
       }
     }
   };
@@ -340,9 +316,7 @@ class Fields {
   parseFields = async (input: string): Promise<Field[]> => {
     const fields: Field[] = [];
 
-    if (!input) {
-      return [];
-    }
+    if (!input) return [];
 
     for (const item of input.split(",")) {
       const [name, type] = item.split(":");
@@ -351,6 +325,7 @@ class Fields {
         log.error(`Invalid field: ${item}`);
         return [];
       }
+
       const resolvedType = await this.resolveType(type);
 
       fields.push({
@@ -370,28 +345,24 @@ class Fields {
 
     const suggestion = closest(cleanType, allowedTypes);
 
-    const { confirm } = await prompt([
-      {
-        type: "confirm",
-        name: "confirm",
+    const confirmType = handleCancel(
+      await confirm({
         message: `Invalid type "${type}". Did you mean "${suggestion}"?`,
-        default: true,
-      },
-    ]);
+        initialValue: true,
+      }),
+    );
 
-    if (confirm) return suggestion;
+    if (confirmType) return suggestion;
 
-    const { manual } = await prompt([
-      {
-        type: "select",
-        name: "manual",
+    const manual = handleCancel(
+      await select({
         message: "Select correct type:",
-        choices: allowedTypes,
-        default: allowedTypes[0],
-      },
-    ]);
+        options: allowedTypes.map((v) => ({ label: v, value: v })),
+        initialValue: allowedTypes[0],
+      }),
+    );
 
-    return manual;
+    return manual as string;
   };
 }
 

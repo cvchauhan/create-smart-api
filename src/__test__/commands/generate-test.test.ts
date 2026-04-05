@@ -1,14 +1,22 @@
 import generateTest from "../../commands/generate-test";
-import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { log } from "../../helper";
 import { execSync } from "child_process";
 import { mkdir, writeFile } from "fs/promises";
 
-// ✅ Mock helper prompt (NEW)
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
+import * as prompts from "@clack/prompts";
+
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  isCancel: jest.fn(() => false),
+  cancel: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
 }));
+
+const selectMock = prompts.select as jest.Mock;
 
 jest.mock("child_process", () => ({
   execSync: jest.fn(),
@@ -28,10 +36,10 @@ jest.mock("../../helper", () => ({
     success: jest.fn(),
     error: jest.fn(),
     info: jest.fn(),
+    step: jest.fn(),
   },
 }));
 
-const promptMock = prompt as any;
 const execSyncMock = execSync as any;
 
 describe("generateTest command", () => {
@@ -52,9 +60,7 @@ describe("generateTest command", () => {
 
   // ✅ CommonJS case
   test("should generate test files for commonjs", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "commonjs",
-    });
+    selectMock.mockResolvedValueOnce("commonjs");
 
     await generateTest("user", "commonjs");
 
@@ -77,9 +83,7 @@ describe("generateTest command", () => {
 
   // ✅ ES Module case
   test("should generate test files for ES module", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "module",
-    });
+    selectMock.mockResolvedValueOnce("module");
 
     await generateTest("product", "module");
 
@@ -92,40 +96,9 @@ describe("generateTest command", () => {
     );
   });
 
-  // ✅ when condition TRUE
-  let questions: any[];
-  test("should evaluate when condition true", async () => {
-    promptMock.mockImplementation(async (q: any[]) => {
-      questions = q;
-      return { moduleType: "commonjs" };
-    });
-
-    await generateTest("user", undefined as any);
-
-    const whenFn = questions[0].when;
-
-    expect(whenFn()).toBe(true);
-  });
-
-  // ✅ when condition FALSE
-  test("should evaluate when condition false", async () => {
-    promptMock.mockImplementation(async (q: any[]) => {
-      questions = q;
-      return {};
-    });
-
-    await generateTest("user", "commonjs");
-
-    const whenFn = questions[0].when;
-
-    expect(whenFn()).toBe(false);
-  });
-
   // ✅ validate test content includes route
   test("should include correct route in test file", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "commonjs",
-    });
+    selectMock.mockResolvedValueOnce("commonjs");
 
     await generateTest("order", "commonjs");
 

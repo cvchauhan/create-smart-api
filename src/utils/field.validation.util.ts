@@ -1,21 +1,25 @@
-import { prompt } from "../helper/promptAdapter";
 import Field from "../types/field";
+import { text } from "@clack/prompts";
+import { handleCancel } from "./prompt.util";
 
 class FieldValidation {
   fieldInputs = async (fields?: Field[]): Promise<{ fieldInput: string }> => {
-    return await prompt<{ fieldInput: string }>([
-      {
-        type: "input",
-        name: "fieldInput",
-        when: () => !fields?.length,
-        validate: this.validateFieldInput,
+    // ✅ skip if already exists
+    if (fields?.length) {
+      return { fieldInput: "" };
+    }
+
+    const fieldInput = handleCancel(
+      await text({
         message:
           "Enter fields (e.g. name:string,email:string,age:number,status:enum)",
-      },
-    ]);
+        validate: this.validateFieldInput as any,
+      }),
+    );
+    return { fieldInput: fieldInput as string };
   };
 
-  validateFieldInput = async (input: string) => {
+  validateFieldInput = (input: string): string | undefined => {
     if (!input || !input.trim()) {
       return "❌ Field input is required (e.g:name:string)";
     }
@@ -26,24 +30,24 @@ class FieldValidation {
       const parts = field.split(":");
 
       if (parts.length < 2) {
-        return `❌ Invalid format: "${field}". Use name:type (e.g:name:string)`;
+        return `❌ Invalid format: "${field}". Use name:type`;
       }
 
       const [name, type] = parts;
 
       if (!name.trim()) {
-        return `❌ Field name missing in "${field}" (e.g:name:string)`;
+        return `❌ Field name missing in "${field}"`;
       }
 
       if (!type.trim()) {
-        return `❌ Field type missing in "${field}" (e.g:name:string)`;
+        return `❌ Field type missing in "${field}"`;
       }
     }
 
-    return true;
+    return undefined; // ✅ valid
   };
 
-  validateName = async (input: string) => {
+  validateName = (input: string): string | undefined => {
     const regex = /^[a-zA-Z0-9._-]+$/;
 
     if (!input) {
@@ -51,12 +55,13 @@ class FieldValidation {
     }
 
     if (!regex.test(input)) {
-      return "Special characters only allowed string, number & (_,-)";
+      return "Only letters, numbers, ., _, - allowed";
     }
 
-    return true;
+    return undefined; // ✅ valid
   };
-  validateOnlyNumber = async (input: string) => {
+
+  validateOnlyNumber = (input: string): string | undefined => {
     const regex = /^[0-9]+$/;
 
     if (!input) {
@@ -67,7 +72,7 @@ class FieldValidation {
       return "Only numbers are allowed";
     }
 
-    return true;
+    return undefined; // ✅ valid
   };
 }
 

@@ -1,12 +1,19 @@
 import generateValidation from "../../commands/generate-validation";
-import { prompt } from "../../helper/promptAdapter";
 import path from "path";
 import { execSync } from "child_process";
 import { log } from "../../helper";
 import { mkdir, writeFile } from "fs/promises";
 
-jest.mock("../../helper/promptAdapter", () => ({
-  prompt: jest.fn(),
+import * as prompts from "@clack/prompts";
+
+jest.mock("@clack/prompts", () => ({
+  text: jest.fn(),
+  select: jest.fn(),
+  confirm: jest.fn(),
+  isCancel: jest.fn(() => false),
+  cancel: jest.fn(),
+  intro: jest.fn(),
+  outro: jest.fn(),
 }));
 
 jest.mock("fs/promises", () => ({
@@ -26,7 +33,7 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-const promptMock = prompt as any;
+const promptMock = prompts.select as jest.Mock;
 
 describe("generateValidation", () => {
   const cwdMock = "/mock-root";
@@ -47,9 +54,7 @@ describe("generateValidation", () => {
 
   // ✅ CommonJS case
   test("should generate validation file for commonjs", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "commonjs",
-    });
+    promptMock.mockResolvedValue("commonjs");
 
     await generateValidation("user", "commonjs");
 
@@ -63,45 +68,14 @@ describe("generateValidation", () => {
 
   // ✅ ES Module case
   test("should generate validation file for ES module", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "module",
-    });
+    promptMock.mockResolvedValue("module");
 
     await generateValidation("product", "module");
   });
 
-  // ✅ when condition TRUE
-  let questions: any[];
-  test("should evaluate when condition true", async () => {
-    promptMock.mockImplementation(async (q: any[]) => {
-      questions = q;
-      return { moduleType: "commonjs" };
-    });
-
-    await generateValidation("order", undefined as any);
-
-    const whenFn = questions[0].when;
-    expect(whenFn()).toBe(true);
-  });
-
-  // ✅ when condition FALSE
-  test("should evaluate when condition false", async () => {
-    promptMock.mockImplementation(async (q: any[]) => {
-      questions = q;
-      return {};
-    });
-
-    await generateValidation("order", "commonjs");
-
-    const whenFn = questions[0].when;
-    expect(whenFn()).toBe(false);
-  });
-
   // ✅ content includes schema usage
   test("should include schema parsing in validation file", async () => {
-    promptMock.mockResolvedValue({
-      moduleType: "commonjs",
-    });
+    promptMock.mockResolvedValue("commonjs");
 
     await generateValidation("order", "commonjs");
 

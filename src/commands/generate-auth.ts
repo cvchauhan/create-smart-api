@@ -12,7 +12,7 @@ export default async function (
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
 ) {
-  const config = getConfig(process.cwd());
+  const config = getConfig(process.cwd()) || {};
 
   let selectedFramework = framework || config?.framework;
   let selectedModuleType = moduleType || config?.module;

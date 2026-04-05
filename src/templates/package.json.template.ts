@@ -1,6 +1,7 @@
 import path from "path";
 import { execSync } from "child_process";
 import { readFile, writeFile } from "fs/promises";
+import { saveProjectConfig } from "../helper/saveProjectConfig";
 
 export default async function generatePackageJson(
   answers: {
@@ -44,11 +45,11 @@ export default async function generatePackageJson(
   const pkgPath = path.join(base, "package.json");
   const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
 
-  pkg.createSmartApi = {
-    db: db,
+  await saveProjectConfig(base, {
+    db,
     module: moduleType,
-    framework: framework,
-  };
+    framework,
+  });
 
   await writeFile(pkgPath, JSON.stringify(pkg, null, 2));
 }

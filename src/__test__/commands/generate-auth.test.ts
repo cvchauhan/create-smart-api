@@ -38,7 +38,13 @@ jest.mock("@clack/prompts", () => ({
   outro: jest.fn(),
 }));
 
+jest.mock("../../helper/getConfig", () => ({
+  getConfig: jest.fn(() => ({})),
+}));
+
 const selectMock = prompts.select as jest.Mock;
+const mockedGetConfig = require("../../helper/getConfig")
+  .getConfig as jest.Mock;
 
 describe("Auth middleware generator", () => {
   beforeEach(() => {
@@ -69,6 +75,10 @@ describe("Auth middleware generator", () => {
   });
 
   test("should generate express ES module middleware", async () => {
+    mockedGetConfig.mockReturnValueOnce({
+      framework: "express",
+      module: "module",
+    });
     selectMock.mockResolvedValueOnce("express").mockResolvedValueOnce("module");
 
     await generateAuth();
@@ -80,6 +90,10 @@ describe("Auth middleware generator", () => {
   });
 
   test("should generate fastify middleware", async () => {
+    mockedGetConfig.mockReturnValueOnce({
+      framework: "fastify",
+      module: "module",
+    });
     selectMock.mockResolvedValueOnce("fastify").mockResolvedValueOnce("module");
 
     await generateAuth();

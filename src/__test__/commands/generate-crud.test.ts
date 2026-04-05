@@ -11,6 +11,12 @@ jest.mock("../../helper", () => ({
   },
 }));
 
+jest.mock("../../helper/getConfig", () => ({
+  getConfig: jest.fn(() => ({})),
+}));
+const mockedGetConfig = require("../../helper/getConfig")
+  .getConfig as jest.Mock;
+
 jest.mock("../../generators/crud", () => jest.fn());
 
 describe("generate crud command", () => {
@@ -26,6 +32,10 @@ describe("generate crud command", () => {
   });
 
   test("should call crud generator when module name provided", async () => {
+    mockedGetConfig.mockReturnValueOnce({
+      framework: "express",
+      module: "commonjs",
+    });
     await generateCrud("user", "express", "commonjs");
 
     expect(crud).toHaveBeenCalledWith(

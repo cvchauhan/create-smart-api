@@ -94,10 +94,10 @@ export default async function generateCrud(
     "src/controllers",
     `${name}.controller.js`,
   );
-  await generateController(name, isESM, controllerPath);
+  const selectedFramework = framework || answers.framework;
+  await generateController(name, isESM, controllerPath, selectedFramework);
 
   /* -------- AUTO REGISTER ROUTE -------- */
-  const selectedFramework = framework || answers.framework;
   const routesIndex = path.join(base, "src/routes/index.js");
   await genrateRouter(name, selectedFramework, routesIndex, selectModuleType);
 

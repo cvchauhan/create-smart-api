@@ -4,65 +4,73 @@ export default async function generateController(
   name: string,
   isESM: boolean,
   controllerPath: string,
+  framework: "express" | "fastify",
 ) {
+  // 👉 Decide handler params & response method
+  const resParam = framework === "fastify" ? "reply" : "res";
+  const sendMethod =
+    framework === "fastify" ? `${resParam}.send` : `${resParam}.json`;
+
+  const params = framework === "fastify" ? "(req, reply)" : "(req, res)";
+
   let controllerContent;
 
   if (isESM) {
     controllerContent = `import * as service from "../services/${name}.service.js";
     
-export const getAll = async (req, res) => {
+export const getAll = async ${params} => {
     const data = await service.getAll();
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-export const getById = async (req, res) => {
+export const getById = async ${params} => {
     const data = await service.getById(req.params.id);
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-export const create = async (req, res) => {
+export const create = async ${params} => {
     const data = await service.create(req.body);
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-export const update = async (req, res) => {
+export const update = async ${params} => {
     const data = await service.update(req.params.id, req.body);
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-export const remove = async (req, res) => {
+export const remove = async ${params} => {
     const data = await service.remove(req.params.id);
-    res.json({ success: true, data });
+    return ${sendMethod}({ success: true, data });
 };
-    `;
+`;
   } else {
     controllerContent = `const service = require("../services/${name}.service");
     
-module.exports.getAll = async (req, res) => {
+module.exports.getAll = async ${params} => {
     const data = await service.getAll();
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-module.exports.getById = async (req, res) => {
+module.exports.getById = async ${params} => {
     const data = await service.getById(req.params.id);
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-module.exports.create = async (req, res) => {
+module.exports.create = async ${params} => {
     const data = await service.create(req.body);
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-module.exports.update = async (req, res) => {
+module.exports.update = async ${params} => {
     const data = await service.update(req.params.id, req.body);
-    res.json(data);
+    return ${sendMethod}(data);
 };
 
-module.exports.remove = async (req, res) => {
+module.exports.remove = async ${params} => {
     const data = await service.remove(req.params.id);
-    res.json({ success: true, data });
+    return ${sendMethod}({ success: true, data });
 };
-    `;
+`;
   }
 
   await writeFile(controllerPath, controllerContent);

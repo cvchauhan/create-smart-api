@@ -118,8 +118,8 @@ app.listen({port:${port}});
 `;
     } else {
       serverContent = `const Fastify = require("fastify");
+const dotenv = require("dotenv");
 dotenv.config();
-const registerRoutes = require("./routes");
 
 const registerRoutes = require("./routes");
 

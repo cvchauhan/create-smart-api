@@ -76,6 +76,7 @@ describe("generateCrud", () => {
       "user",
       false,
       expect.stringContaining("user.controller.js"),
+      "express",
     );
 
     expect(genrateRouter).toHaveBeenCalledWith(

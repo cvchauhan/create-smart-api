@@ -49,37 +49,37 @@ Generated projects include:
 
 ---
 
-# 🎯 Features
+## 🎯 Features
 
-- ✅ Express.js / Fastify support
-- ✅ CommonJS + ESM support
-- ✅ MongoDB / MySQL / MSSQL support
-- ✅ Sequelize + Mongoose support
-- ✅ CRUD generator
-- ✅ Auth generator
-- ✅ Validation generator
-- ✅ Swagger/OpenAPI setup
-- ✅ Jest testing support
-- ✅ Plugin system
-- ✅ Microservice scaffolding
+- Express.js / Fastify support
+- CommonJS + ESM support
+- MongoDB / MySQL / MSSQL support
+- Sequelize + Mongoose support
+- CRUD generator
+- Auth generator
+- Validation generator
+- Swagger/OpenAPI setup
+- Jest testing support
+- Plugin system
+- Microservice scaffolding
 
 ---
 
-# 📥 Installation
+## 📥 Installation
 
-## Run instantly with npx
+### Run instantly with npx
 
 ```bash
 npx create-smart-api create my-api
 ```
 
-## Short alias
+### Short alias
 
 ```bash
 npx create-smart-api c my-api
 ```
 
-## Global install
+### Global install
 
 ```bash
 npm install -g create-smart-api
@@ -87,7 +87,7 @@ npm install -g create-smart-api
 
 ---
 
-# ⚡ Quick Start
+## ⚡ Quick Start
 
 ```bash
 create-smart-api create my-api
@@ -101,7 +101,7 @@ create-smart-api c my-api
 
 ---
 
-# 🏗️ Project Setup Wizard
+## 🏗️ Project Setup Wizard
 
 The CLI will guide you through:
 
@@ -120,7 +120,7 @@ Supported databases:
 
 ---
 
-# 🧠 Smart CRUD Generator
+## 🧠 Smart CRUD Generator
 
 Generate complete CRUD module instantly:
 
@@ -147,25 +147,19 @@ Required? Yes
 Unique? No
 ```
 
----
-
 ### Quick Input Mode
 
 ```bash
 name:string,email:string,age:number,status:enum
 ```
 
----
+### Schema Preview Table
 
-## Schema Preview Table
-
-```bash
-| # | Field  | Type   | Req | Uniq | Default | Extra              |
-|---|--------|--------|-----|------|---------|--------------------|
-| 1 | name   | string | Yes | No   | -       | -                  |
-| 2 | email  | string | Yes | Yes  | -       | -                  |
-| 3 | status | enum   | No  | No   | active  | active,inactive    |
-```
+| #   | Field  | Type   | Req | Uniq | Default | Extra           |
+| --- | ------ | ------ | --- | ---- | ------- | --------------- |
+| 1   | name   | string | Yes | No   | -       | -               |
+| 2   | email  | string | Yes | Yes  | -       | -               |
+| 3   | status | enum   | No  | No   | active  | active,inactive |
 
 ---
 
@@ -180,91 +174,71 @@ Options include:
 
 ---
 
-# ⚙️ CLI Commands
+## ⚙️ CLI Commands
 
----
-
-## Create Project
+### Create Project
 
 ```bash
 create-smart-api create my-api
 create-smart-api c my-api
 ```
 
----
-
-## Generate CRUD
+### Generate CRUD
 
 ```bash
 create-smart-api generate:crud user
 create-smart-api g:c user
 ```
 
----
-
-## Generate Auth
+### Generate Auth
 
 ```bash
 create-smart-api generate:auth
 create-smart-api g:a
 ```
 
----
-
-## Generate Service
+### Generate Service
 
 ```bash
 create-smart-api generate:service user
 create-smart-api g:s user
 ```
 
----
-
-## Generate Route
+### Generate Route
 
 ```bash
 create-smart-api generate:route user
 create-smart-api g:r user
 ```
 
----
-
-## Generate Model
+### Generate Model
 
 ```bash
 create-smart-api generate:model user
 create-smart-api g:m user
 ```
 
----
-
-## Generate Validation
+### Generate Validation
 
 ```bash
 create-smart-api generate:validation user
 create-smart-api g:v user
 ```
 
----
-
-## Generate Test
+### Generate Test
 
 ```bash
 create-smart-api generate:test user
 create-smart-api g:t user
 ```
 
----
-
-## Generate Swagger
+### Generate Swagger
 
 ```bash
 create-smart-api generate:swagger
 ```
 
----
-
-## Add Plugin
+### Add Plugin
 
 ```bash
 create-smart-api add:plugin redis
@@ -273,7 +247,7 @@ create-smart-api add:p redis
 
 ---
 
-# 🔌 Plugin Support
+## 🔌 Plugin Support
 
 Currently supported plugins:
 
@@ -288,20 +262,16 @@ create-smart-api add:plugin kafka
 
 ---
 
-# 🧩 Database Support
+## 🧩 Database Support
 
----
-
-## MongoDB (Mongoose)
+### MongoDB (Mongoose)
 
 - Schema models
 - Enum support
 - Defaults
 - Validation ready
 
----
-
-## MySQL / MSSQL (Sequelize)
+### MySQL / MSSQL (Sequelize)
 
 - Typed models
 - Constraints
@@ -309,7 +279,7 @@ create-smart-api add:plugin kafka
 
 ---
 
-# 🔗 Relationship Support
+## 🔗 Relationship Support
 
 Define model relationships interactively:
 
@@ -325,7 +295,7 @@ Auto-create missing related models if needed.
 
 ---
 
-# 🧪 Testing
+## 🧪 Testing
 
 Generated apps support Jest:
 
@@ -335,7 +305,7 @@ npm test
 
 ---
 
-# 🛠️ Auto Command Suggestions
+## 🛠️ Auto Command Suggestions
 
 Mistyped command?
 
@@ -355,7 +325,7 @@ And can rerun automatically after confirmation.
 
 ---
 
-# 🚀 Roadmap
+## 🚀 Roadmap
 
 Upcoming features:
 
@@ -368,7 +338,7 @@ Upcoming features:
 
 ---
 
-# 🤝 Contributing
+## 🤝 Contributing
 
 Contributions are welcome!
 
@@ -379,27 +349,26 @@ Contributions are welcome!
 
 ---
 
-# 📄 License
+## 📄 License
 
 MIT License
 
 ---
 
-# 👨‍💻 Author
+## 👨‍💻 Author
 
 Created with ❤️ by **Chirag Chauhan**
 
-GitHub:
-https://github.com/cvchauhan
+GitHub: https://github.com/cvchauhan
 
 ---
 
-# ⭐ Support
+## ⭐ Support
 
 If you like this project:
 
-👉 Star the repository  
-👉 Share with developers  
+👉 Star the repository
+👉 Share with developers
 👉 Contribute ideas
 
 ---

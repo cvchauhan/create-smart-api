@@ -2,12 +2,11 @@ import Field from "../types/field";
 import { log } from "../helper/index";
 import { closest } from "fastest-levenshtein";
 import { validateFieldInput, validateName } from "./field.validation.util";
-
-import { text, select, confirm } from "@clack/prompts";
 import { handleCancel } from "./prompt.util";
 
 class Fields {
   addField = async (fields: Field[], mode?: string) => {
+    const { text, confirm } = require("@clack/prompts");
     while (true) {
       let newField: Field;
 
@@ -54,6 +53,7 @@ class Fields {
   };
 
   editField = async (fields: Field[]) => {
+    const { text, select, confirm } = require("@clack/prompts");
     const fieldName = handleCancel(
       await select({
         message: "Select field to edit:",
@@ -162,7 +162,7 @@ class Fields {
       log.warn("No fields to delete");
       return;
     }
-
+    const { select } = require("@clack/prompts");
     const fieldName: any = handleCancel(
       await select({
         message: "Select field to delete:",
@@ -183,8 +183,8 @@ class Fields {
   };
 
   askFieldDetails = async (existing?: Field): Promise<Field> => {
+    const { text, select, confirm } = require("@clack/prompts");
     let obj: any = {};
-
     const name: any = handleCancel(
       await text({
         message: "Field name:",
@@ -265,6 +265,7 @@ class Fields {
   };
 
   enhanceFields = async (fields: Field[]) => {
+    const { text, confirm } = require("@clack/prompts");
     for (const field of fields) {
       const required = handleCancel(
         await confirm({
@@ -344,7 +345,7 @@ class Fields {
     if (allowedTypes.includes(cleanType)) return cleanType;
 
     const suggestion = closest(cleanType, allowedTypes);
-
+    const { select, confirm } = require("@clack/prompts");
     const confirmType = handleCancel(
       await confirm({
         message: `Invalid type "${type}". Did you mean "${suggestion}"?`,

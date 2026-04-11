@@ -1,5 +1,5 @@
+import { spawnSync } from "node:child_process";
 import pluginInstaller from "../../commands/add-plugin";
-import { spawnSync } from "child_process";
 import { log } from "../../helper";
 
 jest.mock("child_process", () => ({

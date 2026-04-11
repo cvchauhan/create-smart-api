@@ -1,4 +1,4 @@
-import { writeFile } from "fs/promises";
+import { writeFile } from "node:fs/promises";
 
 export default async function generateEnvFile(
   port: number,

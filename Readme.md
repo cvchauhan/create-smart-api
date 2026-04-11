@@ -1,51 +1,85 @@
-## 📦 create-smart-api — Smart Node.js Backend Generator
+# 🚀 create-smart-api
 
-A powerful **CLI toolkit** to generate **production-ready Node.js REST APIs** with advanced scaffolding, interactive schema builder, and database integration.
+### Smart Node.js Backend Generator for Production-Ready APIs
 
----
-
-## 🚀 What’s New 🔥
-
-- 🧠 **Interactive Schema Builder**
-- 📊 **Table Preview before model creation**
-- ✏️ Edit / Add / Delete fields dynamically
-- ⚡ **Bulk field input support**
-- 🔍 **Auto typo correction (string, boolean, etc.)**
-- 🧩 Supports **Sequelize & Mongoose models**
-- 📁 Auto `.env` + DB config generation
-- 🔄 Real DB-connected CRUD APIs (not dummy)
+Build scalable backend APIs in seconds with an interactive CLI that generates clean, production-ready Node.js projects using Express or Fastify.
 
 ---
 
-## 🚀 Features
+## 📦 Overview
 
-- Express.js or Fastify support
-- CommonJS & ES Modules
-- Clean architecture (Controller / Service / Model / Route)
-- Smart CRUD generator
-- JWT authentication
-- Validation (Zod/Joi)
-- Jest testing setup
-- Swagger/OpenAPI docs
-- Plugin system
+`create-smart-api` is a powerful CLI toolkit that helps developers scaffold modern backend applications with:
+
+- Clean architecture
+- CRUD generation
+- Authentication
+- Validation
+- Swagger docs
+- Testing setup
+- Plugin support
+- Interactive schema builder
+
+Perfect for rapid backend development.
 
 ---
 
-## 📦 Installation
+## ✨ Key Highlights
 
-### Run with npx (recommended)
+### 🔥 Smart Interactive CLI
+
+Generate complete backend projects with guided prompts.
+
+### 🧠 Interactive Schema Builder
+
+Create models visually with:
+
+- Add/Edit/Delete fields
+- Bulk field input mode
+- Table preview before generation
+- Auto typo correction for field types
+
+### ⚡ Production Ready
+
+Generated projects include:
+
+- Folder structure
+- Database config
+- Environment setup
+- Real connected CRUD APIs
+
+---
+
+# 🎯 Features
+
+- ✅ Express.js / Fastify support
+- ✅ CommonJS + ESM support
+- ✅ MongoDB / MySQL / MSSQL support
+- ✅ Sequelize + Mongoose support
+- ✅ CRUD generator
+- ✅ Auth generator
+- ✅ Validation generator
+- ✅ Swagger/OpenAPI setup
+- ✅ Jest testing support
+- ✅ Plugin system
+- ✅ Microservice scaffolding
+
+---
+
+# 📥 Installation
+
+## Run instantly with npx
 
 ```bash
 npx create-smart-api create my-api
 ```
 
-### Or use short form
+## Short alias
 
 ```bash
 npx create-smart-api c my-api
 ```
 
-### Or install globally
+## Global install
 
 ```bash
 npm install -g create-smart-api
@@ -53,224 +87,176 @@ npm install -g create-smart-api
 
 ---
 
-## ⚡ Quick Start
+# ⚡ Quick Start
 
 ```bash
 create-smart-api create my-api
 ```
 
-## OR Use Short form
+or
 
 ```bash
 create-smart-api c my-api
 ```
 
-Follow CLI prompts:
+---
+
+# 🏗️ Project Setup Wizard
+
+The CLI will guide you through:
 
 - Project name
-- Framework (Express / Fastify)
-- Module system (CommonJS / ESM)
-- Database:
-  - MongoDB (Mongoose)
-  - MySQL (Sequelize)
-  - MSSQL (Sequelize)
+- Framework selection
+- Module system
+- Database choice
+- CRUD generation
+- Port configuration
 
-- Generate CRUD module
-- Port
+Supported databases:
+
+- MongoDB
+- MySQL
+- MSSQL
 
 ---
 
-## 🧠 Smart CRUD Generator (🔥 Highlight Feature)
+# 🧠 Smart CRUD Generator
+
+Generate complete CRUD module instantly:
 
 ```bash
 create-smart-api generate:crud user
 ```
 
-## OR Use Short form
+or shortcut:
 
 ```bash
 create-smart-api g:c user
 ```
 
-### ✨ Step 1: Bulk Field Input
+---
 
-## 🧩 Field Definition
+## Schema Builder Example
 
-### 🔹 Choose Input Mode
+### Interactive Mode
 
-````bash
-? How do you want to define fields?
-❯ Interactive
-  Quick input (name:string,...)
-
+```bash
 Field name: name
 Type: string
 Required? Yes
 Unique? No
 ```
 
-? How do you want to define fields?
-  Interactive
-❯ Quick input (name:string,...)
+---
 
+### Quick Input Mode
+
+```bash
 name:string,email:string,age:number,status:enum
-
-````
+```
 
 ---
 
-### ✨ Step 2: Field Enhancements
+## Schema Preview Table
 
-- Required
-- Unique
-- Default values
-- Enum values
+```bash
+| # | Field  | Type   | Req | Uniq | Default | Extra              |
+|---|--------|--------|-----|------|---------|--------------------|
+| 1 | name   | string | Yes | No   | -       | -                  |
+| 2 | email  | string | Yes | Yes  | -       | -                  |
+| 3 | status | enum   | No  | No   | active  | active,inactive    |
+```
 
 ---
 
-### 📊 Step 3: Table Preview
+## Edit Before Generate
 
-```
-## 📊 Schema Preview
-
-| # | Field  | Type   | Req | Uniq | Default | Extra               |
-|---|--------|--------|-----|------|---------|---------------------|
-| 1 | name   | string | Yes | No   | -       | -                   |
-| 2 | email  | string | Yes | Yes  | -       | -                   |
-| 3 | status | string | No  | No   | active  | enum(active,inact)  |
-
----
-```
-
-### ✏️ Step 4: Edit Before Confirm
-
-```
-Options:
+Options include:
 
 - Edit field
-- Add new field
+- Add field
 - Delete field
 - Continue
-```
 
 ---
 
-## 🧩 Database Support
+# ⚙️ CLI Commands
 
-### 🟢 Sequelize (MySQL / MSSQL)
+---
 
-- Auto model generation
-- Proper type mapping
-- Validation & constraints
-
-### 🟢 Mongoose (MongoDB)
-
-- Schema-based model
-- Enum support
-- Default values
-- Ready-to-use models
-
-## ⚙️ CLI Commands
-
-### Create project
+## Create Project
 
 ```bash
 create-smart-api create my-api
-```
-
-### Or Use create-smart-api c my-api
-
-```bash
 create-smart-api c my-api
 ```
 
 ---
 
-### Generate CRUD
+## Generate CRUD
 
 ```bash
 create-smart-api generate:crud user
-```
-
-### Or Use create-smart-api g:c user
-
-```bash
 create-smart-api g:c user
 ```
 
 ---
 
-### Generate Auth
+## Generate Auth
 
 ```bash
 create-smart-api generate:auth
-```
-
-### Or Use create-smart-api g:a
-
-```bash
 create-smart-api g:a
 ```
 
 ---
 
-### Generate Service
+## Generate Service
 
 ```bash
-create-smart-api generate:service
-```
-
-### Or Use create-smart-api g:s
-
-```bash
-create-smart-api g:s
+create-smart-api generate:service user
+create-smart-api g:s user
 ```
 
 ---
 
-### Generate Model
+## Generate Route
+
+```bash
+create-smart-api generate:route user
+create-smart-api g:r user
+```
+
+---
+
+## Generate Model
 
 ```bash
 create-smart-api generate:model user
-```
-
-### Or Use create-smart-api g:m user
-
-```bash
 create-smart-api g:m user
 ```
 
 ---
 
-### Generate Validation
+## Generate Validation
 
 ```bash
 create-smart-api generate:validation user
-```
-
-### Or Use create-smart-api g:v user
-
-```bash
 create-smart-api g:v user
 ```
 
 ---
 
-### Generate Tests
+## Generate Test
 
 ```bash
 create-smart-api generate:test user
-```
-
-### Or Use create-smart-api g:t user
-
-```bash
 create-smart-api g:t user
 ```
 
 ---
 
-### Generate Swagger Docs
+## Generate Swagger
 
 ```bash
 create-smart-api generate:swagger
@@ -278,31 +264,54 @@ create-smart-api generate:swagger
 
 ---
 
-## 🧪 Testing
+## Add Plugin
 
 ```bash
-npm test
+create-smart-api add:plugin redis
+create-smart-api add:p redis
 ```
 
 ---
 
-## 🔌 Plugin System
+# 🔌 Plugin Support
+
+Currently supported plugins:
+
+- Redis
+- Kafka
+
+Example:
 
 ```bash
-create-smart-api plugin install redis
+create-smart-api add:plugin kafka
 ```
 
 ---
 
-## 🔗 Relationship Support
-
-Define relationships between models using a simple and guided approach.
+# 🧩 Database Support
 
 ---
 
-### 🔹 Add Relations
+## MongoDB (Mongoose)
 
-You will be prompted to define relationships:
+- Schema models
+- Enum support
+- Defaults
+- Validation ready
+
+---
+
+## MySQL / MSSQL (Sequelize)
+
+- Typed models
+- Constraints
+- Auto mappings
+
+---
+
+# 🔗 Relationship Support
+
+Define model relationships interactively:
 
 ```bash
 Related model name: User
@@ -310,44 +319,93 @@ Relation type:
 ❯ 1:1
   1:N
   N:N
+```
 
-Add another relation? Yes/No
+Auto-create missing related models if needed.
 
-Model "User" not found.
+---
 
-? What do you want to do?
-❯ Create Model
-  Skip
+# 🧪 Testing
+
+Generated apps support Jest:
+
+```bash
+npm test
 ```
 
 ---
 
-## 🗺️ Roadmap
+# 🛠️ Auto Command Suggestions
 
-- GraphQL generator
-- Redis cache support
-- Microservices support
-- AI-based API generation
+Mistyped command?
+
+Example:
+
+```bash
+create-smart-api genrate:crud user
+```
+
+CLI automatically suggests:
+
+```bash
+Did you mean: generate:crud ?
+```
+
+And can rerun automatically after confirmation.
 
 ---
 
-## 🤝 Contributing
+# 🚀 Roadmap
 
-1. Fork repo
+Upcoming features:
+
+- GraphQL generator
+- Redis cache layer
+- Advanced microservices templates
+- AI-powered API generation
+- Docker support
+- CI/CD templates
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork repository
 2. Create feature branch
-3. Add tests
+3. Commit changes
 4. Submit PR
 
 ---
 
-## 📄 License
+# 📄 License
 
-MIT
+MIT License
 
 ---
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
-Created by Chirag Chauhan
+Created with ❤️ by **Chirag Chauhan**
 
-⭐ Star the repo if you like it!
+GitHub:
+https://github.com/cvchauhan
+
+---
+
+# ⭐ Support
+
+If you like this project:
+
+👉 Star the repository  
+👉 Share with developers  
+👉 Contribute ideas
+
+---
+
+### Build APIs Faster. Smarter. Cleaner.
+
+```bash
+npx create-smart-api create my-next-api
+```

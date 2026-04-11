@@ -1,11 +1,9 @@
-import path from "path";
+import path from "node:path";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import serviceGenrate from "../templates/service.template";
 import generateModel from "./model";
-import { mkdir } from "fs/promises";
-
-import { intro, outro, select } from "@clack/prompts";
+import { mkdir } from "node:fs/promises";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function (
@@ -16,13 +14,13 @@ export default async function (
     log.error("Service name is required");
     return;
   }
+  const { select, intro, outro } = require("@clack/prompts");
   intro("Create Smart API Service 🚀");
   const base = process.cwd();
   const config = getConfig(base);
 
   let selectedDb = config?.db;
   let selectedModuleType = moduleType || config?.module;
-
   // ✅ Ask DB if not available
   if (!selectedDb) {
     const res = handleCancel(

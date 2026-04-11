@@ -1,5 +1,5 @@
 import { defineConfig } from "tsup";
-import { builtinModules } from "module";
+import { builtinModules } from "node:module";
 
 export default defineConfig({
   entry: ["src/bin/cli.ts"],
@@ -12,5 +12,5 @@ export default defineConfig({
   splitting: false,
   sourcemap: false,
   platform: "node",
-  external: [...builtinModules, "prompts", "@clack/prompts"],
+  external: [...builtinModules, "@clack/prompts"],
 });

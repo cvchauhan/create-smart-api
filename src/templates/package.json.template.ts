@@ -1,7 +1,8 @@
-import path from "path";
-import { execSync } from "child_process";
-import { readFile, writeFile } from "fs/promises";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { readFile, writeFile } from "node:fs/promises";
 import { saveProjectConfig } from "../helper/saveProjectConfig";
+import { log } from "../helper";
 
 export default async function generatePackageJson(
   answers: {
@@ -16,35 +17,59 @@ export default async function generatePackageJson(
   base: string,
 ) {
   const { framework, moduleType, db } = answers;
-  execSync("npm init -y", { stdio: "inherit" });
-  execSync('npm pkg set scripts.start="node src/server.js"', {
-    stdio: "inherit",
-  });
 
-  if (moduleType === "module") {
-    execSync("npm pkg set type=module", { stdio: "inherit" });
-  }
+  const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
+
+  const runNpm = (args: string[]) => {
+    log.info(`Running ${npmCmd} ${args.join(" ")}`);
+    spawnSync(npmCmd, args, {
+      stdio: "inherit",
+      shell: true,
+    });
+  };
+
+  // Initialize package.json
+  runNpm(["init", "-y"]);
+  runNpm(["install", "-D", "dotenv"]);
+  const installPkg = [];
+  // Framework install
   if (framework === "express") {
-    execSync("npm install express", { stdio: "inherit" });
+    installPkg.push("express");
+    // runNpm(["install", "express"]);
   }
-  execSync("npm install -D dotenv", { stdio: "inherit" });
 
   if (framework === "fastify") {
-    execSync("npm install fastify", { stdio: "inherit" });
+    installPkg.push("fastify");
+    // runNpm(["install", "fastify"]);
   }
 
+  // dotenv should be regular dependency, not dev dependency
+
+  // Database dependencies
   if (db === "mongodb") {
-    execSync("npm install mongoose", { stdio: "inherit" });
+    installPkg.push("mongoose");
   }
+
   if (db === "mssql") {
-    execSync("npm install sequelize tedious", { stdio: "inherit" });
+    installPkg.push("tedious", "sequelize");
   }
+
   if (db === "mysql") {
-    execSync("npm install mysql2 sequelize", { stdio: "inherit" });
+    installPkg.push("mysql2", "sequelize");
   }
+  if (installPkg.length) {
+    runNpm(["install", ...installPkg]);
+  }
+
   const pkgPath = path.join(base, "package.json");
   const pkg = JSON.parse(await readFile(pkgPath, "utf-8"));
-
+  pkg.scripts = {
+    ...pkg.scripts,
+    start: "node src/server.js",
+  };
+  if (moduleType === "module") {
+    pkg.type = "module";
+  }
   await saveProjectConfig(base, {
     db,
     module: moduleType,

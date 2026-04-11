@@ -1,5 +1,5 @@
-import path from "path";
-import { readFile, writeFile } from "fs/promises";
+import path from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
 
 export async function saveProjectConfig(base: string, data: any) {
   const configPath = path.join(base, ".smart-api.json");

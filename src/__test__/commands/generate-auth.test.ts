@@ -1,8 +1,8 @@
 import generateAuth from "../../commands/generate-auth";
 import { log } from "../../helper";
-import { execSync } from "child_process";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import * as prompts from "@clack/prompts";
+import { spawnSync } from "node:child_process";
 
 jest.mock("../../helper", () => ({
   log: {
@@ -14,15 +14,12 @@ jest.mock("../../helper", () => ({
     successBox: jest.fn(),
   },
 }));
-jest.mock("../../helper/runner", () => ({
-  run: jest.fn().mockResolvedValue({ success: true }),
-}));
 
 jest.mock("child_process", () => ({
-  execSync: jest.fn(),
+  spawnSync: jest.fn(),
 }));
 
-jest.mock("fs/promises", () => ({
+jest.mock("node:fs/promises", () => ({
   writeFile: jest.fn(),
   mkdir: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),
@@ -59,10 +56,14 @@ describe("Auth middleware generator", () => {
     await generateAuth();
 
     expect(mkdir).toHaveBeenCalled();
-
-    expect(execSync).toHaveBeenCalledWith("npm install jsonwebtoken bcrypt", {
-      stdio: "inherit",
-    });
+    expect(spawnSync).toHaveBeenCalledWith(
+      "npm",
+      ["install", "jsonwebtoken", "bcrypt"],
+      {
+        stdio: "inherit",
+        shell: true,
+      },
+    );
 
     expect(writeFile).toHaveBeenCalledWith(
       expect.stringContaining("auth.middleware.js"),
@@ -103,56 +104,4 @@ describe("Auth middleware generator", () => {
       expect.stringContaining("reply"),
     );
   });
-
-  // test("should skip framework prompt if framework passed", async () => {
-  //   selectMock
-  //     .mockResolvedValueOnce("express")
-  //     .mockResolvedValueOnce("commonjs");
-
-  //   await generateAuth("express", "commonjs");
-
-  //   const questions = promptMock.mock.calls[0][0];
-
-  //   const frameworkQuestion = questions.find(
-  //     (q: { name: string }) => q.name === "framework",
-  //   );
-
-  //   expect(frameworkQuestion.when()).toBe(false);
-  // });
-
-  // test("should skip framework prompt if framework passed (fastify)", async () => {
-  //   promptMock.mockResolvedValue({
-  //     framework: "fastify",
-  //     moduleType: "commonjs",
-  //   });
-
-  //   await generateAuth("fastify", "commonjs");
-
-  //   const questions = promptMock.mock.calls[0][0];
-
-  //   const frameworkQuestion = questions.find(
-  //     (q: { name: string }) => q.name === "framework",
-  //   );
-
-  //   expect(frameworkQuestion.when()).toBe(false);
-  // });
-
-  // let questions: any[];
-  // test("should evaluate when conditions", async () => {
-  //   promptMock.mockImplementation(async (q: any) => {
-  //     questions = q;
-  //     return {
-  //       framework: "express",
-  //       moduleType: "commonjs",
-  //     };
-  //   });
-
-  //   await generateAuth();
-
-  //   const frameworkWhen = questions[0].when;
-  //   const moduleTypeWhen = questions[1].when;
-
-  //   expect(frameworkWhen()).toBe(true);
-  //   expect(moduleTypeWhen()).toBe(true);
-  // });
 });

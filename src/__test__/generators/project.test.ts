@@ -1,13 +1,12 @@
 import { createStructure } from "../../generators/project";
-import path from "path";
+import path from "node:path";
 import { log } from "../../helper";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 
-jest.mock("fs/promises", () => ({
+jest.mock("node:fs/promises", () => ({
   mkdir: jest.fn(),
   writeFile: jest.fn(),
 }));
-
 
 jest.mock("@clack/prompts", () => ({
   text: jest.fn(),

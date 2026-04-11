@@ -1,5 +1,4 @@
 import Field from "../types/field";
-import { text } from "@clack/prompts";
 import { handleCancel } from "./prompt.util";
 
 class FieldValidation {
@@ -8,7 +7,7 @@ class FieldValidation {
     if (fields?.length) {
       return { fieldInput: "" };
     }
-
+    const { text } = require("@clack/prompts");
     const fieldInput = handleCancel(
       await text({
         message:

@@ -1,5 +1,4 @@
 import { closest } from "fastest-levenshtein";
-import { confirm, select } from "@clack/prompts";
 import { handleCancel } from "../utils/prompt.util";
 
 export async function resolveType(type: string): Promise<string> {
@@ -9,7 +8,7 @@ export async function resolveType(type: string): Promise<string> {
   if (allowedTypes.includes(cleanType)) return cleanType;
 
   const suggestion = closest(cleanType, allowedTypes);
-
+  const { confirm } = require("@clack/prompts");
   const confirmType = handleCancel(
     await confirm({
       message: `Invalid type "${type}". Did you mean "${suggestion}"?`,
@@ -18,7 +17,7 @@ export async function resolveType(type: string): Promise<string> {
   );
 
   if (confirmType) return suggestion;
-
+  const { select } = require("@clack/prompts");
   const manual = handleCancel(
     await select({
       message: "Select correct type:",

@@ -1,13 +1,13 @@
 import createApp from "../../commands/create";
 
 // ---- Mock fs ----
-jest.mock("fs/promises", () => ({
+jest.mock("node:fs/promises", () => ({
   writeFile: jest.fn(),
   mkdir: jest.fn(),
 }));
 
 // ---- Mock path ----
-jest.mock("path", () => ({
+jest.mock("node:path", () => ({
   join: jest.fn((...args) => args.join("/")),
   basename: jest.fn((p) => p.split("/").pop()),
 }));
@@ -57,7 +57,7 @@ jest.mock("@clack/prompts", () => ({
 
 describe("createApp CLI", () => {
   const { text, select, confirm } = require("@clack/prompts");
-  const { mkdir, writeFile } = require("fs/promises");
+  const { mkdir, writeFile } = require("node:fs/promises");
   const { createStructure } = require("../../generators/project");
   const generateCrud = require("../../generators/crud");
   const generateEnvFile = require("../../templates/env.template");

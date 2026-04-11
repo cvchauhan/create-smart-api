@@ -1,7 +1,7 @@
-import path from "path";
+import path from "node:path";
 import { log } from "../helper";
 import { generateDbConnectionCode } from "../helper/serverDbInject";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 
 export async function createStructure(
   base: string,

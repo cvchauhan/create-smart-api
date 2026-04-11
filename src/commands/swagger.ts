@@ -1,9 +1,8 @@
-import path from "path";
+import path from "node:path";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
-import { spawnSync } from "child_process";
-import { mkdir, writeFile } from "fs/promises";
-import { select } from "@clack/prompts";
+import { spawnSync } from "node:child_process";
+import { mkdir, writeFile } from "node:fs/promises";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function generateSwagger(
@@ -15,6 +14,7 @@ export default async function generateSwagger(
   const answers = {} as any;
 
   if (!moduleType && !config?.module) {
+    const { select } = require("@clack/prompts");
     const res = handleCancel(
       await select({
         message: "Module system",

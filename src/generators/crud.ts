@@ -1,10 +1,9 @@
-import path from "path";
+import path from "node:path";
 import { log } from "../helper";
 import generateModel from "../commands/model";
 import { genrateRouter } from "../utils/router.util";
 import serviceGenrate from "../templates/service.template";
 import generateController from "../templates/controller.template";
-import { intro, outro, select } from "@clack/prompts";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function generateCrud(
@@ -15,6 +14,7 @@ export default async function generateCrud(
   db?: "mongodb" | "mssql" | "mysql",
   isCreate?: boolean,
 ) {
+  const { select, intro, outro } = require("@clack/prompts");
   if (!moduleName) {
     log.error("Module name is required");
     return;

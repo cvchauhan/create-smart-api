@@ -3,15 +3,15 @@ import { getConfig } from "../helper/getConfig";
 import generatAuthMiddleware from "../templates/middleware.template";
 import generateAuthService from "../templates/auth.service.template";
 import generateAuthController from "../templates/auth.controller.template";
-import { execSync } from "child_process";
-
-import { select } from "@clack/prompts";
+import { spawnSync } from "node:child_process";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function (
   framework?: "express" | "fastify",
   moduleType?: "module" | "commonjs",
 ) {
+  log.info("Generating auth module...");
+  const { select } = require("@clack/prompts");
   const config = getConfig(process.cwd()) || {};
 
   let selectedFramework = framework || config?.framework;
@@ -52,10 +52,10 @@ export default async function (
 
   // 🚀 Install deps (optimized)
   log.step("Installing auth dependencies...");
-  execSync("npm install jsonwebtoken bcrypt", { stdio: "inherit" });
-
-  // 🔥 Generate files
-  log.info("Generating auth module...");
+  spawnSync("npm", ["install", "jsonwebtoken", "bcrypt"], {
+    stdio: "inherit",
+    shell: true,
+  });
 
   await generatAuthMiddleware(selectedFramework!, isModule, base);
   await generateAuthService(base, isModule);

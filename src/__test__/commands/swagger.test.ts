@@ -1,7 +1,7 @@
 import generateSwagger from "../../commands/swagger";
-import path from "path";
+import path from "node:path";
 import { log } from "../../helper";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 
 import * as prompts from "@clack/prompts";
 
@@ -24,7 +24,7 @@ jest.mock("child_process", () => ({
     stderr: "",
   }),
 }));
-jest.mock("fs/promises", () => ({
+jest.mock("node:fs/promises", () => ({
   mkdir: jest.fn(),
   writeFile: jest.fn(),
   existsSync: jest.fn().mockReturnValue(true),

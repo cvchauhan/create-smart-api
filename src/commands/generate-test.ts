@@ -1,10 +1,9 @@
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
-import { execSync } from "child_process";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
-import { existsSync, readFileSync } from "fs";
-import { select } from "@clack/prompts";
+import { existsSync, readFileSync } from "node:fs";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function (
@@ -23,6 +22,7 @@ export default async function (
   const answers = {} as any;
 
   if (!moduleType && !config?.module) {
+    const { select } = require("@clack/prompts");
     const res = handleCancel(
       await select({
         message: "Module system",
@@ -47,16 +47,18 @@ export default async function (
 
   if (!devDeps.jest || !devDeps.supertest) {
     log.info("Installing jest & supertest...");
-    execSync("npm install jest supertest --save-dev", {
+    spawnSync("npm", ["install", "jest", "supertest", "--save-dev"], {
       stdio: "inherit",
+      shell: true,
     });
   }
 
   // ✅ Add test script only if not exists
   if (!pkg.scripts?.test) {
-    execSync('npm pkg set scripts.test="jest"', {
-      stdio: "inherit",
-    });
+    pkg.scripts = {
+      ...pkg.scripts,
+      test: "jest",
+    };
   }
 
   /* -------- CREATE TEST DIR -------- */

@@ -1,6 +1,6 @@
-import path from "path";
+import path from "node:path";
 import { log } from "../helper";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync } from "node:fs";
 import { saveProjectConfig } from "../helper/saveProjectConfig";
 
 export function getConfig(base: string) {

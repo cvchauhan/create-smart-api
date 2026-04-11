@@ -1,7 +1,7 @@
 import { log } from "../helper";
 import { showTablePreview } from "../helper/showTablePreview";
 import Field from "../types/field";
-import path from "path";
+import path from "node:path";
 import create from "./create";
 import {
   deleteField,
@@ -19,10 +19,8 @@ import {
   generateSequelizeIndex,
 } from "../utils/model.util";
 import { getConfig } from "../helper/getConfig";
-import { existsSync, lstatSync } from "fs";
-import { writeFile } from "fs/promises";
-
-import { select, confirm, text } from "@clack/prompts";
+import { existsSync, lstatSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function generateModel(
@@ -45,7 +43,7 @@ export default async function generateModel(
   // ❌ No project found
   if (!existsSync(srcPath) || !lstatSync(srcPath).isDirectory()) {
     log.error("No project found.");
-
+    const { confirm } = require("@clack/prompts");
     const createNow = handleCancel(
       await confirm({
         message: "Create a new project now?",
@@ -54,6 +52,7 @@ export default async function generateModel(
     );
 
     if (createNow) {
+      const { text } = require("@clack/prompts");
       const projectName = handleCancel(
         await text({
           message: "New project name?",
@@ -72,7 +71,7 @@ export default async function generateModel(
 
   let selectedModule = config?.module || moduleType;
   let selectedDb = config?.db || db;
-
+  const { select } = require("@clack/prompts");
   // ✅ Ask only if missing
   if (!selectedModule) {
     const res = handleCancel(

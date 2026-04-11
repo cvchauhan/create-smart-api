@@ -1,8 +1,8 @@
 import { log } from "../../helper";
 import generateMicro from "../../commands/generate-microservice";
-import { mkdir } from "fs/promises";
+import { mkdir } from "node:fs/promises";
 
-jest.mock("fs/promises", () => ({
+jest.mock("node:fs/promises", () => ({
   mkdir: jest.fn(),
 }));
 

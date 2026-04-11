@@ -1,8 +1,8 @@
-import path from "path";
+import path from "node:path";
 import routesContent from "../templates/route.template";
 import { log } from "../helper";
-import { writeFile } from "fs/promises";
-import { readdirSync } from "fs";
+import { writeFile } from "node:fs/promises";
+import { readdirSync } from "node:fs";
 
 class Router {
   genrateRouter = async (

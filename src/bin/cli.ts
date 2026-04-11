@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { closest, distance } from "fastest-levenshtein";
 import pkg from "../../package.json";
 
 import {
@@ -110,7 +111,14 @@ async function main() {
   const command = findCommand(cmd);
 
   if (!command) {
+    const suggestion = suggestCommand(cmd);
+
     console.log(`❌ Unknown command: ${cmd}`);
+
+    if (suggestion) {
+      console.log(`👉 Did you mean: ${suggestion} ?`);
+    }
+
     console.log(`👉 Run 'create-smart-api --help'`);
     return;
   }
@@ -126,3 +134,17 @@ async function main() {
 /* ---------------- RUN ---------------- */
 
 main();
+
+function suggestCommand(input: string): string | null {
+  const allCommands = commands.flatMap((c) =>
+    c.alias ? [c.name, c.alias] : [c.name],
+  );
+
+  const suggestion = closest(input, allCommands);
+
+  if (distance(input, suggestion) > 5) {
+    return null;
+  }
+
+  return suggestion;
+}

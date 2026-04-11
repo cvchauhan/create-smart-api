@@ -1,6 +1,6 @@
-import path from "path";
+import path from "node:path";
 import { log } from "../helper";
-import { mkdir } from "fs/promises";
+import { mkdir } from "node:fs/promises";
 
 export default async function (name: string) {
   if (!name) {

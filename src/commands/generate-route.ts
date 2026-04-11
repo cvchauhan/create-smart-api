@@ -1,9 +1,7 @@
-import path from "path";
+import path from "node:path";
 import { log } from "../helper";
 import { getConfig } from "../helper/getConfig";
 import { genrateRouter } from "../utils/router.util";
-
-import { select } from "@clack/prompts";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function (
@@ -23,7 +21,7 @@ export default async function (
 
   let selectedFramework = config?.framework || framework;
   let selectedModuleType = config?.module || moduleType;
-
+  const { select } = require("@clack/prompts");
   // ✅ Ask only if missing
   if (!selectedFramework) {
     const res = handleCancel(

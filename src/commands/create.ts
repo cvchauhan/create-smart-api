@@ -1,5 +1,5 @@
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { writeFile, mkdir } from "node:fs/promises";
+import path from "node:path";
 import { createStructure } from "../generators/project";
 import generateCrud from "../generators/crud";
 import { log } from "../helper";
@@ -10,10 +10,10 @@ import {
 } from "../utils/field.validation.util";
 import generateEnvFile from "../templates/env.template";
 import generatePackageJson from "../templates/package.json.template";
-import { text, select, confirm, intro, outro } from "@clack/prompts";
 import { handleCancel } from "../utils/prompt.util";
 
 export default async function (name: string) {
+  const { text, select, intro, outro } = require("@clack/prompts");
   intro("Create Smart API 🚀");
   const answers: any = {};
 
@@ -88,6 +88,7 @@ export default async function (name: string) {
 
   // CRUD confirm
   {
+    const { confirm } = require("@clack/prompts");
     const res = handleCancel(
       await confirm({
         message: "Generate sample CRUD module?",

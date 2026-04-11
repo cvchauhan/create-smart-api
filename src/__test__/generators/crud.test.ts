@@ -1,7 +1,7 @@
 import generateCrud from "../../generators/crud";
 
 // Mock dependencies
-jest.mock("path", () => ({
+jest.mock("node:path", () => ({
   join: jest.fn((...args) => args.join("/")),
 }));
 

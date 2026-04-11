@@ -1,8 +1,8 @@
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync } from "node:fs";
 import { log } from "../../helper";
 import { getConfig } from "../../helper/getConfig";
 
-jest.mock("fs", () => ({
+jest.mock("node:fs", () => ({
   existsSync: jest.fn(),
   readFileSync: jest.fn(),
 }));
@@ -21,8 +21,8 @@ jest.mock("../../helper/saveProjectConfig", () => ({
     module: "commonjs",
   }),
 }));
-const mockedExistsSync = require("fs").existsSync as jest.Mock;
-const mockedReadFileSync = require("fs").readFileSync as jest.Mock;
+const mockedExistsSync = require("node:fs").existsSync as jest.Mock;
+const mockedReadFileSync = require("node:fs").readFileSync as jest.Mock;
 describe("Getconfig", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -37,7 +37,7 @@ describe("Getconfig", () => {
   test("should return empty config when .smart-api.json is invalid", async () => {
     mockedExistsSync.mockReturnValueOnce(true);
     jest
-      .spyOn(require("fs"), "readFileSync")
+      .spyOn(require("node:fs"), "readFileSync")
       .mockReturnValueOnce("invalid json");
     const config = await getConfig("/mock-root");
     expect(config).toEqual({});

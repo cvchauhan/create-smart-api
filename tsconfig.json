@@ -1,16 +1,18 @@
 {
   "compilerOptions": {
+    "types": ["node", "jest"],
     "target": "ES2020",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "Node16",
+    "moduleResolution": "node16",
     "outDir": "dist",
     "rootDir": "src",
     "declaration": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
-  "include": ["src"],
-  "exclude": ["src/**/__test__/*"]
+  "include": ["src", "src/__test__"],
+  "exclude": ["dist", "node_modules"]
 }

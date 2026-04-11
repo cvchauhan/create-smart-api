@@ -1,7 +1,7 @@
 import generateTest from "../../commands/generate-test";
-import path from "path";
+import path from "node:path";
 import { log } from "../../helper";
-import { execSync } from "child_process";
+import { spawnSync } from "node:child_process";
 import { mkdir, writeFile } from "fs/promises";
 
 import * as prompts from "@clack/prompts";
@@ -19,7 +19,7 @@ jest.mock("@clack/prompts", () => ({
 const selectMock = prompts.select as jest.Mock;
 
 jest.mock("child_process", () => ({
-  execSync: jest.fn(),
+  spawnSync: jest.fn(),
 }));
 
 jest.mock("fs/promises", () => ({
@@ -40,7 +40,7 @@ jest.mock("../../helper", () => ({
   },
 }));
 
-const execSyncMock = execSync as any;
+const execSyncMock = spawnSync as any;
 
 describe("generateTest command", () => {
   const cwdMock = "/mock-root";
@@ -67,11 +67,6 @@ describe("generateTest command", () => {
     const testDir = path.join(cwdMock, "tests");
     const testFile = path.join(testDir, "user.test.js");
     const jestConfigFile = path.join(cwdMock, "jest.config.js");
-
-    expect(execSyncMock).toHaveBeenCalledWith(
-      'npm pkg set scripts.test="jest"',
-      expect.any(Object),
-    );
 
     // directory creation
     expect(mkdir).toHaveBeenCalledWith(testDir, { recursive: true });

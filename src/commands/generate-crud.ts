@@ -1,8 +1,8 @@
 import crud from "../generators/crud";
 import { log } from "../helper";
-import path from "path";
+import path from "node:path";
 import { getConfig } from "../helper/getConfig";
-import { existsSync, lstatSync } from "fs";
+import { existsSync, lstatSync } from "node:fs";
 
 export default async function (
   name: string,

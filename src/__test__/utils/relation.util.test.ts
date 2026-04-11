@@ -1,17 +1,17 @@
 import { askRelations, processRelations } from "../../utils/relation.util";
 
 // ---- Mock fs ----
-jest.mock("fs", () => ({
+jest.mock("node:fs", () => ({
   existsSync: jest.fn(),
   readdirSync: jest.fn(),
 }));
 
-jest.mock("fs/promises", () => ({
+jest.mock("node:fs/promises", () => ({
   writeFile: jest.fn(),
 }));
 
 // ---- Mock path ----
-jest.mock("path", () => ({
+jest.mock("node:path", () => ({
   join: jest.fn((...args) => args.join("/")),
 }));
 
@@ -56,8 +56,8 @@ jest.mock("../../utils/prompt.util", () => ({
 
 describe("relation.util", () => {
   const { confirm, select, text } = require("@clack/prompts");
-  const { existsSync, readdirSync } = require("fs");
-  const { writeFile } = require("fs/promises");
+  const { existsSync, readdirSync } = require("node:fs");
+  const { writeFile } = require("node:fs/promises");
   const { log } = require("../../helper");
   const { parseFields } = require("../../utils/field.util");
 

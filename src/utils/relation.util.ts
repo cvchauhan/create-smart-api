@@ -1,18 +1,17 @@
 import { fieldInputs, validateName } from "./field.validation.util";
 import { log } from "../helper";
-import path from "path";
+import path from "node:path";
 import Field from "../types/field";
 import { addField, parseFields } from "./field.util";
 import { generateMongooseModel, generateSequelizeModel } from "./model.util";
 import Relation from "../types/relation";
-import { existsSync, readdirSync } from "fs";
-import { writeFile } from "fs/promises";
-
-import { select, confirm, text } from "@clack/prompts";
+import { existsSync, readdirSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import { handleCancel } from "./prompt.util";
 
 class Relations {
   askRelations = async () => {
+    const { confirm, select, text } = require("@clack/prompts");
     const relations: Relation[] = [];
 
     const hasRelations = handleCancel(
@@ -105,7 +104,7 @@ class Relations {
             .map((f) => normalize(f.replace(/\.model\.(js|ts)$/, "")))
         : [],
     );
-
+    const { select } = require("@clack/prompts");
     for (const rel of relations) {
       const target = rel.target;
       const targetName = normalize(target);
